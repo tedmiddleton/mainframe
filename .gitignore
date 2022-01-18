@@ -1,0 +1,7 @@
+*.swp
+__pycache__/
+.cache/
+.clangd/
+_build/
+.vim/
+*~
