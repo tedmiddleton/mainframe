@@ -19,8 +19,8 @@ include(GNUInstallDirs)
 # miniframe_base =============================================================
 
 add_library( miniframe_base STATIC
-    miniframe_base.hpp 
-    miniframe_base.cpp 
+    miniframe/base.hpp 
+    src/base.cpp 
     )
 
 target_include_directories( miniframe_base
@@ -32,10 +32,10 @@ target_include_directories( miniframe_base
 # miniframe_series ===========================================================
 
 add_library( miniframe_series STATIC
-    miniframe_series.hpp 
-    miniframe_series_vector.hpp 
-    miniframe_series_iterator.hpp 
-    miniframe_series.cpp 
+    miniframe/series.hpp 
+    miniframe/series_vector.hpp 
+    miniframe/series_iterator.hpp 
+    src/series.cpp 
     )
 
 target_include_directories( miniframe_series
@@ -52,9 +52,9 @@ target_link_libraries( miniframe_series
 # miniframe ==================================================================
 
 add_library( miniframe STATIC
-    miniframe.hpp 
-    miniframe.cpp 
-    miniframe_csv.cpp 
+    miniframe/frame.hpp 
+    src/frame.cpp 
+    src/csv.cpp 
     )
 
 target_include_directories( miniframe
@@ -82,11 +82,11 @@ install( TARGETS miniframe miniframe_series miniframe_base
 # install header file
 install(
     FILES 
-        miniframe.hpp 
-        miniframe_series.hpp 
-        miniframe_series_vector.hpp 
-        miniframe_series_iterator.hpp 
-        miniframe_base.hpp 
+        miniframe/frame.hpp 
+        miniframe/series.hpp 
+        miniframe/series_vector.hpp 
+        miniframe/series_iterator.hpp 
+        miniframe/base.hpp 
     DESTINATION include/miniframe 
     )
 

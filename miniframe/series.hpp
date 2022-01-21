@@ -23,9 +23,9 @@
 #include <sstream>
 #include <variant>
 
-#include "miniframe_base.hpp"
-#include "miniframe_series_vector.hpp"
-#include "miniframe_series_iterator.hpp"
+#include <miniframe/base.hpp>
+#include <miniframe/series_vector.hpp>
+#include <miniframe/series_iterator.hpp>
 
 namespace mf
 {

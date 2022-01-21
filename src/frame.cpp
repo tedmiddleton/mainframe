@@ -9,9 +9,9 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <set>
-#include "miniframe.hpp"
-#include "miniframe_series.hpp"
-#include "miniframe_base.hpp"
+#include <miniframe/frame.hpp>
+#include <miniframe/series.hpp>
+#include <miniframe/base.hpp>
 
 using namespace std;
 

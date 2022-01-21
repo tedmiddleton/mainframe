@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include "miniframe.hpp"
+#include <miniframe/frame.hpp>
 
 using namespace std;
 

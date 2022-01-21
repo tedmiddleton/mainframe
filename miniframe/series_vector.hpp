@@ -23,8 +23,8 @@
 #include <sstream>
 #include <variant>
 
-#include "miniframe_base.hpp"
-#include "miniframe_series_iterator.hpp"
+#include <miniframe/base.hpp>
+#include <miniframe/series_iterator.hpp>
 
 #define CPP20LEVEL 202002L
 #define CPP17LEVEL 201703L
