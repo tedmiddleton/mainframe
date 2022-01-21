@@ -71,4 +71,31 @@ target_link_libraries( miniframe
 
 add_subdirectory( tests )
 
+install( TARGETS miniframe miniframe_series miniframe_base
+         EXPORT miniframe_targets
+         LIBRARY DESTINATION lib
+         ARCHIVE DESTINATION lib
+         RUNTIME DESTINATION bin
+         INCLUDES DESTINATION include
+    )
+
+# install header file
+install(
+    FILES 
+        miniframe.hpp 
+        miniframe_series.hpp 
+        miniframe_series_vector.hpp 
+        miniframe_series_iterator.hpp 
+        miniframe_base.hpp 
+    DESTINATION include/miniframe 
+    )
+
+# generate and install export file
+install( EXPORT miniframe_targets
+         FILE miniframe_targets.cmake
+         NAMESPACE mf::
+         DESTINATION lib/cmake
+    )
+
+    
 
