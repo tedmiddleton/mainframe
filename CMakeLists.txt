@@ -15,6 +15,9 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 set( CMAKE_BUILD_TYPE Debug )
 
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+set( version 0.1.0 )
 
 # miniframe_base =============================================================
 
@@ -71,6 +74,19 @@ target_link_libraries( miniframe
 
 add_subdirectory( tests )
 
+set_property( TARGET miniframe PROPERTY VERSION ${version} )
+set_property( TARGET miniframe PROPERTY SOVERSION 0 )
+set_property( TARGET miniframe PROPERTY 
+    INTERFACE_miniframe_MAJOR_VERSION 0 )
+set_property( TARGET miniframe PROPERTY 
+    COMPATIBL_INTERFACE_STRING miniframe_MAJOR_VERSION )
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
+    VERSION "${version}"
+    COMPATIBILITY AnyNewerVersion
+    )
+
 install( TARGETS miniframe miniframe_series miniframe_base
          EXPORT miniframe_targets
          LIBRARY DESTINATION lib
@@ -93,8 +109,20 @@ install(
 # generate and install export file
 install( EXPORT miniframe_targets
          FILE miniframe_targets.cmake
-         NAMESPACE mf::
          DESTINATION lib/cmake
+    )
+
+# create config file
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
+    INSTALL_DESTINATION lib/cmake
+)
+
+install(
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
+    DESTINATION lib/cmake
     )
 
     
