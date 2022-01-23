@@ -14,10 +14,9 @@ set( CMAKE_CXX_FLAGS "-g -O2 -Wall" )
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 #set( CMAKE_BUILD_TYPE Debug )
 
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
-
 set( version 0.1.0 )
+
+include(CMakePackageConfigHelpers)
 
 # miniframe_base =============================================================
 
@@ -56,9 +55,14 @@ target_link_libraries( miniframe_series
 
 add_library( miniframe STATIC
     miniframe/frame.hpp 
+    miniframe/expression.hpp 
     src/frame.cpp 
     src/csv.cpp 
     )
+
+#add_subdirectory( tests )
+
+# config =====================================================================
 
 target_include_directories( miniframe
     PUBLIC
@@ -72,21 +76,7 @@ target_link_libraries( miniframe
         miniframe_series
     )
 
-#add_subdirectory( tests )
-
-set_property( TARGET miniframe PROPERTY VERSION ${version} )
-set_property( TARGET miniframe PROPERTY SOVERSION 0 )
-set_property( TARGET miniframe PROPERTY 
-    INTERFACE_miniframe_MAJOR_VERSION 0 )
-set_property( TARGET miniframe PROPERTY 
-    COMPATIBL_INTERFACE_STRING miniframe_MAJOR_VERSION )
-
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
-    VERSION "${version}"
-    COMPATIBILITY AnyNewerVersion
-    )
-
+# install the target and create the export-set
 install( TARGETS miniframe miniframe_series miniframe_base
          EXPORT miniframe-targets
          LIBRARY DESTINATION lib
@@ -95,10 +85,11 @@ install( TARGETS miniframe miniframe_series miniframe_base
          INCLUDES DESTINATION include
     )
 
-# install header file
+# install header files
 install(
     FILES 
         miniframe/frame.hpp 
+        miniframe/expression.hpp 
         miniframe/series.hpp 
         miniframe/series_vector.hpp 
         miniframe/series_iterator.hpp 
@@ -112,18 +103,38 @@ install( EXPORT miniframe-targets
          DESTINATION lib/cmake/miniframe
     )
 
+set_property( TARGET miniframe PROPERTY VERSION ${version} )
+set_property( TARGET miniframe PROPERTY SOVERSION 0 )
+set_property( TARGET miniframe PROPERTY 
+    INTERFACE_miniframe_MAJOR_VERSION 0 )
+set_property( TARGET miniframe PROPERTY 
+    COMPATIBLE_INTERFACE_STRING miniframe_MAJOR_VERSION )
+
+# generate the version file for the config file
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
+    VERSION "${version}"
+    COMPATIBILITY AnyNewerVersion
+    )
+
 # create config file
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
     INSTALL_DESTINATION lib/cmake/miniframe
 )
 
+# install the config files
 install(
     FILES
         "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
     DESTINATION lib/cmake/miniframe
     )
+
+# generate the export targets for the build tree
+export(EXPORT miniframe-targets
+       FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/miniframe-targets.cmake"
+)
 
     
 
