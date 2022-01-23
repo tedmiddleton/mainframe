@@ -86,12 +86,23 @@ target_link_libraries( miniframe
 #   add_library( <lib> ... IMPORTED ... ) and attaches properties to the targets
 # miniframe-targets-noconfig.cmake - this adds config-specific lib paths 
 #   (Debug/Release/etc)
+# Rant:
 # All of this should make referencing and using C++ libraries like miniframe 
 # when located somewhere strange a breeze, but like with all things cmake, it's 
-# more complicated than that. In particular, the fact that I've used #include 
-# <miniframe/HDR.hpp> rather than #include "miniframe/HDR.hpp" all over the 
-# place seems to have doomed consuming list files to never finding these headers 
-# when they're located outside the system header locations (usr/include etc).
+# more complicated than that. Really, with all of this machinery below, you'd 
+# really think that this would produce a relocatable library that could be put 
+# anywhere, that consuming targets would use INTERFACE_INCLUDE_DIR to populate 
+# their command lines, and that you could put this lib wherever you wanted (ie 
+# in a staging dir). Nope - you need to use CMAKE_PREFIX_DIR to find the 
+# miniframe-config.cmake file (of course), but even though everything is set up 
+# properly on the consuming side (INTERFACE* properties are a-ok in miniframe 
+# target), for whatever mysterious reason cmake refuses to use that on the 
+# compile command line of consuming targets. I guess this is because 
+# @PACKAGE_INIT@ expands on invocation of cmake to generate the build system 
+# (and it uses the system default prefix of course), but then cmake --install is 
+# where we give it the install prefix, meaning the earlier bad prefix is baked 
+# into the -config.cmake file? <sigh> This is beyond me. Maybe this just isn't 
+# something cmake supports?
 
 # install the target and create the export-set
 install( TARGETS miniframe miniframe_series miniframe_base

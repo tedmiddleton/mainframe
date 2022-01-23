@@ -22,9 +22,9 @@
 #include <sstream>
 #include <variant>
 
-#include <miniframe/base.hpp>
-#include <miniframe/expression.hpp>
-#include <miniframe/series.hpp>
+#include "miniframe/base.hpp"
+#include "miniframe/expression.hpp"
+#include "miniframe/series.hpp"
 
 namespace mf
 {
