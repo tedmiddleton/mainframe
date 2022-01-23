@@ -12,7 +12,7 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 
 set( CMAKE_CXX_FLAGS "-g -O2 -Wall" )
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
-set( CMAKE_BUILD_TYPE Debug )
+#set( CMAKE_BUILD_TYPE Debug )
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -72,7 +72,7 @@ target_link_libraries( miniframe
         miniframe_series
     )
 
-add_subdirectory( tests )
+#add_subdirectory( tests )
 
 set_property( TARGET miniframe PROPERTY VERSION ${version} )
 set_property( TARGET miniframe PROPERTY SOVERSION 0 )
@@ -88,7 +88,7 @@ write_basic_package_version_file(
     )
 
 install( TARGETS miniframe miniframe_series miniframe_base
-         EXPORT miniframe_targets
+         EXPORT miniframe-targets
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib
          RUNTIME DESTINATION bin
@@ -107,22 +107,22 @@ install(
     )
 
 # generate and install export file
-install( EXPORT miniframe_targets
-         FILE miniframe_targets.cmake
-         DESTINATION lib/cmake
+install( EXPORT miniframe-targets
+         FILE miniframe-targets.cmake
+         DESTINATION lib/cmake/miniframe
     )
 
 # create config file
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
-    INSTALL_DESTINATION lib/cmake
+    INSTALL_DESTINATION lib/cmake/miniframe
 )
 
 install(
     FILES
         "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
-    DESTINATION lib/cmake
+    DESTINATION lib/cmake/miniframe
     )
 
     
