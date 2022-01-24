@@ -30,7 +30,7 @@ set( version 0.1.0 )
 
 add_library( miniframe_base STATIC
     miniframe/base.hpp 
-    src/base.cpp 
+    miniframe/base.cpp 
     )
 
 target_include_directories( miniframe_base
@@ -45,7 +45,7 @@ add_library( miniframe_series STATIC
     miniframe/series.hpp 
     miniframe/series_vector.hpp 
     miniframe/series_iterator.hpp 
-    src/series.cpp 
+    miniframe/series.cpp 
     )
 
 target_include_directories( miniframe_series
@@ -64,8 +64,8 @@ target_link_libraries( miniframe_series
 add_library( miniframe STATIC
     miniframe/frame.hpp 
     miniframe/expression.hpp 
-    src/frame.cpp 
-    src/csv.cpp 
+    miniframe/frame.cpp 
+    miniframe/csv.cpp 
     )
 
 #add_subdirectory( tests )

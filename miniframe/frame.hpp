@@ -29,6 +29,12 @@
 namespace mf
 {
 
+struct frame_iterator
+{
+    frame_iterator( size_t idx ) : m_idx( idx ) {}
+    size_t m_idx;
+};
+
 class frame 
 {
 private:
@@ -72,8 +78,8 @@ public:
         return out; 
     }
 
-    template< typename Func >
-    frame rows( Func func ) const
+    template< typename Op, typename L, typename R >
+    frame rows( binary_expr<Op, L, R> be ) const
     {
         frame out = clone_empty();
         return out;
