@@ -41,9 +41,9 @@ public:
     frame clone_empty() const;
 
     template< typename T >
-    void new_series( std::string _series_name )
+    void new_series( std::string series_name )
     {
-        auto s = make_series<T>( _series_name );
+        auto s = make_series<T>( series_name );
         m_columns.push_back( s ); 
         reconcile_size();
     }
@@ -54,90 +54,88 @@ public:
         reconcile_size();
     }
 
-    template< typename ..._Tps >
-    void push_back( _Tps... _args )
+    template< typename ...Tps >
+    void push_back( Tps... args )
     {
-        _push_back( 0, _args... );
+        push_back_impl( 0, args... );
     }
 
-    template< typename ..._Tps >
-    std::tuple< _Tps... > row( size_t _row ) const
+    template< typename ...Tps >
+    std::tuple< Tps... > row( size_t row ) const
     {
-        std::tuple< _Tps... > out;
-        row_impl< _Tps... >( out, 0, _row );
+        std::tuple< Tps... > out;
+        row_impl< Tps... >( out, 0, row );
         return out; 
     }
 
-    template< typename _Func >
-    frame rows( _Func func ) const
+    template< typename Func >
+    frame rows( Func func ) const
     {
         frame out = clone_empty();
         return out;
     }
 
     template< typename T >
-    T& cell_at( size_t _row, size_t _col )
+    T& cell_at( size_t rowidx, size_t colidx )
     {
-        auto& col = column( _col );
-        return col.at<T>( _row );
+        auto& col = column( colidx );
+        return col.at<T>( rowidx );
     }
 
-    template< typename _Tp1, typename _Tp2, typename _Func >
-    void map( std::string col1name, std::string col2name, _Func func )
+    template< typename Tp1, typename Tp2, typename Func >
+    void map( std::string col1name, std::string col2name, Func func )
     {
         auto& col1 = column( col1name );
         auto& col2 = column( col2name );
         size_t num = col1.size();
         for ( size_t i=0; i < num; ++i ) {
-            func( col1.at<_Tp1>( i ), col2.at<_Tp2>( i ) );
+            func( col1.at<Tp1>( i ), col2.at<Tp2>( i ) );
         }
     }
 
-    series& column( size_t _ind )
+    series& column( size_t idx )
     {
-        return m_columns.at( _ind );
+        return m_columns.at( idx );
     }
 
-    const series& column( size_t _ind ) const
+    const series& column( size_t idx ) const
     {
-        return m_columns.at( _ind );
+        return m_columns.at( idx );
     }
 
-    series& column( std::string _colname )
+    series& column( std::string colname )
     {
         for ( auto it = m_columns.begin(); it != m_columns.end(); ++it ) {
-            auto colname = it->name();
-            if ( colname == _colname ) {
+            if ( it->name() == colname ) {
                 return *it;
             }
         }
         throw std::out_of_range{ 
-            std::string{ "Can't find column '" } + _colname + std::string{ "'" } };
+            std::string{ "Can't find column '" } + colname + std::string{ "'" } };
     }
 
-    const series& column( std::string _colname ) const
+    const series& column( std::string colname ) const
     {
         for ( auto it = m_columns.begin(); it != m_columns.end(); ++it ) {
-            auto colname = it->name();
-            if ( colname == _colname ) {
+            if ( it->name() == colname ) {
                 return *it;
             }
         }
         throw std::out_of_range{ 
-            std::string{ "Can't find column '" } + _colname + std::string{ "'" } };
+            std::string{ "Can't find column '" } + colname + std::string{ "'" } };
     }
 
-    template< typename ..._Tps >
-    frame columns( _Tps... selargs )
+    template< typename ...Tps >
+    frame columns( Tps... selargs )
     {
         frame out;
-        _columns<_Tps...>( out, 0, selargs... );
+        columns_impl<Tps...>( out, 0, selargs... );
         return out;
     }
 
     void unref();
 
-    void drop_series( std::string _name );
+    void drop_series( std::string name );
 
     std::vector<std::string> column_names() const;
 
@@ -150,66 +148,64 @@ public:
     friend std::ostream & operator<<( std::ostream& o, const frame & mf );
 
 private:
-    template< typename _FirstTp, typename... _Tps >
-    void _columns( frame& _out, size_t _argnum, _FirstTp _first_arg, _Tps... _args )
+    template< typename FirstTp, typename... Tps >
+    void columns_impl( frame& out, size_t argnum, FirstTp first_arg, Tps... args )
     {
-        _add_column( _out, _first_arg );
-        _columns<_Tps...>( _out, _argnum+1, _args... );
+        add_column_impl( out, first_arg );
+        columns_impl<Tps...>( out, argnum+1, args... );
     }
 
-    template< typename _Tp >
-    void _columns( frame& _out, size_t _argnum, _Tp _arg )
+    template< typename Tp >
+    void columns_impl( frame& out, size_t argnum, Tp arg )
     {
-        _add_column( _out, _arg );
+        add_column_impl( out, arg );
     }
 
-    void _add_column( frame& _out, std::string _colname )
+    void add_column_impl( frame& out, std::string colname )
     {
-        series& series = column( _colname );
-        _out.m_columns.push_back( series );
+        series& series = column( colname );
+        out.m_columns.push_back( series );
     }
 
-    void _add_column( frame& _out, size_t _arg )
+    void add_column_impl( frame& out, size_t arg )
     {
-        series& series = column( _arg );
-        _out.m_columns.push_back( series );
+        series& series = column( arg );
+        out.m_columns.push_back( series );
     }
 
-    template< typename _RemainTp, typename ..._OrgTps >
-    void row_impl( std::tuple< _OrgTps... > & _tup, size_t _col, size_t _row ) const
+    template< typename RemainTp, typename ...OrgTps >
+    void row_impl( std::tuple< OrgTps... > & tup, size_t col, size_t row ) const
     {
-        const series& s = column( _col );
-        std::get<_col>( _tup ) = s.at<_RemainTp>( _row );
+        const series& s = column( col );
+        std::get<col>( tup ) = s.at<RemainTp>( row );
     }
 
-    template< typename _FirstTp, typename ..._RemainTps, typename ..._OrgTps >
-    void row_impl( std::tuple< _OrgTps... >& _tup, size_t _col, size_t _row ) const
+    template< typename FirstTp, typename ...RemainTps, typename ...OrgTps >
+    void row_impl( std::tuple< OrgTps... >& tup, size_t col, size_t row ) const
     {
-        row_impl< _RemainTps..., _OrgTps... >( _col+1, _row );
-        const series& s = column( _col );
-        std::get<_col>( _tup ) = s.at<_FirstTp>( _row );
+        row_impl< RemainTps..., OrgTps... >( col+1, row );
+        const series& s = column( col );
+        std::get<col>( tup ) = s.at<FirstTp>( row );
     }
 
-    template< typename _FirstTp >
-    void _push_back( size_t _col, _FirstTp _arg )
+    template< typename FirstTp >
+    void push_back_impl( size_t col, FirstTp arg )
     {
-        series& series = column( _col );
-        series.push_back<_FirstTp>( _arg );
+        series& series = column( col );
+        series.push_back<FirstTp>( arg );
     }
 
-    template< typename _FirstTp, typename ..._Tps >
-    void _push_back( size_t _col, _FirstTp _arg, _Tps... _args )
+    template< typename FirstTp, typename ...Tps >
+    void push_back_impl( size_t col, FirstTp arg, Tps... args )
     {
-        series& series = column( _col );
-        series.push_back<_FirstTp>( _arg );
-        _push_back( _col+1, _args... );
+        series& series = column( col );
+        series.push_back<FirstTp>( arg );
+        push_back_impl( col+1, args... );
     }
 
     void reconcile_size();
 
-    using ColumnCollection = std::vector<series>;
-
-    ColumnCollection m_columns;
+    std::vector<series> m_columns;
 };
 
 
