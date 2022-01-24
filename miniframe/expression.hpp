@@ -53,7 +53,7 @@ struct make_terminal
     using type = terminal<T>;
     terminal<T> operator()( const T& t )
     {
-        return terminal<T>{ .t=t };
+        return terminal<T>{ t };
     }
 };
 
@@ -87,8 +87,8 @@ struct make_expr
     type operator()( L l, R r )
     {
         return type{ 
-            .l=make_terminal<L>{}(l), 
-            .r=make_terminal<R>{}(r) };
+            make_terminal<L>{}(l), 
+            make_terminal<R>{}(r) };
     }
 };
 
