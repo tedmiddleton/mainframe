@@ -413,7 +413,7 @@ public:
     {
         auto out = std::make_unique<series_vector<T>>();
         std::unordered_set<T> bag;
-        for (auto &elem : *this) {
+        for ( const auto &elem : *this ) {
             if ( bag.find( elem ) == bag.end() ) {
                 out->push_back( elem );
                 bag.insert( elem );

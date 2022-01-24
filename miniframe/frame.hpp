@@ -31,6 +31,10 @@ namespace mf
 
 class frame 
 {
+private:
+    template< typename ... Tps >
+    friend frame make_frame( std::initializer_list<std::string> colnames );
+
 public:
     frame() = default;
     frame( const frame& other );
@@ -188,9 +192,28 @@ private:
         std::get<col>( tup ) = s.at<FirstTp>( row );
     }
 
+    template< typename FirstTp, typename ... Tps >
+    void add_empty_series( FirstTp, Tps ... args )
+    {
+        auto s = make_series<FirstTp>( "" );
+        m_columns.push_back( s ); 
+        add_empty_series<Tps...>( args... );
+    }
+
+    template< typename T >
+    void add_empty_series( T )
+    {
+        auto s = make_series<T>( "" );
+        m_columns.push_back( s ); 
+    }
+
     template< typename FirstTp >
     void push_back_impl( size_t col, FirstTp arg )
     {
+        // Special case - empty dataframe
+        if ( m_columns.empty() ) {
+            add_empty_series( arg );
+        }
         series& series = column( col );
         series.push_back<FirstTp>( arg );
     }
@@ -198,6 +221,10 @@ private:
     template< typename FirstTp, typename ...Tps >
     void push_back_impl( size_t col, FirstTp arg, Tps... args )
     {
+        // Special case - empty dataframe
+        if ( m_columns.empty() ) {
+            add_empty_series( arg, args... );
+        }
         series& series = column( col );
         series.push_back<FirstTp>( arg );
         push_back_impl( col+1, args... );
@@ -208,6 +235,12 @@ private:
     std::vector<series> m_columns;
 };
 
+template< typename ... Tps >
+frame make_frame( std::initializer_list<std::string> colnames )
+{
+    (void)colnames;
+    return frame{};
+}
 
 } // namespace mf
 
