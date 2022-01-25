@@ -30,20 +30,6 @@ using namespace std;
 namespace mf
 {
 
-frame::frame( const frame& other )
-{
-    for ( auto& col : other.m_columns ) {
-        add_series( col );
-    }
-}
-
-frame& frame::operator=( const frame& other )
-{
-    frame n{ other };
-    std::swap( m_columns, n.m_columns );
-    return *this;
-}
-
 frame frame::clone_empty() const
 {
     frame out;
@@ -58,6 +44,12 @@ void frame::unref()
     for ( auto& col : m_columns ) {
         col.unref();
     }
+}
+
+void frame::add_series( const series& series )
+{
+    m_columns.push_back( series );
+    reconcile_size();
 }
 
 void frame::drop_series( string _name )
@@ -77,11 +69,18 @@ void frame::drop_series( string _name )
 std::vector<std::string> frame::column_names() const
 {
     std::vector<std::string> out;
-    out.reserve( m_columns.size() );
-    for ( auto& col : m_columns ) {
+    for ( auto const & col : m_columns ) {
         out.push_back( col.name() );
     }
     return out;
+}
+
+void frame::set_column_names( const std::vector<std::string>& names )
+{
+    for ( size_t i=0; i < names.size(); ++i ) {
+
+        m_columns.at( i ).set_name( names.at( i ) );
+    }
 }
 
 frame frame::to_string() const

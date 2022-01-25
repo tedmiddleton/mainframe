@@ -43,12 +43,15 @@ private:
 
 public:
     frame() = default;
-    frame( const frame& other );
+    frame( const frame& other ) = default;
     frame( frame&& ) = default;
-    frame& operator=( const frame& other );
+    frame& operator=( const frame& other ) = default;
     virtual ~frame() = default;
 
+    // Generate a new frame with the same types and column names but empty
     frame clone_empty() const;
+
+    void unref();
 
     template< typename T >
     void new_series( std::string series_name )
@@ -58,11 +61,19 @@ public:
         reconcile_size();
     }
 
-    void add_series( const series& series )
-    {
-        m_columns.push_back( series );
-        reconcile_size();
-    }
+    void add_series( const series& series );
+
+    void drop_series( std::string name );
+
+    std::vector<std::string> column_names() const;
+
+    void set_column_names( const std::vector<std::string>& names );
+
+    frame to_string() const;
+
+    size_t size() const;
+
+    size_t num_columns() const;
 
     template< typename ...Tps >
     void push_back( Tps... args )
@@ -81,6 +92,7 @@ public:
     template< typename Op, typename L, typename R >
     frame rows( binary_expr<Op, L, R> be ) const
     {
+        (void)be;
         frame out = clone_empty();
         return out;
     }
@@ -143,18 +155,6 @@ public:
         return out;
     }
 
-    void unref();
-
-    void drop_series( std::string name );
-
-    std::vector<std::string> column_names() const;
-
-    frame to_string() const;
-
-    size_t size() const;
-
-    size_t num_columns() const;
-
     friend std::ostream & operator<<( std::ostream& o, const frame & mf );
 
 private:
@@ -168,6 +168,7 @@ private:
     template< typename Tp >
     void columns_impl( frame& out, size_t argnum, Tp arg )
     {
+        (void)argnum;
         add_column_impl( out, arg );
     }
 
