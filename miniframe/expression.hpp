@@ -138,11 +138,11 @@ struct column
         begin = end;
     }
 
-    bool bind_vec( const std::string& n, const std::vector<T>& vec )
+    bool bind_column( const series& s )
     {
-        if ( name == n ) {
-            begin = vec.begin();
-            end = vec.end();
+        if ( name == s.name() ) {
+            begin = s.begin<T>();
+            end = s.end<T>();
             return true;
         }
         return false;
@@ -150,7 +150,7 @@ struct column
 
     const T& get_value( size_t row ) const
     {
-        if ( end>begin && row < static_cast<size_t>(end-begin) ) {
+        if ( end > begin && row < static_cast<size_t>(end - begin) ) {
             return *(begin + row);
         } 
         else {
@@ -159,8 +159,8 @@ struct column
     }
 
     std::string name;
-    typename std::vector<T>::const_iterator begin;
-    typename std::vector<T>::const_iterator end;
+    typename series_vector<T>::const_iterator begin;
+    typename series_vector<T>::const_iterator end;
 };
 
 template< typename T >
@@ -172,7 +172,7 @@ struct terminal
     terminal( T _t ) : t( _t ) {}
 
     template< typename U >
-    bool bind_vec( const std::string& /*name*/, const std::vector<U>& /*vec*/ )
+    bool bind_column( const series& )
     {
         return false;
     }
@@ -193,9 +193,9 @@ struct terminal< column<T> >
 
     terminal( column<T> _t ) : t( _t ) {}
 
-    bool bind_vec( const std::string& name, const std::vector<T>& vec )
+    bool bind_column( const series& s )
     {
-        return t.bind_vec( name, vec );
+        return t.bind_column( s );
     }
 
     const T& get_value( size_t row ) const
@@ -218,10 +218,10 @@ struct binary_expr
     binary_expr( L _l, R _r ) : l( _l ), r( _r ) {}
 
     template< typename T >
-    bool bind_vec( const std::string& name, const std::vector<T>& vec )
+    bool bind_column( const series& s )
     {
-        auto lb = l.bind_vec( name, vec );
-        auto rb = r.bind_vec( name, vec );
+        auto lb = l.bind_column( s );
+        auto rb = r.bind_column( s );
         return lb || rb;
     }
 
@@ -248,9 +248,9 @@ struct unary_expr
     unary_expr( T _t ) : t( _t ) {}
 
     template< typename U >
-    bool bind_vec( const std::string& name, const std::vector<U>& vec )
+    bool bind_column( const series& s )
     {
-        return t.bind_vec( name, vec );
+        return t.bind_column( s );
     }
 
     return_type get_value( size_t rowidx ) const

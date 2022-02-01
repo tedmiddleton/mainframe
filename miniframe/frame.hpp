@@ -98,6 +98,9 @@ public:
     {
         (void)expr;
         frame out = clone_empty();
+        for ( auto& col : m_columns ) {
+            expr.bind_column( col );
+        }
         return out;
     }
 
