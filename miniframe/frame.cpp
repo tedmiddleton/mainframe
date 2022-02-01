@@ -160,8 +160,8 @@ std::ostream & operator<<( std::ostream& o, const frame & mf )
     for ( size_t r = 0; r < num_rows; ++r ) {
         o << setw( gutter_width ) << r << "|" ;
         for ( size_t c = 0; c < num_columns; ++c ) {
-            auto width = widths[ c ] + 1;
-            o << setw( width ) << strframe.cell_at<std::string>( r, c );
+            //auto width = widths[ c ] + 1;
+            //o << setw( width ) << strframe.cell_at<std::string>( r, c );
         }
         o << endl;
     }

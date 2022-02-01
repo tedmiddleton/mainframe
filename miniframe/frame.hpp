@@ -51,6 +51,10 @@ public:
     // Generate a new frame with the same types and column names but empty
     frame clone_empty() const;
 
+    // mf::series contains a shared ptr to series_vector, which allows for fast 
+    // column operations. unref() will deep-copy the data so that this frame's 
+    // series will no longer be shared with other series
+    // Note that row operations implicitly unref's columns
     void unref();
 
     template< typename T >
@@ -89,19 +93,12 @@ public:
         return out; 
     }
 
-    template< typename Op, typename L, typename R >
-    frame rows( binary_expr<Op, L, R> be ) const
+    template< typename Func >
+    frame rows( const Func& expr ) const
     {
-        (void)be;
+        (void)expr;
         frame out = clone_empty();
         return out;
-    }
-
-    template< typename T >
-    T& cell_at( size_t rowidx, size_t colidx )
-    {
-        auto& col = column( colidx );
-        return col.at<T>( rowidx );
     }
 
     template< typename Tp1, typename Tp2, typename Func >
@@ -113,16 +110,6 @@ public:
         for ( size_t i=0; i < num; ++i ) {
             func( col1.at<Tp1>( i ), col2.at<Tp2>( i ) );
         }
-    }
-
-    series& column( size_t idx )
-    {
-        return m_columns.at( idx );
-    }
-
-    const series& column( size_t idx ) const
-    {
-        return m_columns.at( idx );
     }
 
     series& column( std::string colname )
@@ -166,9 +153,8 @@ private:
     }
 
     template< typename Tp >
-    void columns_impl( frame& out, size_t argnum, Tp arg )
+    void columns_impl( frame& out, size_t, Tp arg )
     {
-        (void)argnum;
         add_column_impl( out, arg );
     }
 
@@ -180,14 +166,14 @@ private:
 
     void add_column_impl( frame& out, size_t arg )
     {
-        series& series = column( arg );
+        series& series = m_columns.at( arg );
         out.m_columns.push_back( series );
     }
 
     template< typename RemainTp, typename ...OrgTps >
     void row_impl( std::tuple< OrgTps... > & tup, size_t col, size_t row ) const
     {
-        const series& s = column( col );
+        const series& s = m_columns.at( col );
         std::get<col>( tup ) = s.at<RemainTp>( row );
     }
 
@@ -195,7 +181,7 @@ private:
     void row_impl( std::tuple< OrgTps... >& tup, size_t col, size_t row ) const
     {
         row_impl< RemainTps..., OrgTps... >( col+1, row );
-        const series& s = column( col );
+        const series& s = m_columns.at( col );
         std::get<col>( tup ) = s.at<FirstTp>( row );
     }
 
@@ -221,7 +207,7 @@ private:
         if ( m_columns.empty() ) {
             add_empty_series( arg );
         }
-        series& series = column( col );
+        series& series = m_columns.at( col );
         series.push_back<FirstTp>( arg );
     }
 
@@ -232,7 +218,7 @@ private:
         if ( m_columns.empty() ) {
             add_empty_series( arg, args... );
         }
-        series& series = column( col );
+        series& series = m_columns.at( col );
         series.push_back<FirstTp>( arg );
         push_back_impl( col+1, args... );
     }
