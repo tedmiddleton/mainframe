@@ -171,7 +171,6 @@ struct terminal
 
     terminal( T _t ) : t( _t ) {}
 
-    template< typename U >
     bool bind_column( const series& )
     {
         return false;
@@ -217,7 +216,6 @@ struct binary_expr
 
     binary_expr( L _l, R _r ) : l( _l ), r( _r ) {}
 
-    template< typename T >
     bool bind_column( const series& s )
     {
         auto lb = l.bind_column( s );
@@ -247,7 +245,6 @@ struct unary_expr
 
     unary_expr( T _t ) : t( _t ) {}
 
-    template< typename U >
     bool bind_column( const series& s )
     {
         return t.bind_column( s );

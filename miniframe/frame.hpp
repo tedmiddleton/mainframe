@@ -94,7 +94,7 @@ public:
     }
 
     template< typename Func >
-    frame rows( const Func& expr ) const
+    frame rows( Func expr ) const
     {
         (void)expr;
         frame out = clone_empty();
