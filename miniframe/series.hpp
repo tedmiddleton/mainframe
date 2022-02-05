@@ -25,7 +25,6 @@
 
 #include "miniframe/base.hpp"
 #include "miniframe/series_vector.hpp"
-#include "miniframe/series_iterator.hpp"
 
 namespace mf
 {

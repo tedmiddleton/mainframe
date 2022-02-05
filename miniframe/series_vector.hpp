@@ -24,7 +24,6 @@
 #include <variant>
 
 #include "miniframe/base.hpp"
-#include "miniframe/series_iterator.hpp"
 
 #define CPP20LEVEL 202002L
 #define CPP17LEVEL 201703L
