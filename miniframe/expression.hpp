@@ -271,8 +271,7 @@ struct maybe_wrap
     using type = terminal< T >;
     static type wrap( const T& t )
     {
-        type out;
-        out.t = t;
+        type out{ t };
         return out;
     }
 };
@@ -318,8 +317,7 @@ struct make_unary_expr
 
     static type create( const T& t )
     {
-        type out;
-        out.t = maybe_wrap< T >::wrap( t );
+        type out{ maybe_wrap< T >::wrap( t ) };
         return out;
     }
 };
@@ -332,9 +330,7 @@ struct make_binary_expr
 
     static type create( const L& l, const R& r )
     {
-        type out;
-        out.l = maybe_wrap< L >::wrap( l );
-        out.r = maybe_wrap< R >::wrap( r );
+        type out{ maybe_wrap< L >::wrap( l ), maybe_wrap< R >::wrap( r ) };
         return out;
     }
 };
@@ -350,43 +346,49 @@ terminal<column<T>> col( const char * colname )
 template< typename L, typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::LT, L, R>::type>::type operator<( L l, R r )
 {
-    return make_binary_expr<expr_op::LT, L, R>{}( l, r );
+    return make_binary_expr<expr_op::LT, L, R>::create( l, r );
 }
 
 template< typename L, typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::GT, L, R>::type>::type operator>( L l, R r )
 {
-    return make_binary_expr<expr_op::GT, L, R>{}( l, r );
+    return make_binary_expr<expr_op::GT, L, R>::create( l, r );
 }
 
 template< typename L, typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::LE, L, R>::type>::type operator<=( L l, R r )
 {
-    return make_binary_expr<expr_op::LE, L, R>{}( l, r );
+    return make_binary_expr<expr_op::LE, L, R>::create( l, r );
 }
 
 template< typename L,typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::GE, L, R>::type>::type operator>=( L l, R r )
 {
-    return make_binary_expr<expr_op::GE, L, R>{}( l, r );
+    return make_binary_expr<expr_op::GE, L, R>::create( l, r );
 }
 
 template< typename L,typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::AND, L, R>::type>::type operator&&( L l, R r )
 {
-    return make_binary_expr<expr_op::AND, L, R>{}( l, r );
+    return make_binary_expr<expr_op::AND, L, R>::create( l, r );
 }
 
 template< typename L,typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::OR, L, R>::type>::type operator||( L l, R r )
 {
-    return make_binary_expr<expr_op::OR, L, R>{}( l, r );
+    return make_binary_expr<expr_op::OR, L, R>::create( l, r );
 }
 
 template< typename L,typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::EQ, L, R>::type>::type operator==( L l, R r )
 {
-    return make_binary_expr<expr_op::EQ, L, R>{}( l, r );
+    return make_binary_expr<expr_op::EQ, L, R>::create( l, r );
+}
+
+template< typename L,typename R >
+typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::NE, L, R>::type>::type operator!=( L l, R r )
+{
+    return make_binary_expr<expr_op::NE, L, R>::create( l, r );
 }
 
 template< typename L,typename R >
