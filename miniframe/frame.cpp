@@ -30,6 +30,21 @@ using namespace std;
 namespace mf
 {
 
+bool row_iterator::operator!=( const row_iterator& other ) const
+{
+    return other.m_idx != m_idx || &(other.m_frame) != &m_frame; 
+}
+
+void row_iterator::operator++()
+{
+    m_idx++;
+}
+
+row row_iterator::operator*()
+{
+    return row{ m_frame, m_idx };
+}
+
 frame frame::clone_empty() const
 {
     frame out;
@@ -45,6 +60,37 @@ void frame::unref()
         col.unref();
     }
 }
+
+row_iterator frame::begin()
+{
+    return row_iterator{ *this, 0 };
+}
+
+row_iterator frame::end()
+{
+    return row_iterator{ *this, size() };
+}
+
+const_row_iterator frame::begin() const
+{
+    return const_row_iterator{ *this, 0 };
+}
+
+const_row_iterator frame::end() const
+{
+    return const_row_iterator{ *this, size() };
+}
+
+const_row_iterator frame::cbegin() const
+{
+    return const_row_iterator{ *this, 0 };
+}
+
+const_row_iterator frame::cend() const
+{
+    return const_row_iterator{ *this, size() };
+}
+
 
 void frame::add_series( const series& series )
 {

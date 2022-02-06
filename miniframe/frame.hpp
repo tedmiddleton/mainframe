@@ -29,11 +29,36 @@
 namespace mf
 {
 
-struct frame_iterator
+class frame;
+
+struct const_row_iterator
 {
-    frame_iterator( size_t idx ) : m_idx( idx ) {}
+    const_row_iterator( const frame& f, size_t idx ) 
+        : m_frame( f )
+        , m_idx( idx ) 
+    {}
+
+    const frame& m_frame;
     size_t m_idx;
 };
+
+struct row;
+
+struct row_iterator
+{
+    row_iterator( frame& f, size_t idx ) 
+        : m_frame( f )
+        , m_idx( idx ) 
+    {}
+
+    bool operator!=( const row_iterator& other ) const;
+    void operator++();
+    row operator*();
+    
+    frame& m_frame;
+    size_t m_idx;
+};
+
 
 class frame 
 {
@@ -56,6 +81,13 @@ public:
     // series will no longer be shared with other series
     // Note that row operations implicitly unref's columns
     void unref();
+
+    row_iterator begin();
+    row_iterator end();
+    const_row_iterator begin() const;
+    const_row_iterator end() const;
+    const_row_iterator cbegin() const;
+    const_row_iterator cend() const;
 
     template< typename T >
     void new_series( std::string series_name )
@@ -104,17 +136,6 @@ public:
         return out;
     }
 
-    template< typename Tp1, typename Tp2, typename Func >
-    void map( std::string col1name, std::string col2name, Func func )
-    {
-        auto& col1 = column( col1name );
-        auto& col2 = column( col2name );
-        size_t num = col1.size();
-        for ( size_t i=0; i < num; ++i ) {
-            func( col1.at<Tp1>( i ), col2.at<Tp2>( i ) );
-        }
-    }
-
     series& column( std::string colname )
     {
         for ( auto it = m_columns.begin(); it != m_columns.end(); ++it ) {
@@ -143,6 +164,20 @@ public:
         frame out;
         columns_impl<Tps...>( out, 0, selargs... );
         return out;
+    }
+
+    template< typename T >
+    T& cell( size_t columnidx, size_t rowidx )
+    {
+        series& s = m_columns.at( columnidx );
+        return s.at<T>( rowidx );
+    }
+
+    template< typename T >
+    T& cell( const std::string& columnname, size_t rowidx )
+    {
+        series& s = column( columnname );
+        return s.at<T>( rowidx );
     }
 
     friend std::ostream & operator<<( std::ostream& o, const frame & mf );
@@ -237,6 +272,29 @@ frame make_frame( std::initializer_list<std::string> colnames )
     (void)colnames;
     return frame{};
 }
+
+struct row
+{
+    row( frame& f, size_t idx ) 
+        : m_frame( f )
+        , m_idx( idx ) 
+    {}
+
+    template< typename T >
+    T& get( const std::string& columnname )
+    {
+        return m_frame.cell<T>( columnname, m_idx );
+    }
+
+    template< typename T >
+    T& get( int columnidx )
+    {
+        return m_frame.cell<T>( columnidx, m_idx );
+    }
+
+    frame& m_frame;
+    size_t m_idx;
+};
 
 } // namespace mf
 
