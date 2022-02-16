@@ -44,7 +44,6 @@ target_include_directories( miniframe_base
 add_library( miniframe_series STATIC
     miniframe/series.hpp 
     miniframe/series_vector.hpp 
-    miniframe/series_iterator.hpp 
     miniframe/series.cpp 
     )
 
@@ -102,7 +101,6 @@ install(
         miniframe/expression.hpp 
         miniframe/series.hpp 
         miniframe/series_vector.hpp 
-        miniframe/series_iterator.hpp 
         miniframe/base.hpp 
     DESTINATION include/miniframe 
     )
