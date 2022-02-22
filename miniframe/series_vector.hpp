@@ -62,6 +62,16 @@ public:
 
     series_iterator( T* ptr ) : m_curr( ptr ) {}
 
+    operator series_iterator< const T >() const
+    {
+        return series_iterator< const T >{ m_curr };
+    }
+
+    operator T*() const
+    {
+        return m_curr;
+    }
+
     difference_type operator-( const series_iterator<T>& other ) const
     {
         return m_curr - other.m_curr;
@@ -79,6 +89,8 @@ public:
 
     void operator++() { m_curr++; }
     void operator--() { m_curr--; }
+    void operator++(int) { ++m_curr; }
+    void operator--(int) { --m_curr; }
 
     reference operator*() { return *m_curr; }
     pointer operator->() { return m_curr; }
@@ -86,6 +98,8 @@ public:
 protected:
     template< typename U >
     friend bool operator==( const series_iterator<U>&, const series_iterator<U>& );
+    template< typename U >
+    friend bool operator!=( const series_iterator<U>&, const series_iterator<U>& );
 
     T* m_curr;
 };
@@ -119,12 +133,20 @@ public:
 
     void operator++() { this->m_curr--; }
     void operator--() { this->m_curr++; }
+    void operator++(int) { --this->m_curr; }
+    void operator--(int) { ++this->m_curr; }
 };
 
 template< typename T >
 bool operator==( const series_iterator<T>& l, const series_iterator<T>& r )
 {
     return l.m_curr == r.m_curr;
+}
+
+template< typename T >
+bool operator!=( const series_iterator<T>& l, const series_iterator<T>& r )
+{
+    return l.m_curr != r.m_curr;
 }
 
 template< typename T >
@@ -194,18 +216,10 @@ public:
     {
     }
 
-    void deallocate( T* b, T* e )
-    {
-        auto curr = b;
-        for ( ; curr != e; ++curr ) {
-            curr->~T();
-        }
-        free( b );
-    }
-
     virtual ~series_vector()
     {
-        deallocate( m_begin, m_end );
+        destroy( m_begin, m_end );
+        free( m_begin );
     }
 
     series_vector& operator=( const series_vector& in )
@@ -236,7 +250,7 @@ public:
 
     void assign( size_type count, const T& value )
     {
-        allocate_copy_if_needed( count );
+        reserve( count );
         auto curr = m_begin;
         // operator= for existing
         for( ; curr < m_begin + count && curr < m_end; ++curr ) {
@@ -255,7 +269,7 @@ public:
     template< typename InputIt >
     void assign( InputIt inbegin, InputIt inend )
     {
-        allocate_copy_if_needed( inend - inbegin );
+        reserve( inend - inbegin );
         auto curr = m_begin;
         auto incurr = inbegin;
         // operator= for existing
@@ -400,15 +414,18 @@ public:
     {
         return std::numeric_limits<difference_type>::max();
     }
+
     void reserve( size_type newsize )
     {
-        size_t n = pow_2( newsize );
-        T* nbegin = static_cast<T*>( malloc ( n * sizeof( T ) ) );
-        T* nend = duplicate( m_begin, m_end, nbegin );
-        deallocate( m_begin, m_end );
-        m_begin = nbegin;
-        m_end = nend;
-        m_max = m_begin + n;
+        if ( newsize > capacity() ) {
+            size_t n = pow_2( newsize );
+            T* nbegin = static_cast<T*>( malloc ( n * sizeof( T ) ) );
+            T* nend = placement_copy( m_begin, m_end, nbegin );
+            clear();
+            m_begin = nbegin;
+            m_end = nend;
+            m_max = m_begin + n;
+        }
     }
     size_type capacity() const noexcept
     {
@@ -416,46 +433,115 @@ public:
     }
     void clear() noexcept
     {
-        deallocate( m_begin, m_end );
+        destroy( m_begin, m_end );
+        free( m_begin );
         m_begin = m_end = m_max = nullptr;
     }
 
-    //iterator insert( const_iterator _pos, const T& _value )
-    //{
-    //    return m_array.insert( _pos, _value );
-    //}
-    //iterator insert( const_iterator _pos, T&& _value )
-    //{
-    //    return m_array.insert( _pos, std::move( _value ) );
-    //}
-    //iterator insert( const_iterator _pos, size_type _count, const T& _value )
-    //{
-    //    return m_array.insert( _pos, _count,  _value );
-    //}
-    //template< typename InputIt >
-    //iterator insert( const_iterator _pos, InputIt _first, InputIt _last )
-    //{
-    //    return m_array.insert( _pos, _first, _last );
-    //}
-    //iterator insert( const_iterator _pos, std::initializer_list<T> _init )
-    //{
-    //    return m_array.insert( _pos, _init );
-    //}
+    template< typename U >
+    iterator insert( const_iterator cpos, U&& value )
+    {
+        auto offset = cpos - begin();
+        reserve( size() + 1 ); // possibly invalidates pos
+        iterator pos = begin() + offset; // Fix pos
 
-    //template< class... Args >
-    //iterator emplace( const_iterator _pos, Args&&... _args )
-    //{
-    //    return m_array.emplace( _pos, std::forward( _args... ) );
-    //}
+        // Move existing items
+        split_array( pos, 1 );
 
-    //iterator erase( const_iterator _pos )
-    //{
-    //    return m_array.erase( _pos );
-    //}
-    //iterator erase( const_iterator _first, const_iterator _last )
-    //{
-    //    return m_array.erase( _first, _last );
-    //}
+        // Splice in the value
+        new( pos ) T{ std::forward<U>( value ) };
+        return pos; 
+    }
+    iterator insert( const_iterator cpos, size_type count, const T& value )
+    {
+        if ( count == 0 )
+            return remove_const( cpos );
+        auto offset = cpos - begin();
+        reserve( size() + count ); // possibly invalidates pos
+        iterator pos = begin() + offset; // Fix pos
+
+        // Move existing items
+        split_array( pos, count );
+
+        // Splice in the value
+        iterator ocurr = pos;
+        size_type i = 0;
+        for ( ; i < count; ++i, ++ocurr ) {
+            new( ocurr ) T{ value };
+        }
+        return pos; 
+    }
+    void debug_print()
+    {
+        std::cout << "debug_print():\n";
+        for( auto it = begin(); it != end(); ++it ) {
+            std::cout << &(*it) << ", " << *it << "\n";
+        }
+    }
+
+    template< typename InputIt >
+    iterator insert( const_iterator cpos, InputIt fst, InputIt lst )
+    {
+        if ( lst <= fst )
+            return remove_const( cpos );
+        auto offset = cpos - begin();
+        size_t count = lst - fst;
+        reserve( size() + count ); // possibly invalidates pos
+        iterator pos = begin() + offset; // Fix pos
+
+        // Move existing items
+        split_array( pos, count );
+
+        // Splice in [fst...lst)
+        InputIt icurr = fst;
+        iterator ocurr = pos;
+        for ( ; icurr != lst; ++icurr, ++ocurr ) {
+            new( ocurr ) T{ *icurr };
+        }
+        return pos; 
+    }
+    iterator insert( const_iterator pos, std::initializer_list<T> initlist )
+    {
+        return insert( pos, initlist.begin(), initlist.end() );
+    }
+
+    template< class... Args >
+    iterator emplace( iterator cpos, Args&&... args )
+    {
+        size_type offset = cpos - begin();
+        reserve( size() + sizeof...( args ) );
+        iterator pos = begin() + offset; // Fix pos
+
+        split_array( pos, sizeof...( args ) );
+
+        emplace_impl( pos, args... );
+        return pos;
+    }
+
+    iterator erase( const_iterator pos )
+    {
+        return erase( pos, pos+1 );
+    }
+    iterator erase( const_iterator cfst, const_iterator clst )
+    {
+        auto fst = remove_const( cfst );
+        auto lst = remove_const( clst );
+        if ( fst >= lst || fst >= end() )
+            return fst;
+
+        auto icurr = lst;
+        auto ocurr = fst;
+        auto count = lst - fst;
+        auto nend = m_begin + (size() - count);
+        for ( ; ocurr != m_end; ++ocurr, ++icurr ) {
+            ocurr->~T();
+            if ( icurr < m_end ) {
+                new( ocurr ) T{ *icurr };
+            }
+        }
+        m_end = nend;
+        return fst;
+    }
 
     //void push_back( const T& _value )
     //{
@@ -516,6 +602,46 @@ public:
 
 private:
 
+    void split_array( const_iterator pos, size_t count )
+    {
+        T* ricurr = m_end-1;
+        T* riend = remove_const( pos )-1;
+        T* rocurr = ricurr+count;
+        for ( ; ricurr != riend; --ricurr, --rocurr ) {
+            new( rocurr ) T{ *ricurr };
+            ricurr->~T();
+        }
+        m_end += count;
+    }
+
+    template< class Arg >
+    void emplace_impl( iterator pos, Arg&& arg )
+    {
+        new( pos ) T{ std::forward<T>( arg ) };
+    }
+    template< class ArgFirst, class... Args >
+    void emplace_impl( iterator pos, ArgFirst&& argf, Args&& ... args )
+    {
+        new( pos ) T{ std::forward<T>( argf ) };
+        emplace_impl( pos + 1, args... );
+    }
+
+    template< typename Iter >
+    Iter placement_copy( Iter inbegin, Iter inend, Iter outbegin ) const
+    {
+        auto incurr = inbegin;
+        auto outcurr = outbegin;
+        for (; incurr != inend; ++incurr, ++outcurr ) {
+            new( outcurr ) T{ *incurr };
+        }
+        return outcurr;
+    }
+
+    iterator remove_const( const_iterator it ) const
+    {
+        return iterator{ m_begin + ( &*it - m_begin ) };
+    }
+
     size_t pow_2( size_t n )
     {
         n--;
@@ -542,31 +668,40 @@ private:
         m_max = m_begin + n;
     }
 
-    T* duplicate( T* b, T* e, T* ob )
+    template< typename Iter >
+    void destroy( Iter begin, Iter end )
     {
-        for ( ; b < e; ++b, ++ob ) {
-            new( ob ) T{ *b };
+        auto curr = begin;
+        for ( ; curr != end; ++curr ) {
+            curr->~T();
         }
-        return ob;
     }
 
-    void allocate_copy_if_needed( size_t needed )
-    {
-        if ( needed > capacity() ) {
-            size_t n = next_pow_2( needed );
-            T* nbegin = static_cast<T*>( malloc ( n * sizeof( T ) ) );
-            T* nend = duplicate( m_begin, m_end, nbegin );
-            deallocate( m_begin, m_end );
-            m_begin = nbegin;
-            m_end = nend;
-            m_max = m_begin + n;
-        }
-    }
+    //template< typename U >
+    //static typename std::enable_if< std::is_move_constructible<U>::value, U*>::type
+    //    move_array( U* inbegin, U* inend, U* outbegin )
+    //{
+    //    for ( ; inbegin < inend; ++inbegin, ++outbegin ) {
+    //        new( outbegin ) U{ std::move( *inbegin ) };
+    //    }
+    //    return outbegin;
+    //}
+
+    //template< typename U >
+    //static typename std::enable_if< !std::is_move_constructible<U>::value, U*>::type
+    //    move_array( U* inbegin, U* inend, U* outbegin )
+    //{
+    //    for ( ; inbegin < inend; ++inbegin, ++outbegin ) {
+    //        new( outbegin ) U{ *inbegin };
+    //    }
+    //    return outbegin;
+    //}
 
     T * m_begin;
     T * m_end;
     T * m_max;
 };
+
 
 //template< typename T, typename Allocator >
 //bool operator==( const series_vector<T>& _left, 
