@@ -51,7 +51,7 @@ public:
 };
 
 template< typename T >
-class series_iterator
+class sv_iterator
 {
 public:
     using iterator_category = std::random_access_iterator_tag;
@@ -60,11 +60,11 @@ public:
     using pointer           = T*;  // or also value_type*
     using reference         = T&;  // or also value_type&u
 
-    series_iterator( T* ptr ) : m_curr( ptr ) {}
+    sv_iterator( T* ptr ) : m_curr( ptr ) {}
 
-    operator series_iterator< const T >() const
+    operator sv_iterator< const T >() const
     {
-        return series_iterator< const T >{ m_curr };
+        return sv_iterator< const T >{ m_curr };
     }
 
     operator T*() const
@@ -72,19 +72,19 @@ public:
         return m_curr;
     }
 
-    difference_type operator-( const series_iterator<T>& other ) const
+    difference_type operator-( const sv_iterator<T>& other ) const
     {
         return m_curr - other.m_curr;
     }
 
-    series_iterator<T> operator+( difference_type p ) const
+    sv_iterator<T> operator+( difference_type p ) const
     {
-        return series_iterator<T>{ m_curr + p };
+        return sv_iterator<T>{ m_curr + p };
     }
 
-    series_iterator<T> operator-( difference_type p ) const
+    sv_iterator<T> operator-( difference_type p ) const
     {
-        return series_iterator<T>{ m_curr - p };
+        return sv_iterator<T>{ m_curr - p };
     }
 
     void operator++() { m_curr++; }
@@ -97,15 +97,15 @@ public:
 
 protected:
     template< typename U >
-    friend bool operator==( const series_iterator<U>&, const series_iterator<U>& );
+    friend bool operator==( const sv_iterator<U>&, const sv_iterator<U>& );
     template< typename U >
-    friend bool operator!=( const series_iterator<U>&, const series_iterator<U>& );
+    friend bool operator!=( const sv_iterator<U>&, const sv_iterator<U>& );
 
     T* m_curr;
 };
 
 template< typename T >
-class reverse_series_iterator : public series_iterator<T>
+class reverse_sv_iterator : public sv_iterator<T>
 {
 public:
     using iterator_category = std::random_access_iterator_tag;
@@ -114,21 +114,21 @@ public:
     using pointer           = T*;  // or also value_type*
     using reference         = T&;  // or also value_type&u
 
-    using series_iterator<T>::series_iterator;
+    using sv_iterator<T>::sv_iterator;
 
-    difference_type operator-( const reverse_series_iterator<T>& other ) const
+    difference_type operator-( const reverse_sv_iterator<T>& other ) const
     {
         return other.m_curr - this->m_curr;
     }
 
-    series_iterator<T> operator+( difference_type p ) const
+    sv_iterator<T> operator+( difference_type p ) const
     {
-        return series_iterator<T>{ this->m_curr - p };
+        return sv_iterator<T>{ this->m_curr - p };
     }
 
-    series_iterator<T> operator-( difference_type p ) const
+    sv_iterator<T> operator-( difference_type p ) const
     {
-        return series_iterator<T>{ this->m_curr + p };
+        return sv_iterator<T>{ this->m_curr + p };
     }
 
     void operator++() { this->m_curr--; }
@@ -138,13 +138,13 @@ public:
 };
 
 template< typename T >
-bool operator==( const series_iterator<T>& l, const series_iterator<T>& r )
+bool operator==( const sv_iterator<T>& l, const sv_iterator<T>& r )
 {
     return l.m_curr == r.m_curr;
 }
 
 template< typename T >
-bool operator!=( const series_iterator<T>& l, const series_iterator<T>& r )
+bool operator!=( const sv_iterator<T>& l, const sv_iterator<T>& r )
 {
     return l.m_curr != r.m_curr;
 }
@@ -161,10 +161,10 @@ public:
     using const_reference   = const value_type&;
     using pointer           = value_type*;
     using const_pointer	    = const value_type*;
-    using iterator          = series_iterator< T >;
-    using const_iterator    = series_iterator< const T >;
-    using reverse_iterator          = reverse_series_iterator< T >;
-    using const_reverse_iterator    = reverse_series_iterator< const T >;
+    using iterator          = sv_iterator< T >;
+    using const_iterator    = sv_iterator< const T >;
+    using reverse_iterator          = reverse_sv_iterator< T >;
+    using const_reverse_iterator    = reverse_sv_iterator< const T >;
 
     series_vector()
     {
@@ -506,7 +506,7 @@ public:
     }
 
     template< class... Args >
-    iterator emplace( iterator cpos, Args&&... args )
+    iterator emplace( const_iterator cpos, Args&&... args )
     {
         size_type offset = cpos - begin();
         reserve( size() + sizeof...( args ) );
@@ -514,7 +514,7 @@ public:
 
         split_array( pos, sizeof...( args ) );
 
-        emplace_impl( pos, args... );
+        emplace_impl( pos, std::forward<Args>(args)... );
         return pos;
     }
 
@@ -543,62 +543,65 @@ public:
         return fst;
     }
 
-    //void push_back( const T& _value )
-    //{
-    //    m_array.push_back( _value );
-    //}
-    //void push_back( T&& _value )
-    //{
-    //    m_array.push_back( std::move( _value ) );
-    //}
-    //template< typename... Args > 
-    //reference emplace_back( Args&&... args )
-    //{
-    //    if ( size() == capacity() ) {
-    //        copy_allocate_add( capacity() );
-    //    }
-    //    T t{ std::forward( args... ) };
-    //    *m_end = std::move( t );
-    //    //*m_end = std::forward( args... );
-    //    reference out = *m_end;
-    //    m_end++;
-    //    return out;
-    //}
-    //void pop_back()
-    //{
-    //    m_array.pop_back();
-    //}
-    //void resize( size_type _newsize ) 
-    //{ 
-    //    m_array.resize( _newsize ); 
-    //}
-    //void resize( size_type _count, const value_type& _value )
-    //{
-    //    m_array.resize( _count, _value ); 
-    //}
-    //void swap( series_vector<T>& other ) SVB_NOEXCEPT
-    //{
-    //    swap( m_array, other.m_array );
-    //}
-
-    //template< class _T, class _Alloc >
-    //friend bool operator==( const std::vector<_T,_Alloc>& _left, 
-    //                                      const std::vector<_T,_Alloc>& _right );
-    //template< class _T, class _Alloc >
-    //friend bool operator!=( const std::vector<_T,_Alloc>& _left, 
-    //                                      const std::vector<_T,_Alloc>& _right );
-    //template< class _T, class _Alloc >
-    //friend bool operator<( const std::vector<_T,_Alloc>& _left, 
-    //                                     const std::vector<_T,_Alloc>& _right );
-    //template< class _T, class _Alloc >
-    //friend bool operator<=( const std::vector<_T,_Alloc>& _left, 
-    //                                      const std::vector<_T,_Alloc>& _right );
-    //template< class _T, class _Alloc >
-    //friend bool operator>( const std::vector<_T,_Alloc>& _left, 
-    //                                     const std::vector<_T,_Alloc>& _right );
-    //template< class _T, class _Alloc >
-    //friend bool operator>=( const std::vector<_T,_Alloc>& _left, 
-    //                                      const std::vector<_T,_Alloc>& _right );
+    void push_back( const T& value )
+    {
+        insert( end(), value );
+    }
+    void push_back( T&& value )
+    {
+        insert( end(), std::move( value ) );
+    }
+    template< typename... Args > 
+    reference emplace_back( Args&&... args )
+    {
+        return *emplace( end(), std::forward<Args>(args)... );
+    }
+    void pop_back()
+    {
+        erase( end()-1 );
+    }
+    void resize( size_type newsize ) 
+    { 
+        if ( newsize > size() ) {
+            if constexpr ( std::is_default_constructible<T>::value ) {
+                reserve( newsize );
+                for ( ; m_end < m_begin + newsize; ++m_end ) {
+                    // Requires default ctor
+                    new( m_end ) T{};
+                }
+            }
+            else {
+                throw std::logic_error{ "Type is not default contructible and cannot be resize'd larger!" };
+            }
+        }
+        else {
+            for ( T * curr = m_begin + newsize; curr != m_end; ++curr ) {
+                curr->~T();
+            }
+            m_end = m_begin + newsize;
+        }
+    }
+    void resize( size_type newsize, const value_type& value )
+    {
+        if ( newsize > size() ) {
+            reserve( newsize );
+            for ( ; m_end < m_begin + newsize; ++m_end ) {
+                new( m_end ) T{ value };
+            }
+        }
+        else {
+            for ( T * curr = m_begin + newsize; curr != m_end; ++curr ) {
+                curr->~T();
+            }
+            m_end = m_begin + newsize;
+        }
+    }
+    void swap( series_vector<T>& other )
+    {
+        swap( m_begin, other.m_begin );
+        swap( m_end, other.m_end );
+        swap( m_max, other.m_max );
+    }
 
 private:
 
@@ -623,7 +626,7 @@ private:
     void emplace_impl( iterator pos, ArgFirst&& argf, Args&& ... args )
     {
         new( pos ) T{ std::forward<T>( argf ) };
-        emplace_impl( pos + 1, args... );
+        emplace_impl( pos + 1, std::forward<Args>(args)... );
     }
 
     template< typename Iter >
@@ -677,75 +680,28 @@ private:
         }
     }
 
-    //template< typename U >
-    //static typename std::enable_if< std::is_move_constructible<U>::value, U*>::type
-    //    move_array( U* inbegin, U* inend, U* outbegin )
-    //{
-    //    for ( ; inbegin < inend; ++inbegin, ++outbegin ) {
-    //        new( outbegin ) U{ std::move( *inbegin ) };
-    //    }
-    //    return outbegin;
-    //}
-
-    //template< typename U >
-    //static typename std::enable_if< !std::is_move_constructible<U>::value, U*>::type
-    //    move_array( U* inbegin, U* inend, U* outbegin )
-    //{
-    //    for ( ; inbegin < inend; ++inbegin, ++outbegin ) {
-    //        new( outbegin ) U{ *inbegin };
-    //    }
-    //    return outbegin;
-    //}
-
     T * m_begin;
     T * m_end;
     T * m_max;
 };
 
 
-//template< typename T, typename Allocator >
-//bool operator==( const series_vector<T>& _left, 
-//                               const series_vector<T>& _right )
-//{
-//    return _left.m_array == _right.m_array;
-//}
-//
-//template< typename T, typename Allocator >
-//bool operator!=( const series_vector<T>& _left, 
-//                               const series_vector<T>& _right )
-//{
-//    return _left.m_array != _right.m_array;
-//}
-//
-//template< typename T, typename Allocator >
-//bool operator<( const series_vector<T>& _left, 
-//                              const series_vector<T>& _right )
-//{
-//    return _left.m_array < _right.m_array;
-//}
-//
-//template< typename T, typename Allocator >
-//bool operator<=( const series_vector<T>& _left, 
-//                               const series_vector<T>& _right )
-//{
-//    return _left.m_array <= _right.m_array;
-//}
-//
-//template< typename T, typename Allocator >
-//bool operator>( const series_vector<T>& _left, 
-//                              const series_vector<T>& _right )
-//{
-//    return _left.m_array > _right.m_array;
-//}
-//
-//template< typename T, typename Allocator >
-//bool operator>=( const series_vector<T>& _left, 
-//                               const series_vector<T>& _right )
-//{
-//    return _left.m_array >= _right.m_array;
-//}
-//
-//
+template< typename T >
+bool operator==( const series_vector<T>& left, 
+                 const series_vector<T>& right )
+{
+    return (left.size() == right.size()) &&
+        std::equal( left.begin(), left.end(), right.begin() );
+}
+
+template< typename T >
+bool operator!=( const series_vector<T>& left, 
+                 const series_vector<T>& right )
+{
+    return !( left == right );
+}
+
+
 //template<typename T>
 //class series_vector : public series_vector<T>
 //{

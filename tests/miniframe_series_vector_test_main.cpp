@@ -24,7 +24,7 @@ public:
         m_str = strdup( other.m_str );
     }
     foo( foo&& other )
-        : m_str( nullptr )
+        : m_str( strdup( "EMPTY" ) )
     {
         std::swap( m_str, other.m_str );
     }
@@ -55,6 +55,13 @@ public:
     friend std::ostream& operator<<( std::ostream& o, const foo& f );
 
     char * m_str;
+};
+
+class foo_with_ctor : public foo
+{
+public:
+    using foo::foo;
+    foo_with_ctor() : foo( strdup( "default" ) ) {}
 };
 
 std::ostream& operator<<( std::ostream& o, const foo& f )
@@ -577,7 +584,7 @@ TEST_CASE( "insert( pos, &&value )", "[series_vector]" )
         auto it = sv1.insert( sv1.begin(), std::move( f3 ) );
         REQUIRE( it == sv1.begin() );
         REQUIRE( sv1.size() == 4 );
-        REQUIRE( f3.m_str == nullptr );
+        REQUIRE( f3 == "EMPTY" );
         REQUIRE( string( sv1.at( 0 ).m_str ) == "f3" );
         REQUIRE( sv1.at( 1 ) == f0 );
         REQUIRE( sv1.at( 2 ) == f1 );
@@ -597,7 +604,7 @@ TEST_CASE( "insert( pos, &&value )", "[series_vector]" )
         auto it = sv1.insert( sv1.begin()+1, std::move( f3 ) );
         REQUIRE( it == sv1.begin()+1 );
         REQUIRE( sv1.size() == 4 );
-        REQUIRE( f3.m_str == nullptr );
+        REQUIRE( f3 == "EMPTY" );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( string( sv1.at( 1 ).m_str ) == "f3" );
         REQUIRE( sv1.at( 2 ) == f1 );
@@ -617,7 +624,7 @@ TEST_CASE( "insert( pos, &&value )", "[series_vector]" )
         auto it = sv1.insert( sv1.end(), std::move( f3 ) );
         REQUIRE( it == sv1.begin()+3 );
         REQUIRE( sv1.size() == 4 );
-        REQUIRE( f3.m_str == nullptr );
+        REQUIRE( f3 == "EMPTY" );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
@@ -944,4 +951,73 @@ TEST_CASE( "erase( pos )", "[series_vector]" )
     }
 }
 
+TEST_CASE( "push_back(), emplace_back(), pop_back()", "[series_vector]" )
+{
+    foo f0{ "f0" };
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series_vector<foo> sv1{ f0, f1 };
+    REQUIRE( sv1.size() == 2 );
+    sv1.push_back( std::move( f2 ) );
+    REQUIRE( sv1.size() == 3 );
+    REQUIRE( f2 == "EMPTY" );
+    sv1.push_back( f3 );
+    REQUIRE( sv1.size() == 4 );
+    REQUIRE( f3 == "f3" );
+    sv1.emplace_back( "f4", "f5", "f6" );
+    REQUIRE( sv1.size() == 7 );
+    REQUIRE( sv1.at( 0 ) == f0 );
+    REQUIRE( sv1.at( 1 ) == f1 );
+    REQUIRE( sv1.at( 2 ) == "f2" );
+    REQUIRE( sv1.at( 3 ) == f3 );
+    REQUIRE( sv1.at( 4 ) == "f4" );
+    REQUIRE( sv1.at( 5 ) == "f5" );
+    REQUIRE( sv1.at( 6 ) == "f6" );
+    sv1.pop_back();
+    sv1.pop_back();
+    sv1.pop_back();
+    REQUIRE( sv1.size() == 4 );
+    REQUIRE( sv1.at( 0 ) == f0 );
+    REQUIRE( sv1.at( 1 ) == f1 );
+    REQUIRE( sv1.at( 2 ) == "f2" );
+    REQUIRE( sv1.at( 3 ) == f3 );
+}
+
+TEST_CASE( "resize()", "[series_vector]" )
+{
+    foo f0{ "f0" };
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo_with_ctor fc0{ "fc0" };
+    foo_with_ctor fc1{ "fc1" };
+    series_vector<foo> sv1{ f0, f1 };
+    sv1.resize( 1 );
+    REQUIRE( sv1.size() == 1 );
+    REQUIRE_THROWS( sv1.resize( 3 ) );
+    sv1.resize( 3, f2 );
+    REQUIRE( sv1.size() == 3 );
+    series_vector<foo_with_ctor> sv2{ fc0, fc1 };
+    sv2.resize( 1 );
+    REQUIRE( sv2.size() == 1 );
+    REQUIRE_NOTHROW( sv2.resize( 3 ) );
+    REQUIRE( sv2.size() == 3 );
+}
+
+TEST_CASE( "operator==", "[series_vector]" )
+{
+    foo f0{ "f0" };
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series_vector<foo> sv1{ f0, f1 };
+    series_vector<foo> sv2{ f0, f1 };
+    //REQUIRE( sv1 == sv2 );
+    //sv2.resize( 3, f2 );
+    //REQUIRE( sv1 != sv2 );
+    sv1.emplace_back( f2, f3 );
+    REQUIRE( sv1 != sv2 );
+    //sv2.push_back( f3 );
+    //REQUIRE( sv1 == sv2 );
+}
 
