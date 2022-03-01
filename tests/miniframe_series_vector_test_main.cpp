@@ -784,7 +784,8 @@ TEST_CASE( "emplace( pos, args... )", "[series_vector]" )
     {
         series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
-        auto it = sv1.emplace( sv1.begin(), "f3", "f4" );
+        sv1.emplace( sv1.begin(), "f4" );
+        auto it = sv1.emplace( sv1.begin(), "f3" );
         REQUIRE( it == sv1.begin() );
         REQUIRE( sv1.size() == 5 );
         REQUIRE( sv1.at( 0 ) == "f3" );
@@ -797,7 +798,8 @@ TEST_CASE( "emplace( pos, args... )", "[series_vector]" )
     {
         series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
-        auto it = sv1.emplace( sv1.begin()+1, "f3", "f4" );
+        sv1.emplace( sv1.begin()+1, "f4" );
+        auto it = sv1.emplace( sv1.begin()+1, "f3" );
         REQUIRE( it == sv1.begin()+1 );
         REQUIRE( sv1.size() == 5 );
         REQUIRE( sv1.at( 0 ) == f0 );
@@ -810,8 +812,9 @@ TEST_CASE( "emplace( pos, args... )", "[series_vector]" )
     {
         series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
-        auto it = sv1.emplace( sv1.end(), "f3", "f4" );
-        REQUIRE( it == sv1.begin()+3 );
+        sv1.emplace( sv1.end(), "f3" );
+        auto it = sv1.emplace( sv1.end(), "f4" );
+        REQUIRE( it == sv1.begin()+4 );
         REQUIRE( sv1.size() == 5 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -965,7 +968,9 @@ TEST_CASE( "push_back(), emplace_back(), pop_back()", "[series_vector]" )
     sv1.push_back( f3 );
     REQUIRE( sv1.size() == 4 );
     REQUIRE( f3 == "f3" );
-    sv1.emplace_back( "f4", "f5", "f6" );
+    sv1.emplace_back( "f4" );
+    sv1.emplace_back( "f5" );
+    sv1.emplace_back( "f6" );
     REQUIRE( sv1.size() == 7 );
     REQUIRE( sv1.at( 0 ) == f0 );
     REQUIRE( sv1.at( 1 ) == f1 );
@@ -1012,12 +1017,18 @@ TEST_CASE( "operator==", "[series_vector]" )
     foo f3{ "f3" };
     series_vector<foo> sv1{ f0, f1 };
     series_vector<foo> sv2{ f0, f1 };
-    //REQUIRE( sv1 == sv2 );
-    //sv2.resize( 3, f2 );
-    //REQUIRE( sv1 != sv2 );
-    sv1.emplace_back( f2, f3 );
+    REQUIRE( sv1 == sv2 );
+    sv2.resize( 3, f2 );
     REQUIRE( sv1 != sv2 );
-    //sv2.push_back( f3 );
-    //REQUIRE( sv1 == sv2 );
+    REQUIRE( f2 == "f2" );
+    REQUIRE( f3 == "f3" );
+    sv1.emplace_back( f2 );
+    sv1.emplace_back( f3 );
+    REQUIRE( f2 == "f2" );
+    REQUIRE( f3 == "f3" );
+    REQUIRE( sv1 != sv2 );
+    sv2.push_back( f3 );
+    REQUIRE( f3 == "f3" );
+    REQUIRE( sv1 == sv2 );
 }
 

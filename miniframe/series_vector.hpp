@@ -505,16 +505,16 @@ public:
         return insert( pos, initlist.begin(), initlist.end() );
     }
 
-    template< class... Args >
+    template< typename... Args >
     iterator emplace( const_iterator cpos, Args&&... args )
     {
         size_type offset = cpos - begin();
-        reserve( size() + sizeof...( args ) );
+        reserve( size() + 1 );
         iterator pos = begin() + offset; // Fix pos
 
-        split_array( pos, sizeof...( args ) );
+        split_array( pos, 1 );
 
-        emplace_impl( pos, std::forward<Args>(args)... );
+        new( pos ) T( std::forward<Args>( args )... );
         return pos;
     }
 
@@ -617,18 +617,6 @@ private:
         m_end += count;
     }
 
-    template< class Arg >
-    void emplace_impl( iterator pos, Arg&& arg )
-    {
-        new( pos ) T{ std::forward<T>( arg ) };
-    }
-    template< class ArgFirst, class... Args >
-    void emplace_impl( iterator pos, ArgFirst&& argf, Args&& ... args )
-    {
-        new( pos ) T{ std::forward<T>( argf ) };
-        emplace_impl( pos + 1, std::forward<Args>(args)... );
-    }
-
     template< typename Iter >
     Iter placement_copy( Iter inbegin, Iter inend, Iter outbegin ) const
     {
@@ -702,47 +690,47 @@ bool operator!=( const series_vector<T>& left,
 }
 
 
-//template<typename T>
-//class series_vector : public series_vector<T>
-//{
-//public:
-//    series_vector() = default;
-//
-//    std::unique_ptr<iseries_vector> unique() const override
-//    {
-//        auto out = std::make_unique<series_vector<T>>();
-//        std::unordered_set<T> bag;
-//        for ( const auto &elem : *this ) {
-//            if ( bag.find( elem ) == bag.end() ) {
-//                out->push_back( elem );
-//                bag.insert( elem );
-//            }
-//        }
-//        return out;
-//    }
-//
-//    std::unique_ptr<iseries_vector> to_string() const override
-//    {
-//        auto out = std::make_unique<series_vector<std::string>>();
-//        out->reserve( this->size() );
-//        for ( const auto &elem : *this ) {
-//          std::stringstream ss;
-//          detail::stringify(ss, elem, true);
-//          out->push_back(ss.str());
-//        }
-//        return out;
-//    }
-//
-//    std::unique_ptr<iseries_vector> clone() const override
-//    {
-//        return std::make_unique<series_vector<T>>( *this );
-//    }
-//
-//    std::unique_ptr<iseries_vector> clone_empty() const override
-//    {
-//        return std::make_unique<series_vector<T>>();
-//    }
-//};
+template<typename T>
+class series_base : public series_vector<T>
+{
+public:
+    using series_vector<T>::series_vector;
+
+    std::unique_ptr<iseries_vector> unique() const override
+    {
+        auto out = std::make_unique<series_vector<T>>();
+        std::unordered_set<T> bag;
+        for ( const auto &elem : *this ) {
+            if ( bag.find( elem ) == bag.end() ) {
+                out->push_back( elem );
+                bag.insert( elem );
+            }
+        }
+        return out;
+    }
+
+    std::unique_ptr<iseries_vector> to_string() const override
+    {
+        auto out = std::make_unique<series_vector<std::string>>();
+        out->reserve( this->size() );
+        for ( const auto &elem : *this ) {
+          std::stringstream ss;
+          detail::stringify(ss, elem, true);
+          out->push_back(ss.str());
+        }
+        return out;
+    }
+
+    std::unique_ptr<iseries_vector> clone() const override
+    {
+        return std::make_unique<series_vector<T>>( *this );
+    }
+
+    std::unique_ptr<iseries_vector> clone_empty() const override
+    {
+        return std::make_unique<series_vector<T>>();
+    }
+};
 
 } // namespace mf
 
