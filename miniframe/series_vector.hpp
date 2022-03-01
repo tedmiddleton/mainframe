@@ -172,12 +172,10 @@ public:
     }
     series_vector( size_type count, const T& value ) 
     {
-        std::ios_base::fmtflags f{ std::cout.flags() };
         create_storage( count );
         for ( ; m_end != m_begin + count; ++m_end ) {
             new( m_end ) T{ value };
         }
-        std::cout.flags(f);
     }
     explicit series_vector( size_type count )
     {
