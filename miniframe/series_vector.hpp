@@ -34,14 +34,14 @@ class iseries_vector
 public:
     virtual ~iseries_vector() = default;
 
-    //virtual size_t size() const = 0;
+    virtual size_t size() const = 0;
     //virtual void resize( size_t _newsize ) = 0;
     //virtual void reserve( size_t _size ) = 0;
-    //virtual bool empty() const = 0;
-    //virtual size_t max_size() const = 0;
-    //virtual size_t capacity() const = 0;
+    virtual bool empty() const = 0;
+    virtual size_t max_size() const = 0;
+    virtual size_t capacity() const = 0;
     //virtual void shrink_to_fit() = 0;
-    //virtual void clear() = 0;
+    virtual void clear() = 0;
     //virtual void pop_back() = 0;
 
     //virtual std::unique_ptr<iseries_vector> unique() const = 0; 
@@ -163,8 +163,8 @@ public:
     using const_pointer	    = const value_type*;
     using iterator          = sv_iterator< T >;
     using const_iterator    = sv_iterator< const T >;
-    using reverse_iterator          = reverse_sv_iterator< T >;
-    using const_reverse_iterator    = reverse_sv_iterator< const T >;
+    using reverse_iterator  = reverse_sv_iterator< T >;
+    using const_reverse_iterator = reverse_sv_iterator< const T >;
 
     series_vector()
     {
@@ -237,9 +237,9 @@ public:
         return *this;
     }
 
-    series_vector& operator=( std::initializer_list<T> _init )
+    series_vector& operator=( std::initializer_list<T> init )
     {
-        series_vector other{ _init };
+        series_vector other{ init };
         std::swap( m_begin, other.m_begin );
         std::swap( m_end, other.m_end );
         std::swap( m_max, other.m_max );
@@ -284,9 +284,9 @@ public:
         }
         m_end = m_begin + ( inend - inbegin );
     }
-    void assign( std::initializer_list<T> _init )
+    void assign( std::initializer_list<T> init )
     {
-        assign( _init.begin(), _init.end() );
+        assign( init.begin(), init.end() );
     }
 
     reference at( size_type pos )

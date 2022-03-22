@@ -16,12 +16,13 @@ using namespace std;
 namespace mf
 {
 
-ostream & operator<<( ostream& o, const series & se )
+template< typename T >
+ostream & operator<<( ostream& o, const series<T> & se )
 {
     auto strvals = se.to_string();
     size_t maxwidth = 0;
-    for ( auto it=strvals.begin<string>(); it!=strvals.end<string>(); ++it ) {
-        maxwidth = std::max( maxwidth, it->size() );
+    for ( auto& elemstr : strvals ) {
+        maxwidth = std::max( maxwidth, elemstr.size() );
     }
     auto name = strvals.name();
     if ( name.size() > 0 ) { 
@@ -31,8 +32,8 @@ ostream & operator<<( ostream& o, const series & se )
         o << strvals.size() << " element Series\n";
     }
     o << get_horzrule( maxwidth ) << "\n";
-    for ( auto it=strvals.begin<string>(); it!=strvals.end<string>(); ++it ) {
-        o << *it << "\n";
+    for ( auto& elemstr : strvals ) {
+        o << elemstr << "\n";
     }
     return o;
 }

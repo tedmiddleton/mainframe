@@ -29,323 +29,298 @@
 namespace mf
 {
 
+// This is an untyped version of series
+class column
+{
+public:
+};
+
+template< typename T >
 class series
 {
-private:
-    series() = default;
-
-    template<typename T>
-    friend series make_series( std::string _name );
-
-    template<typename T>
-    friend series make_series( std::string _name, std::vector<T> _data );
-
 public:
-
     // types
-    template<typename T>
-    using iterator = typename std::vector<T>::iterator;
-    template<typename T>
-    using const_iterator = typename std::vector<T>::const_iterator;
-    template<typename T>
-    using reference = typename std::vector<T>::reference;
-    template<typename T>
-    using const_reference = typename std::vector<T>::const_reference;
-    template<typename T>
-    using pointer = typename std::vector<T>::pointer;
-    template<typename T>
-    using const_pointer	= typename std::vector<T>::const_pointer;
+    using value_type        = T;
+    using size_type         = typename series_vector<T>::size_type;
+    using difference_type   = typename series_vector<T>::difference_type;
+    using reference         = value_type&;
+    using const_reference   = const value_type&;
+    using pointer           = value_type*;
+    using const_pointer	    = const value_type*;
+    using iterator          = typename series_vector<T>::iterator;
+    using const_iterator    = typename series_vector<T>::const_iterator;
+    using reverse_iterator  = typename series_vector<T>::reverse_iterator;
+    using const_reverse_iterator = typename series_vector<T>::const_reverse_iterator;
 
     // ctors
-    series( series&& ) = default;
-    series( const series& _other )
-        : m_impl( _other.m_impl->clone() )
+    series() 
+        : m_sharedvec( std::make_shared< series_vector<T> >() )
+    {}
+
+    series( size_type count, const T& value )
+        : m_sharedvec( std::make_shared< series_vector<T> >( count, value ) )
+    {}
+
+    explicit series( size_type count )
+        : m_sharedvec( std::make_shared< series_vector<T> >( count ) )
+    {}
+
+    template< typename InputIt >
+    series( InputIt f, InputIt l )
+        : m_sharedvec( std::make_shared< series_vector<T> >( f, l ) )
+    {}
+
+    series( const series& other ) = default;
+
+    series( series&& other )
+        : m_sharedvec( std::move( other.m_sharedvec ) )
+    {
+        // Don't leave other with nullptr
+        other.m_sharedvec = std::make_shared< series_vector<T> >();
+    }
+
+    series( std::initializer_list<T> init )
+        : m_sharedvec( std::make_shared< series_vector<T> >( init ) )
     {}
      
+    virtual ~series() = default;
+
     // operator=
-    series& operator=( series&& ) = default; 
-    series& operator=( const series& _other ) 
+    series& operator=( series&& other ) 
     {
-        std::unique_ptr<iseries_vector> s = _other.m_impl->clone();
-        m_impl = std::move( s );
+        m_sharedvec = std::move( other.m_sharedvec );
+        other.m_sharedvec = std::make_shared< series_vector<T> >();
+        return *this;
+    }
+
+    series& operator=( const series& ) = default;
+
+    series& operator=( std::initializer_list<T> init )
+    {
+        m_sharedvec = std::make_shared< series_vector<T> >( init );
         return *this;
     }
 
     // assign
+    void assign( size_type count, const T& value );
+    template< typename InputIt >
+    void assign( InputIt inbegin, InputIt inend );
+    void assign( std::initializer_list<T> init );
     
     // at
-    template<typename T>
-    T& at( size_t _n )
+    reference at( size_type n )
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->at( _n );
+        return m_sharedvec->at( n );
     }
 
     // operator=
-    template<typename T>
-    T& operator[]( size_t _n )
+    T& operator[]( size_type n )
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)[ _n ];
+        return m_sharedvec[ n ];
     }
 
     // front & back
-    template<typename T>
-    reference<T> front()
+    reference front()
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->front();
+        return m_sharedvec->front();
     }
 
     // data
-    template<typename T>
     T* data()
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->data();
+        return m_sharedvec->data();
     }
 
     // begin, cbegin, end, cend
-    template<typename T>
-    iterator<T> begin()
+    iterator begin()
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->begin();
+        return m_sharedvec->begin();
     }
-    template<typename T>
-    const_iterator<T> begin() const
+    const_iterator begin() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->begin();
+        return m_sharedvec->begin();
     }
-    template<typename T>
-    const_iterator<T> cbegin() const
+    const_iterator cbegin() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->cbegin();
+        return m_sharedvec->cbegin();
     }
-    template<typename T>
-    iterator<T> end()
+    iterator end()
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->end();
+        return m_sharedvec->end();
     }
-    template<typename T>
-    const_iterator<T> end() const
+    const_iterator end() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->end();
+        return m_sharedvec->end();
     }
-    template<typename T>
-    const_iterator<T> cend() const
+    const_iterator cend() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->cend();
+        return m_sharedvec->cend();
     }
 
     // rbegin, crbegin, rend, crend
-    template<typename T>
-    iterator<T> rbegin()
+    iterator rbegin()
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->rbegin();
+        return m_sharedvec->rbegin();
     }
-    template<typename T>
-    const_iterator<T> rbegin() const
+    const_iterator rbegin() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->rbegin();
+        return m_sharedvec->rbegin();
     }
-    template<typename T>
-    const_iterator<T> crbegin() const
+    const_iterator crbegin() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->crbegin();
+        return m_sharedvec->crbegin();
     }
-    template<typename T>
-    iterator<T> rend()
+    iterator rend()
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->rend();
+        return m_sharedvec->rend();
     }
-    template<typename T>
-    const_iterator<T> rend() const
+    const_iterator rend() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->rend();
+        return m_sharedvec->rend();
     }
-    template<typename T>
-    const_iterator<T> crend() const
+    const_iterator crend() const
     {
-        return std::dynamic_pointer_cast<const series_vector<T>>(m_impl)->crend();
+        return m_sharedvec->crend();
     }
 
     // capacity & modifiers
     bool empty() const
     {
-        return m_impl->empty();
+        return m_sharedvec->empty();
     }
-    size_t size() const 
+    size_type size() const 
     { 
-        return m_impl->size(); 
+        return m_sharedvec->size(); 
     }
-    size_t max_size() const 
+    size_type max_size() const 
     { 
-        return m_impl->max_size(); 
+        return m_sharedvec->max_size(); 
     }
-    void reserve( size_t _size ) 
+    void reserve( size_type _size ) 
     { 
-        m_impl->reserve( _size ); 
+        m_sharedvec->reserve( _size ); 
     }
-    size_t capacity() const
+    size_type capacity() const
     { 
-        return m_impl->capacity(); 
+        return m_sharedvec->capacity(); 
     }
     void shrink_to_fit()
     {
-        m_impl->shrink_to_fit();
+        m_sharedvec->shrink_to_fit();
     }
     void clear()
     {
-        m_impl->clear();
+        m_sharedvec->clear();
     }
 
     // insert & emplace
-    template<typename T>
-    iterator<T> insert( const_iterator<T> _pos, const T& _value )
+    iterator insert( const_iterator pos, const T& value )
     {
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        return s->insert( _pos, _value );
+        return m_sharedvec->insert( pos, value );
     }
-    template<typename T>
-    iterator<T> insert( const_iterator<T> _pos, T&& _value )
+    iterator insert( const_iterator pos, T&& value )
     {
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        return s->insert( _pos, std::move( _value ));
+        return m_sharedvec->insert( pos, std::move( value ));
     }
-    template<typename T>
-    iterator<T> insert( const_iterator<T> _pos, size_t _count, const T& _value )
+    iterator insert( const_iterator pos, size_type count, const T& value )
     {
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        return s->insert( _pos, _count, _value );
+        return m_sharedvec->insert( pos, count, value );
     }
-    template< typename InputIt, typename T >
-    iterator<T> insert( const_iterator<T> _pos, InputIt _first, InputIt _last )
+    template< typename InputIt >
+    iterator insert( const_iterator pos, InputIt first, InputIt last )
     {
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        s->insert( _pos, _first, _last );
+        m_sharedvec->insert( pos, first, last );
     }
-    template<typename T>
-    iterator<T> insert( const_iterator<T> _pos, std::initializer_list<T> _init )
+    iterator insert( const_iterator pos, std::initializer_list<T> init )
     {
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        s->insert( _pos, _init );
+        m_sharedvec->insert( pos, init );
     }
-    template< typename T, class... Args >
-    iterator<T> emplace( const_iterator<T> _pos, Args&&... _args )
+    template< class... Args >
+    iterator emplace( const_iterator pos, Args&&... args )
     {
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        s->emplace( _pos, std::forward( _args... ) );
+        m_sharedvec->emplace( pos, std::forward( args... ) );
     }
 
     // erase
-    template<typename T>
-    iterator<T> erase( const_iterator<T> _pos )
+    iterator erase( const_iterator pos )
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->erase( _pos );
+        return m_sharedvec->erase( pos );
     }
-    template<typename T>
-    iterator<T> erase( const_iterator<T> _first, const_iterator<T> _last )
+    iterator erase( const_iterator first, const_iterator last )
     {
-        return std::dynamic_pointer_cast<series_vector<T>>(m_impl)->erase( _first, _last );
+        return m_sharedvec->erase( first, last );
     }
 
     // push_back, emplace_back, pop_back
-    template<typename T>
-    void push_back( const T& _value )
+    void push_back( const T& value )
     {
-        std::dynamic_pointer_cast<series_vector<T>>(m_impl)->push_back( _value );
+        m_sharedvec->push_back( value );
     }
-    template<typename T>
-    void push_back( T&& _value )
+    void push_back( T&& value )
     {
-        std::dynamic_pointer_cast<series_vector<T>>(m_impl)->push_back( std::move( _value ) );
+        m_sharedvec->push_back( std::move( value ) );
     }
-    template< typename T, typename... Args > 
-    reference<T> emplace_back( Args&&... _args )
+    template< typename... Args > 
+    reference emplace_back( Args&&... args )
     {
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        return s->emplace_back( std::forward( _args... ) );
+        return m_sharedvec->emplace_back( std::forward( args... ) );
     }
     void pop_back()
     {
-        m_impl->pop_back();
+        m_sharedvec->pop_back();
     }
 
     // resize
-    void resize( size_t _newsize ) 
+    void resize( size_type newsize ) 
     { 
-        return m_impl->resize( _newsize ); 
+        return m_sharedvec->resize( newsize ); 
     }
-    template<typename T>
-    void resize( size_t _newsize, const T& _value ) 
+    void resize( size_type newsize, const T& value ) 
     { 
-        auto s = std::dynamic_pointer_cast<series_vector<T>>(m_impl);
-        return s->resize( _newsize, _value );
+        return m_sharedvec->resize( newsize, value );
     }
 
     // swap
  
-    std::string name() const 
+    const std::string& name() const 
     { 
         return m_name; 
     }
     
-    void set_name( std::string _name ) 
+    std::string& name() 
     { 
-        m_name = _name; 
+        return m_name; 
     }
     
     series unique() const
     { 
         series out;
         out.m_name = m_name;
-        out.m_impl = m_impl->unique();
+        out.m_sharedvec = m_sharedvec->unique();
         return out;
     }
 
-    series to_string() const
+    iterator unref( iterator it )
     {
-        series out;
-        out.m_name = m_name;
-        out.m_impl = m_impl->to_string();
-        return out;
+        iterator newit = it;
+        if ( m_sharedvec.use_count() > 1 ) {
+            auto oldbegin = m_sharedvec->begin();
+            std::shared_ptr<series_vector<T>> n = 
+                std::make_shared<series_vector<T>>( *m_sharedvec );
+            m_sharedvec = n;
+            newit += (m_sharedvec->begin() - oldbegin);
+        }
+        return newit;
     }
 
-    series clone_empty() const
-    {
-        series out;
-        out.m_name = m_name;
-        out.m_impl = m_impl->clone_empty();
-        return out;
-    }
-
-    void unref()
-    {
-        auto n = m_impl->clone();
-        m_impl = std::shared_ptr<iseries_vector>{ std::move( n ) };
-    }
-
-    friend std::ostream& operator<<( std::ostream&, const series& );
+    template< typename U >
+    friend std::ostream& operator<<( std::ostream&, const series<U>& );
 
 private:
 
     std::string m_name;
-    std::shared_ptr<iseries_vector> m_impl;
+    std::shared_ptr<series_vector<T>> m_sharedvec;
 };
-
-template<typename T>
-series make_series( std::string _name )
-{
-    series out;
-    out.m_name = _name;
-    out.m_impl = std::make_unique<series_vector<T>>();
-    return out;
-}
-
-template<typename T>
-series make_series( std::string _name, std::vector<T> _data )
-{
-    series out;
-    out.m_name = _name;
-    out.m_impl = std::make_unique<series_vector<T>>( _data );
-    return out;
-}
 
 } // namespace mf
 

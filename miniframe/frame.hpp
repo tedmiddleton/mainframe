@@ -29,65 +29,149 @@
 namespace mf
 {
 
-class frame;
-
-struct const_row_iterator
+template< typename ... Ts >
+struct frame_iterator
 {
-    const_row_iterator( const frame& f, size_t idx ) 
-        : m_frame( f )
-        , m_idx( idx ) 
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type   = ptrdiff_t;
+
+    frame_iterator( std::tuple<typename series<Ts>::iterator ...>& its )
+        : m_ptrs( its )
     {}
 
-    const frame& m_frame;
-    size_t m_idx;
+    frame_iterator( std::tuple<Series<Ts>...>& cols, int offset )
+    {
+        init_impl<0, Ts...>( cols, offset );
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void init_impl( std::tuple<series<Ts>...>& cols, int offset )
+    {
+        series<U>& s = std::get< Ind >( cols );
+        auto begin = s.begin();
+        std::get< Ind >( m_ptrs ) = begin + offset;
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            init_impl< Ind+1, Us... >( cols, offset );
+        }
+    }
+
+    template< typename ... Us >
+    frame_iterator< Ts..., Us... > combine( 
+        const frame_iterator< Us... >& other )
+    {
+        auto ptr = tuple_cat( m_ptrs, other.m_ptrs );
+        frame_iterator< Ts..., Us... > out{ ptr };
+        return out;
+    }
+
+    template< size_t Ind >
+    typename series_vector<typename std::tuple_element< Ind, std::tuple< Ts ... > >::type>::iterator column_iterator()
+    {
+        return std::get< Ind >( m_ptrs );
+    }
+
+    frame_iterator<Ts...> operator+( size_t n )
+    {
+        frame_iterator<Ts...> out{ *this };
+        out += n;
+        return out;
+    }
+
+    frame_iterator<Ts...> operator-( size_t n )
+    {
+        frame_iterator<Ts...> out{ *this };
+        out -= n;
+        return out;
+    }
+
+    void operator++()
+    {
+        operator+=( 1 );
+    }
+
+    void operator--()
+    {
+        operator-=( 1 );
+    }
+
+    void operator+=( size_t n )
+    {
+        inc< 0, Ts... >( n );
+    }
+
+    void operator-=( size_t n )
+    {
+        dec< 0, Ts... >( n );
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void inc( size_t n )
+    {
+        std::get< Ind >( m_ptrs ) += n;
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            inc< Ind+1, Us... >( n );
+        }
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void dec( size_t n )
+    {
+        std::get< Ind >( m_ptrs ) -= n;
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            dec< Ind+1, Us... >( n );
+        }
+    }
+
+    template< size_t Ind >
+    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& get()
+    {
+        auto ptr = std::get< Ind >( m_ptrs );
+        return *ptr;
+    }
+
+    FrameRow< Ts... >& operator*()
+    {
+        return *this;
+    }
+
+    template< typename ... Us >
+    friend bool operator==( const frame_iterator< Us... >& l, const frame_iterator< Us... >& r );
+    template< typename ... Us >                                                          
+    friend bool operator!=( const frame_iterator< Us... >& l, const frame_iterator< Us... >& r );
+
+private:
+    template< typename ... Us >
+    friend struct frame_iterator;
+
+    std::tuple< series_iterator<Ts>... > m_ptrs;
 };
 
-struct row;
-
-struct row_iterator
-{
-    row_iterator( frame& f, size_t idx ) 
-        : m_frame( f )
-        , m_idx( idx ) 
-    {}
-
-    bool operator!=( const row_iterator& other ) const;
-    void operator++();
-    row operator*();
-    
-    frame& m_frame;
-    size_t m_idx;
-};
-
-
+template< typename ... Ts >
 class frame 
 {
-private:
-    template< typename ... Tps >
-    friend frame make_frame( std::initializer_list<std::string> colnames );
-
 public:
+    using iterator = frame_iterator< Ts... >;
+
     frame() = default;
-    frame( const frame& other ) = default;
+    frame( const frame& ) = default;
     frame( frame&& ) = default;
     frame& operator=( const frame& other ) = default;
     virtual ~frame() = default;
 
-    // Generate a new frame with the same types and column names but empty
-    frame clone_empty() const;
+    iterator begin()
+    {
+        return iterator{ m_columns, 0 };
+    }
 
-    // mf::series contains a shared ptr to series_vector, which allows for fast 
-    // column operations. unref() will deep-copy the data so that this frame's 
-    // series will no longer be shared with other series
-    // Note that row operations implicitly unref's columns
-    void unref();
+    iterator end()
+    {
+        return iterator{ m_columns, static_cast<int>(size()) };
+    }
 
-    row_iterator begin();
-    row_iterator end();
-    const_row_iterator begin() const;
-    const_row_iterator end() const;
-    const_row_iterator cbegin() const;
-    const_row_iterator cend() const;
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 
     template< typename T >
     void new_series( std::string series_name )
@@ -263,37 +347,7 @@ private:
 
     void reconcile_size();
 
-    std::vector<series> m_columns;
-};
-
-template< typename ... Tps >
-frame make_frame( std::initializer_list<std::string> colnames )
-{
-    (void)colnames;
-    return frame{};
-}
-
-struct row
-{
-    row( frame& f, size_t idx ) 
-        : m_frame( f )
-        , m_idx( idx ) 
-    {}
-
-    template< typename T >
-    T& get( const std::string& columnname )
-    {
-        return m_frame.cell<T>( columnname, m_idx );
-    }
-
-    template< typename T >
-    T& get( int columnidx )
-    {
-        return m_frame.cell<T>( columnidx, m_idx );
-    }
-
-    frame& m_frame;
-    size_t m_idx;
+    std::tuple<series<Ts>...> m_columns;
 };
 
 } // namespace mf
