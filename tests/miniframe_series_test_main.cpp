@@ -138,14 +138,50 @@ TEST_CASE( "ctor( initializer_list )", "[series]" )
 
 TEST_CASE( "operator=( const& )", "[series]" )
 {
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    series<foo> sv1( 66, f1 );
+    series<foo> sv2( 33, f2 );
+    REQUIRE(sv1.size() == 66);
+    REQUIRE(sv1.at(0) == f1);
+    REQUIRE(sv1.at(65) == f1);
+    REQUIRE(sv2.at(0) == f2);
+    REQUIRE(sv2.at(32) == f2);
+    REQUIRE(sv2.size() == 33);
+    sv2 = sv1;
+    REQUIRE(sv1.size() == 66);
+    REQUIRE(sv2.size() == 66);
+    REQUIRE(sv2.at(0) == f1);
+    REQUIRE(sv2.at(65) == f1);
 }
 
 TEST_CASE( "operator=( && )", "[series]" )
 {
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    series<foo> sv1( 66, f1 );
+    series<foo> sv2( 33, f2 );
+    REQUIRE(sv1.size() == 66);
+    REQUIRE(sv2.size() == 33);
+    REQUIRE(sv1.at(0) == f1);
+    REQUIRE(sv1.at(65) == f1);
+    REQUIRE(sv2.at(0) == f2);
+    REQUIRE(sv2.at(32) == f2);
+    sv2 = std::move( sv1 );
+    REQUIRE(sv1.size() == 0);
+    REQUIRE(sv2.size() == 66);
+    REQUIRE(sv2.at(0) == f1);
+    REQUIRE(sv2.at(65) == f1);
 }
 
 TEST_CASE( "operator=( initializer_list )", "[series]" )
 {
+    series_vector<int> intsv1( 66 );
+    REQUIRE( intsv1.size() == 66 );
+    intsv1 = { 1, 2, 3, 4, 5 };
+    REQUIRE( intsv1.size() == 5 );
+    REQUIRE( intsv1.at(0) == 1 );
+    REQUIRE( intsv1.at(4) == 5 );
 }
 
 TEST_CASE( "assign( count, value )", "[series]" )

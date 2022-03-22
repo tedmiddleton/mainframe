@@ -171,10 +171,8 @@ TEST_CASE( "operator=( && )", "[series_vector]" )
     REQUIRE(sv2.at(0) == f2);
     REQUIRE(sv2.at(32) == f2);
     sv2 = std::move( sv1 );
-    REQUIRE(sv1.size() == 33);
+    REQUIRE(sv1.size() == 0);
     REQUIRE(sv2.size() == 66);
-    REQUIRE(sv1.at(0) == f2);
-    REQUIRE(sv1.at(32) == f2);
     REQUIRE(sv2.at(0) == f1);
     REQUIRE(sv2.at(65) == f1);
 }

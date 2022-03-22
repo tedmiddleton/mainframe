@@ -229,8 +229,12 @@ public:
         return *this;
     }
 
-    series_vector& operator=( series_vector&& other )
+    series_vector& operator=( series_vector&& in )
     {
+        series_vector other;
+        std::swap( in.m_begin, other.m_begin );
+        std::swap( in.m_end, other.m_end );
+        std::swap( in.m_max, other.m_max );
         std::swap( m_begin, other.m_begin );
         std::swap( m_end, other.m_end );
         std::swap( m_max, other.m_max );
