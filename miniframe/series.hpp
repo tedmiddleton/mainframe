@@ -102,10 +102,21 @@ public:
     }
 
     // assign
-    void assign( size_type count, const T& value );
+    void assign( size_type count, const T& value )
+    {
+        m_sharedvec = std::make_shared< series_vector<T> >( count, value );
+    }
+
     template< typename InputIt >
-    void assign( InputIt inbegin, InputIt inend );
-    void assign( std::initializer_list<T> init );
+    void assign( InputIt inbegin, InputIt inend )
+    {
+        m_sharedvec = std::make_shared< series_vector<T> >( inbegin, inend );
+    }
+
+    void assign( std::initializer_list<T> init )
+    {
+        m_sharedvec = std::make_shared< series_vector<T> >( init );
+    }
     
     // at
     reference at( size_type n )
@@ -123,6 +134,19 @@ public:
     reference front()
     {
         return m_sharedvec->front();
+    }
+    const_reference front() const
+    {
+        return m_sharedvec->front();
+    }
+
+    reference back()
+    {
+        return m_sharedvec->back();
+    }
+    const_reference back() const
+    {
+        return m_sharedvec->back();
     }
 
     // data
@@ -158,27 +182,27 @@ public:
     }
 
     // rbegin, crbegin, rend, crend
-    iterator rbegin()
+    reverse_iterator rbegin()
     {
         return m_sharedvec->rbegin();
     }
-    const_iterator rbegin() const
+    const_reverse_iterator rbegin() const
     {
         return m_sharedvec->rbegin();
     }
-    const_iterator crbegin() const
+    const_reverse_iterator crbegin() const
     {
         return m_sharedvec->crbegin();
     }
-    iterator rend()
+    reverse_iterator rend()
     {
         return m_sharedvec->rend();
     }
-    const_iterator rend() const
+    const_reverse_iterator rend() const
     {
         return m_sharedvec->rend();
     }
-    const_iterator crend() const
+    const_reverse_iterator crend() const
     {
         return m_sharedvec->crend();
     }
@@ -300,6 +324,13 @@ public:
         return out;
     }
 
+    size_t use_count() const
+    {
+        return m_sharedvec.use_count();
+    }
+
+private:
+
     iterator unref( iterator it )
     {
         iterator newit = it;
@@ -313,10 +344,10 @@ public:
         return newit;
     }
 
+
     template< typename U >
     friend std::ostream& operator<<( std::ostream&, const series<U>& );
 
-private:
 
     std::string m_name;
     std::shared_ptr<series_vector<T>> m_sharedvec;

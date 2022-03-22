@@ -166,6 +166,16 @@ public:
     using reverse_iterator  = reverse_sv_iterator< T >;
     using const_reverse_iterator = reverse_sv_iterator< const T >;
 
+    template< typename U, template< typename, typename > typename Func >
+    series_vector<U> cast( Func<T, U> castfunc ) const
+    {
+        series_vector<U> out;
+        for ( const T& elem : *this ) {
+            out.push_back( castfunc( elem ) );
+        }
+        return out;
+    }
+
     series_vector()
     {
         create_storage( DEFAULT_SIZE );

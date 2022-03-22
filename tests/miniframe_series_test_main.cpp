@@ -114,6 +114,8 @@ TEST_CASE( "ctor( const& )", "[series]" )
     series<double> s2( s1 );
     REQUIRE( s1.size() == 5 );
     REQUIRE( s2.size() == 5 );
+    REQUIRE( s1.use_count() == 2 );
+    REQUIRE( s2.use_count() == 2 );
 }
 
 TEST_CASE( "ctor( && )", "[series]" )
@@ -123,6 +125,8 @@ TEST_CASE( "ctor( && )", "[series]" )
     series<double> s2( std::move( s1 ) );
     REQUIRE( s1.size() == 0 );
     REQUIRE( s2.size() == 5 );
+    REQUIRE( s1.use_count() == 1 );
+    REQUIRE( s2.use_count() == 1 );
 }
 
 TEST_CASE( "ctor( initializer_list )", "[series]" )
@@ -140,79 +144,225 @@ TEST_CASE( "operator=( const& )", "[series]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
-    series<foo> sv1( 66, f1 );
-    series<foo> sv2( 33, f2 );
-    REQUIRE(sv1.size() == 66);
-    REQUIRE(sv1.at(0) == f1);
-    REQUIRE(sv1.at(65) == f1);
-    REQUIRE(sv2.at(0) == f2);
-    REQUIRE(sv2.at(32) == f2);
-    REQUIRE(sv2.size() == 33);
-    sv2 = sv1;
-    REQUIRE(sv1.size() == 66);
-    REQUIRE(sv2.size() == 66);
-    REQUIRE(sv2.at(0) == f1);
-    REQUIRE(sv2.at(65) == f1);
+    series<foo> s1( 66, f1 );
+    series<foo> s2( 33, f2 );
+    REQUIRE(s1.size() == 66);
+    REQUIRE(s1.at(0) == f1);
+    REQUIRE(s1.at(65) == f1);
+    REQUIRE(s2.at(0) == f2);
+    REQUIRE(s2.at(32) == f2);
+    REQUIRE(s2.size() == 33);
+    REQUIRE(s1.use_count() == 1);
+    REQUIRE(s2.use_count() == 1);
+    s2 = s1;
+    REQUIRE(s1.size() == 66);
+    REQUIRE(s2.size() == 66);
+    REQUIRE(s1.at(0) == f1);
+    REQUIRE(s1.at(65) == f1);
+    REQUIRE(s2.at(0) == f1);
+    REQUIRE(s2.at(65) == f1);
+    REQUIRE(s1.use_count() == 2);
+    REQUIRE(s2.use_count() == 2);
 }
 
 TEST_CASE( "operator=( && )", "[series]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
-    series<foo> sv1( 66, f1 );
-    series<foo> sv2( 33, f2 );
-    REQUIRE(sv1.size() == 66);
-    REQUIRE(sv2.size() == 33);
-    REQUIRE(sv1.at(0) == f1);
-    REQUIRE(sv1.at(65) == f1);
-    REQUIRE(sv2.at(0) == f2);
-    REQUIRE(sv2.at(32) == f2);
-    sv2 = std::move( sv1 );
-    REQUIRE(sv1.size() == 0);
-    REQUIRE(sv2.size() == 66);
-    REQUIRE(sv2.at(0) == f1);
-    REQUIRE(sv2.at(65) == f1);
+    series<foo> s1( 66, f1 );
+    series<foo> s2( 33, f2 );
+    REQUIRE(s1.size() == 66);
+    REQUIRE(s2.size() == 33);
+    REQUIRE(s1.at(0) == f1);
+    REQUIRE(s1.at(65) == f1);
+    REQUIRE(s2.at(0) == f2);
+    REQUIRE(s2.at(32) == f2);
+    REQUIRE(s1.use_count() == 1);
+    REQUIRE(s2.use_count() == 1);
+    s2 = std::move( s1 );
+    REQUIRE(s1.size() == 0);
+    REQUIRE(s2.size() == 66);
+    REQUIRE(s2.at(0) == f1);
+    REQUIRE(s2.at(65) == f1);
+    REQUIRE(s1.use_count() == 1);
+    REQUIRE(s2.use_count() == 1);
 }
 
 TEST_CASE( "operator=( initializer_list )", "[series]" )
 {
-    series_vector<int> intsv1( 66 );
-    REQUIRE( intsv1.size() == 66 );
-    intsv1 = { 1, 2, 3, 4, 5 };
-    REQUIRE( intsv1.size() == 5 );
-    REQUIRE( intsv1.at(0) == 1 );
-    REQUIRE( intsv1.at(4) == 5 );
+    series<int> ints1( 66 );
+    REQUIRE( ints1.size() == 66 );
+    ints1 = { 1, 2, 3, 4, 5 };
+    REQUIRE( ints1.size() == 5 );
+    REQUIRE( ints1.at(0) == 1 );
+    REQUIRE( ints1.at(4) == 5 );
 }
 
 TEST_CASE( "assign( count, value )", "[series]" )
 {
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    {
+        series<foo> s1( 3, f1 );
+        s1.assign( 2, f2 );
+        REQUIRE( s1.size() == 2 );
+        REQUIRE( s1.at( 0 ) == f2 );
+        REQUIRE( s1.at( 1 ) == f2 );
+    }
+    {
+        series<foo> s1( 2, f1 );
+        s1.assign( 3, f2 );
+        REQUIRE( s1.size() == 3 );
+        REQUIRE( s1.at( 0 ) == f2 );
+        REQUIRE( s1.at( 1 ) == f2 );
+        REQUIRE( s1.at( 2 ) == f2 );
+    }
 }
 
 TEST_CASE( "assign( begin, end )", "[series]" )
 {
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    {
+        series<foo> s1( 3, f1 );
+        vector<foo> v1( 4, f2 );
+        s1.assign( v1.begin(), v1.begin()+2 );
+        REQUIRE( s1.size() == 2 );
+        REQUIRE( s1.at( 0 ) == f2 );
+        REQUIRE( s1.at( 1 ) == f2 );
+    }
+    {
+        series<foo> s1( 3, f1 );
+        vector<foo> v1( 4, f2 );
+        s1.assign( v1.begin(), v1.end() );
+        REQUIRE( s1.size() == 4 );
+        REQUIRE( s1.at( 0 ) == f2 );
+        REQUIRE( s1.at( 1 ) == f2 );
+        REQUIRE( s1.at( 2 ) == f2 );
+        REQUIRE( s1.at( 3 ) == f2 );
+    }
 }
 
 TEST_CASE( "assign( initializer_list )", "[series]" )
 {
+    {
+        series<int> s1( 3U, 123 );
+        s1.assign( { 1, 2 } );
+        REQUIRE( s1.size() == 2 );
+    }
+    {
+        series<int> s1( 3U, 123 );
+        s1.assign( { 1, 2, 3, 4 } );
+        REQUIRE( s1.size() == 4 );
+    }
 }
 
 TEST_CASE( "front()", "[series]" )
 {
+    series<int> ints1{ 1, 2, 3, 4 };
+    REQUIRE(ints1.size() == 4);
+    REQUIRE(ints1.front() == 1);
 }
 
 TEST_CASE( "back()", "[series]" )
 {
+    series<int> ints1{ 1, 2, 3, 4 };
+    REQUIRE(ints1.size() == 4);
+    REQUIRE(ints1.back() == 4);
 }
 
 TEST_CASE( "data()", "[series]" )
 {
+    series<int> ints1{ 1, 2, 3, 4 };
+    REQUIRE(ints1.size() == 4);
+    REQUIRE(*(ints1.data()) == 1);
 }
 
 TEST_CASE( "begin()/end()", "[series]" )
 {
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series<foo> s1{ f1, f2, f3 };
+    auto b = s1.begin();
+    auto e = s1.end();
+    REQUIRE((e-b) == 3);
+    REQUIRE(*b == f1);
+    REQUIRE(*(b+1) == f2);
+    REQUIRE(*(b+2) == f3);
+    REQUIRE(b+3 == e);
+    REQUIRE(*(e-1) == f3);
+    b++; ++b; b++;
+    REQUIRE( b == e );
+    b = s1.begin();
+    e--; --e; e--;
+    REQUIRE( b == e );
 }
 
 TEST_CASE( "rbegin()/rend()", "[series]" )
+{
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series<foo> s1{ f1, f2, f3 };
+    auto b = s1.rbegin();
+    auto e = s1.rend();
+    REQUIRE((e-b) == 3);
+    REQUIRE(*b == f3);
+    REQUIRE(*(b+1) == f2);
+    REQUIRE(*(b+2) == f1);
+    REQUIRE(b+3 == e);
+    REQUIRE(*(e-1) == f1);
+    b++; ++b; b++;
+    REQUIRE( b == e );
+    b = s1.rbegin();
+    e--; --e; e--;
+    REQUIRE( b == e );
+}
+
+TEST_CASE( "empty()", "[series]" )
+{
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series<foo> sv1;
+    REQUIRE(sv1.empty());
+    sv1.assign( { f1, f2, f3 } );
+    REQUIRE(!sv1.empty());
+}
+
+TEST_CASE( "reserve()/capacity()", "[series]" )
+{
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series<foo> sv1{ f1, f2, f3 };
+    auto c1 = sv1.capacity();
+    REQUIRE( c1>=3 );
+    sv1.reserve( c1*10 );
+    auto c2 = sv1.capacity();
+    REQUIRE( c2 >= (c1*10) );
+    REQUIRE( sv1.at( 0 ) == f1 );
+    REQUIRE( sv1.at( 1 ) == f2 );
+    REQUIRE( sv1.at( 2 ) == f3 );
+}
+
+TEST_CASE( "size()/clear()", "[series]" )
+{
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series<foo> sv1{ f1, f2, f3 };
+    REQUIRE( sv1.size() == 3 );
+    sv1.clear();
+    REQUIRE( sv1.size() == 0 );
+}
+
+TEST_CASE( "insert( pos, first, last )", "[series]" )
+{
+}
+
+TEST_CASE( "insert( pos, value )", "[series]" )
 {
 }
 
