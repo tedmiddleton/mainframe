@@ -240,22 +240,22 @@ public:
     // insert & emplace
     iterator insert( const_iterator pos, const T& value )
     {
-        if ( pos >= m_sharedvec->cbegin() && pos < m_sharedvec->cend() ) {
+        if ( m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend() ) {
             pos = unref( pos );
         }
         return m_sharedvec->insert( pos, value );
     }
     iterator insert( const_iterator pos, T&& value )
     {
-        if ( pos >= m_sharedvec->cbegin() && pos < m_sharedvec->cend() ) {
+        if ( m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend() ) {
             pos = unref( pos );
         }
         return m_sharedvec->insert( pos, std::move( value ));
     }
     iterator insert( const_iterator pos, size_type count, const T& value )
     {
-        if ( pos >= m_sharedvec->cbegin() && 
-             pos < m_sharedvec->cend() && 
+        if ( m_sharedvec->cbegin() <= pos && 
+             pos <= m_sharedvec->cend() && 
              count > 0 ) {
             pos = unref( pos );
         }
@@ -264,8 +264,8 @@ public:
     template< typename InputIt >
     iterator insert( const_iterator pos, InputIt first, InputIt last )
     {
-        if ( pos >= m_sharedvec->cbegin() && 
-             pos < m_sharedvec->cend() &&
+        if ( m_sharedvec->cbegin() <= pos && 
+             pos <= m_sharedvec->cend() &&
              last > first ) {
             pos = unref( pos );
         }
@@ -273,8 +273,8 @@ public:
     }
     iterator insert( const_iterator pos, std::initializer_list<T> init )
     {
-        if ( pos >= m_sharedvec->cbegin() && 
-             pos < m_sharedvec->cend() &&
+        if ( m_sharedvec->cbegin() <= pos && 
+             pos <= m_sharedvec->cend() &&
              !init.empty() ) {
             pos = unref( pos );
         }
@@ -283,45 +283,70 @@ public:
     template< class... Args >
     iterator emplace( const_iterator pos, Args&&... args )
     {
-        return m_sharedvec->emplace( pos, std::forward( args... ) );
+        if ( m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend() ) {
+            pos = unref( pos );
+        }
+        return m_sharedvec->emplace( pos, std::forward<T>( args... ) );
     }
 
     // erase
     iterator erase( const_iterator pos )
     {
+        if ( m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend() ) {
+            pos = unref( pos );
+        }
         return m_sharedvec->erase( pos );
     }
     iterator erase( const_iterator first, const_iterator last )
     {
+        if ( m_sharedvec->cbegin() <= first && 
+             first < last && 
+             last <= m_sharedvec->cend() ) {
+            auto diff = last - first;
+            first = unref( first );
+            last = first + diff;
+        }
         return m_sharedvec->erase( first, last );
     }
 
     // push_back, emplace_back, pop_back
     void push_back( const T& value )
     {
+        std::shared_ptr<series_vector<T>> n = 
+            std::make_shared<series_vector<T>>( *m_sharedvec );
         m_sharedvec->push_back( value );
     }
     void push_back( T&& value )
     {
+        std::shared_ptr<series_vector<T>> n = 
+            std::make_shared<series_vector<T>>( *m_sharedvec );
         m_sharedvec->push_back( std::move( value ) );
     }
     template< typename... Args > 
     reference emplace_back( Args&&... args )
     {
-        return m_sharedvec->emplace_back( std::forward( args... ) );
+        std::shared_ptr<series_vector<T>> n = 
+            std::make_shared<series_vector<T>>( *m_sharedvec );
+        return m_sharedvec->emplace_back( std::forward<T>( args... ) );
     }
     void pop_back()
     {
+        std::shared_ptr<series_vector<T>> n = 
+            std::make_shared<series_vector<T>>( *m_sharedvec );
         m_sharedvec->pop_back();
     }
 
     // resize
     void resize( size_type newsize ) 
     { 
+        std::shared_ptr<series_vector<T>> n = 
+            std::make_shared<series_vector<T>>( *m_sharedvec );
         return m_sharedvec->resize( newsize ); 
     }
     void resize( size_type newsize, const T& value ) 
     { 
+        std::shared_ptr<series_vector<T>> n = 
+            std::make_shared<series_vector<T>>( *m_sharedvec );
         return m_sharedvec->resize( newsize, value );
     }
 

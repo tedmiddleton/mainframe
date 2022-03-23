@@ -81,7 +81,7 @@ TEST_CASE( "ctor()", "[series_vector]" )
     REQUIRE(sv1.size() == 0);
 }
 
-TEST_CASE( "ctor( count, value )", "[series_vector]" )
+TEST_CASE( "ctor( count value )", "[series_vector]" )
 {
     foo f{ "foo" };
     series_vector<foo> sv1( 4U, f );
@@ -98,7 +98,7 @@ TEST_CASE( "ctor( count )", "[series_vector]" )
     REQUIRE(intsv1.size() == 66);
 }
 
-TEST_CASE( "ctor( begin, end )", "[series_vector]" )
+TEST_CASE( "ctor( begin end )", "[series_vector]" )
 {
     vector<int> intv1 = { 1, 2, 3, 4, 5, 6, 7, 8 };
     series_vector<int> intsv1( intv1.begin(), intv1.end() );
@@ -187,7 +187,7 @@ TEST_CASE( "operator=( initializer_list )", "[series_vector]" )
     REQUIRE( intsv1.at(4) == 5 );
 }
 
-TEST_CASE( "assign( count, value )", "[series_vector]" )
+TEST_CASE( "assign( count value )", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
@@ -208,7 +208,7 @@ TEST_CASE( "assign( count, value )", "[series_vector]" )
     }
 }
 
-TEST_CASE( "assign( begin, end )", "[series_vector]" )
+TEST_CASE( "assign( begin end )", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
@@ -347,7 +347,7 @@ TEST_CASE( "size()/clear()", "[series_vector]" )
     REQUIRE( sv1.size() == 0 );
 }
 
-TEST_CASE( "insert( pos, first, last )", "[series_vector]" )
+TEST_CASE( "insert( pos first last )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -513,7 +513,7 @@ TEST_CASE( "insert( pos, first, last )", "[series_vector]" )
     }
 }
 
-TEST_CASE( "insert( pos, value )", "[series_vector]" )
+TEST_CASE( "insert( pos value )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -566,7 +566,7 @@ TEST_CASE( "insert( pos, value )", "[series_vector]" )
     }
 }
 
-TEST_CASE( "insert( pos, &&value )", "[series_vector]" )
+TEST_CASE( "insert( pos &&value )", "[series_vector]" )
 {
     SECTION( "begin()" )
     {
@@ -630,7 +630,7 @@ TEST_CASE( "insert( pos, &&value )", "[series_vector]" )
     }
 }
 
-TEST_CASE( "insert( pos, count, value )", "[series_vector]" )
+TEST_CASE( "insert( pos count value )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -773,7 +773,7 @@ TEST_CASE( "insert( pos, count, value )", "[series_vector]" )
     }
 }
 
-TEST_CASE( "emplace( pos, args... )", "[series_vector]" )
+TEST_CASE( "emplace( pos args... )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -822,7 +822,7 @@ TEST_CASE( "emplace( pos, args... )", "[series_vector]" )
     }
 }
 
-TEST_CASE( "erase( first, last )", "[series_vector]" )
+TEST_CASE( "erase( first last )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -952,7 +952,7 @@ TEST_CASE( "erase( pos )", "[series_vector]" )
     }
 }
 
-TEST_CASE( "push_back(), emplace_back(), pop_back()", "[series_vector]" )
+TEST_CASE( "push_back() emplace_back() pop_back()", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
