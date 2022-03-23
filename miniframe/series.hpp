@@ -240,29 +240,50 @@ public:
     // insert & emplace
     iterator insert( const_iterator pos, const T& value )
     {
+        if ( pos >= m_sharedvec->cbegin() && pos < m_sharedvec->cend() ) {
+            pos = unref( pos );
+        }
         return m_sharedvec->insert( pos, value );
     }
     iterator insert( const_iterator pos, T&& value )
     {
+        if ( pos >= m_sharedvec->cbegin() && pos < m_sharedvec->cend() ) {
+            pos = unref( pos );
+        }
         return m_sharedvec->insert( pos, std::move( value ));
     }
     iterator insert( const_iterator pos, size_type count, const T& value )
     {
+        if ( pos >= m_sharedvec->cbegin() && 
+             pos < m_sharedvec->cend() && 
+             count > 0 ) {
+            pos = unref( pos );
+        }
         return m_sharedvec->insert( pos, count, value );
     }
     template< typename InputIt >
     iterator insert( const_iterator pos, InputIt first, InputIt last )
     {
-        m_sharedvec->insert( pos, first, last );
+        if ( pos >= m_sharedvec->cbegin() && 
+             pos < m_sharedvec->cend() &&
+             last > first ) {
+            pos = unref( pos );
+        }
+        return m_sharedvec->insert( pos, first, last );
     }
     iterator insert( const_iterator pos, std::initializer_list<T> init )
     {
-        m_sharedvec->insert( pos, init );
+        if ( pos >= m_sharedvec->cbegin() && 
+             pos < m_sharedvec->cend() &&
+             !init.empty() ) {
+            pos = unref( pos );
+        }
+        return m_sharedvec->insert( pos, init );
     }
     template< class... Args >
     iterator emplace( const_iterator pos, Args&&... args )
     {
-        m_sharedvec->emplace( pos, std::forward( args... ) );
+        return m_sharedvec->emplace( pos, std::forward( args... ) );
     }
 
     // erase
@@ -340,6 +361,19 @@ private:
                 std::make_shared<series_vector<T>>( *m_sharedvec );
             m_sharedvec = n;
             newit += (m_sharedvec->begin() - oldbegin);
+        }
+        return newit;
+    }
+
+    const_iterator unref( const_iterator it )
+    {
+        const_iterator newit = it;
+        if ( m_sharedvec.use_count() > 1 ) {
+            auto oldbegin = m_sharedvec->cbegin();
+            std::shared_ptr<series_vector<T>> n = 
+                std::make_shared<series_vector<T>>( *m_sharedvec );
+            m_sharedvec = n;
+            newit += (m_sharedvec->cbegin() - oldbegin);
         }
         return newit;
     }

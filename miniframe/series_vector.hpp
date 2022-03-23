@@ -91,6 +91,8 @@ public:
     void operator--() { m_curr--; }
     void operator++(int) { ++m_curr; }
     void operator--(int) { --m_curr; }
+    void operator+=( difference_type p ) { m_curr += p; }
+    void operator-=( difference_type p ) { m_curr -= p; }
 
     reference operator*() { return *m_curr; }
     pointer operator->() { return m_curr; }
