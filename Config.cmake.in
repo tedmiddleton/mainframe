@@ -1,6 +1,6 @@
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/miniframe-targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/mainframe-targets.cmake")
 
-check_required_components(miniframe)
+check_required_components(mainframe)
 

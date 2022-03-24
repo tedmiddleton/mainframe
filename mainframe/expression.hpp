@@ -4,12 +4,13 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef INCLUDED_miniframe_expression_hpp
-#define INCLUDED_miniframe_expression_hpp
+#ifndef INCLUDED_mainframe_expression_hpp
+#define INCLUDED_mainframe_expression_hpp
 
 #include <string>
 
-#include "miniframe/series.hpp"
+#include "mainframe/series.hpp"
+#include "mainframe/frame_iterator.hpp"
 
 namespace mf
 {
@@ -131,36 +132,31 @@ struct is_expression<T &, void>
 {};
 
 template< typename T >
-struct column
+struct expr_column
 {
-    column() 
+    expr_column() 
+        : m_colnum( std::numeric_limits<decltype(m_colnum)>::max )
     {
-        begin = end;
     }
 
-    bool bind_column( const series& s )
+    bool bind_column( const std::string& name, size_t num )
     {
-        if ( name == s.name() ) {
-            begin = s.begin<T>();
-            end = s.end<T>();
+        if ( m_name == name ) {
+            m_colnum = num;
             return true;
         }
         return false;
     }
 
-    const T& get_value( size_t row ) const
+    template< typename ... Ts >
+    const T& get_value( const frame_iterator< Ts... >& fi ) const
     {
-        if ( end > begin && row < static_cast<size_t>(end - begin) ) {
-            return *(begin + row);
-        } 
-        else {
-            throw std::out_of_range{ "out of range" };
-        }
+        T& val = fi.template get<m_colnum>();
+        return val;
     }
 
-    std::string name;
-    typename series_vector<T>::const_iterator begin;
-    typename series_vector<T>::const_iterator end;
+    std::string m_name;
+    size_t m_colnum;
 };
 
 template< typename T >
@@ -171,12 +167,13 @@ struct terminal
 
     terminal( T _t ) : t( _t ) {}
 
-    bool bind_column( const series& )
+    bool bind_column( const std::string&, size_t )
     {
         return false;
     }
 
-    const T& get_value( size_t /*row*/ ) const
+    template< typename ... Ts >
+    const T& get_value( const frame_iterator< Ts... >& ) const
     {
         return t;
     }
@@ -185,24 +182,25 @@ struct terminal
 };
 
 template< typename T >
-struct terminal< column<T> >
+struct terminal< expr_column<T> >
 {
     using is_expr = void;
     using return_type = T;
 
-    terminal( column<T> _t ) : t( _t ) {}
+    terminal( expr_column<T> _t ) : t( _t ) {}
 
-    bool bind_column( const series& s )
+    bool bind_column( const std::string& name, size_t num )
     {
-        return t.bind_column( s );
+        return t.bind_column( name, num );
     }
 
-    const T& get_value( size_t row ) const
+    template< typename ... Ts >
+    const T& get_value( const frame_iterator< Ts... >& fi ) const
     {
-        return t.get_value( row );
+        return t.get_value( fi );
     }
 
-    column<T> t;
+    expr_column<T> t;
 };
 
 template< template <typename, typename> typename Op, typename L, typename R >
@@ -216,16 +214,17 @@ struct binary_expr
 
     binary_expr( L _l, R _r ) : l( _l ), r( _r ) {}
 
-    bool bind_column( const series& s )
+    bool bind_column( const std::string& name, size_t num )
     {
-        auto lb = l.bind_column( s );
-        auto rb = r.bind_column( s );
+        auto lb = l.bind_column( name, num );
+        auto rb = r.bind_column( name, num );
         return lb || rb;
     }
 
-    return_type get_value( size_t rowidx ) const
+    template< typename ... Ts >
+    return_type get_value( const frame_iterator< Ts... >& fi ) const
     {
-        return op::exec( l.get_value( rowidx ), r.get_value( rowidx ) );
+        return op::exec( l.get_value( fi ), r.get_value( fi ) );
     }
 
     L l;
@@ -245,19 +244,19 @@ struct unary_expr
 
     unary_expr( T _t ) : t( _t ) {}
 
-    bool bind_column( const series& s )
+    bool bind_column( const std::string& name, size_t num )
     {
-        return t.bind_column( s );
+        return t.bind_expr_column( name, num );
     }
 
-    return_type get_value( size_t rowidx ) const
+    template< typename ... Ts >
+    return_type get_value( const frame_iterator< Ts... >& fi ) const
     {
-        return op::exec( t.get_value( rowidx ) );
+        return op::exec( t.get_value( fi ) );
     }
 
     T t;
 };
-
 
 // If T is terminal<U>, unary_expr<Op,U> or binary_expr<Op,L,R>, just return T.
 // If T is any other type, return terminal<T>
@@ -333,11 +332,11 @@ struct make_binary_expr
 };
 
 template< typename T >
-terminal<column<T>> col( const char * colname )
+terminal<expr_column<T>> col( const char * colname )
 {
-    column<T> c;
+    expr_column<T> c;
     c.name = colname;
-    return maybe_wrap<column<T>>::wrap( c );
+    return maybe_wrap<expr_column<T>>::wrap( c );
 }
 
 template< typename L, typename R >
@@ -430,13 +429,13 @@ typename std::enable_if<is_expression<T>::value, typename make_unary_expr<expr_o
     return make_unary_expr<expr_op::NOT, T>::create( t );
 }
 
-//terminal<column_name> col( std::string colname )
+//terminal<expr_column_name> col( std::string colname )
 //{
-//    return terminal<column_name>{ column_name{ colname } };
+//    return terminal<expr_column_name>{ expr_column_name{ colname } };
 //}
 
 
 } // namespace mf
 
 
-#endif // INCLUDED_miniframe_expression_hpp
+#endif // INCLUDED_mainframe_expression_hpp

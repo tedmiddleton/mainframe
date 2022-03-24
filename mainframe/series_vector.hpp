@@ -4,8 +4,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef INCLUDED_miniframe_series_vector_h
-#define INCLUDED_miniframe_series_vector_h
+#ifndef INCLUDED_mainframe_series_vector_h
+#define INCLUDED_mainframe_series_vector_h
 
 #include <type_traits>
 #include <vector>
@@ -24,7 +24,7 @@
 #include <variant>
 #include <ios>
 
-#include "miniframe/base.hpp"
+#include "mainframe/base.hpp"
 
 namespace mf
 {
@@ -749,5 +749,5 @@ public:
 } // namespace mf
 
 
-#endif // INCLUDED_miniframe_series_vector_h
+#endif // INCLUDED_mainframe_series_vector_h
 

@@ -1,2 +1,3 @@
-# miniframe
-miniframe - a lightweight dataframe library for C++
+# mainframe
+mainframe - mainframe is the C++ dataframe library
+

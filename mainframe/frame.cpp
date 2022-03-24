@@ -9,9 +9,9 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <set>
-#include <miniframe/frame.hpp>
-#include <miniframe/series.hpp>
-#include <miniframe/base.hpp>
+#include <mainframe/frame.hpp>
+#include <mainframe/series.hpp>
+#include <mainframe/base.hpp>
 
 using namespace std;
 
@@ -186,7 +186,7 @@ std::ostream & operator<<( std::ostream& o, const frame & mf )
     auto gutter_width = 
         num_rows > 0 ? std::ceil( std::log10( num_rows ) ) + 1 : 1;
     o << left;
-    o << mf.num_columns() << "x" << mf.size() << " MiniFrame\n";
+    o << mf.num_columns() << "x" << mf.size() << " mainframe\n";
     o << setw( gutter_width ) << "Row" << "|";
     auto colnames = mf.column_names();
     for ( size_t c = 0; c < num_columns; ++c ) {

@@ -4,8 +4,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef INCLUDED_miniframe_base_h
-#define INCLUDED_miniframe_base_h
+#ifndef INCLUDED_mainframe_base_h
+#define INCLUDED_mainframe_base_h
 #include <ostream>
 #include <optional>
 
@@ -58,5 +58,5 @@ auto stringify( std::ostream & o, const T & t, int ) -> std::ostream &
 } // namespace mf
 
 
-#endif // INCLUDED_miniframe_base_h
+#endif // INCLUDED_mainframe_base_h
 

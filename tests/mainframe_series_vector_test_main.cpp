@@ -1,11 +1,7 @@
-#include <iostream>
-#include <ostream>
-#include <x86intrin.h>
-
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include <miniframe/series.hpp>
+#include <mainframe/series_vector.hpp>
 #include "date.h"
 #include "debug_cout.hpp"
 
@@ -15,9 +11,6 @@ using namespace std::literals;
 using namespace date::literals;
 using namespace date;
 using namespace mf;
-
-template<class T>
-class TD;
 
 class foo
 {
@@ -82,217 +75,206 @@ std::ostream& operator<<( std::ostream& o, const foo& f )
     return o;
 }
 
-TEST_CASE( "ctor()", "[series]" )
+TEST_CASE( "ctor()", "[series_vector]" )
 {
-    series<foo> s1;
-    REQUIRE( s1.name().empty() );
-    REQUIRE( s1.size() == 0 );
+    series_vector<foo> sv1;
+    REQUIRE(sv1.size() == 0);
 }
 
-TEST_CASE( "ctor( count value )", "[series]" )
+TEST_CASE( "ctor( count value )", "[series_vector]" )
 {
-    foo f1{ "f1" };
-    series<foo> s1( 3, f1 );
-    REQUIRE( s1.size() == 3 );
+    foo f{ "foo" };
+    series_vector<foo> sv1( 4U, f );
+    REQUIRE(sv1.size() == 4);
+    REQUIRE(sv1.at( 0 ) == f);
+    REQUIRE(sv1.at( 3 ) == f);
+    series_vector<std::pair<int, int>> dblsv1{ 4, make_pair<int, int>( 1, 2 ) };
+    REQUIRE(dblsv1.size() == 4);
 }
 
-TEST_CASE( "ctor( count )", "[series]" )
+TEST_CASE( "ctor( count )", "[series_vector]" )
 {
-    series<double> s1( 3 );
-    REQUIRE( s1.size() == 3 );
+    series_vector<int> intsv1( 66 );
+    REQUIRE(intsv1.size() == 66);
 }
 
-TEST_CASE( "ctor( begin end )", "[series]" )
+TEST_CASE( "ctor( begin end )", "[series_vector]" )
 {
-    foo f0{ "f0" };
-    foo f1{ "f1" };
-    foo f2{ "f2" };
-    foo f3{ "f3" };
-    foo f4{ "f4" };
-    vector<foo> v1{ f0, f1, f2, f3, f4 };
-    series<foo> s1( v1.begin(), v1.end() );
-    REQUIRE( s1.size() == 5 );
+    vector<int> intv1 = { 1, 2, 3, 4, 5, 6, 7, 8 };
+    series_vector<int> intsv1( intv1.begin(), intv1.end() );
+    REQUIRE(intsv1.size() == 8);
+    REQUIRE(intsv1.at( 0 ) == 1);
+    REQUIRE(intsv1.at( 7 ) == 8);
 }
 
-TEST_CASE( "ctor( const& )", "[series]" )
+TEST_CASE( "ctor( const& )", "[series_vector]" )
 {
-    series<double> s1( 5 );
-    REQUIRE( s1.size() == 5 );
-    series<double> s2( s1 );
-    REQUIRE( s1.size() == 5 );
-    REQUIRE( s2.size() == 5 );
-    REQUIRE( s1.use_count() == 2 );
-    REQUIRE( s2.use_count() == 2 );
+    foo f{ "foo" };
+    series_vector<foo> sv1( 66, f );
+    series_vector<foo> sv2( sv1 );
+    REQUIRE(sv1.size() == 66);
+    REQUIRE(sv2.size() == 66);
+    REQUIRE(sv1.at( 0 ) == f);
+    REQUIRE(sv1.at( 65 ) == f);
+    REQUIRE(sv2.at( 0 ) == f);
+    REQUIRE(sv2.at( 65 ) == f);
 }
 
-TEST_CASE( "ctor( && )", "[series]" )
+TEST_CASE( "ctor( && )", "[series_vector]" )
 {
-    series<double> s1( 5 );
-    REQUIRE( s1.size() == 5 );
-    series<double> s2( std::move( s1 ) );
-    REQUIRE( s1.size() == 0 );
-    REQUIRE( s2.size() == 5 );
-    REQUIRE( s1.use_count() == 1 );
-    REQUIRE( s2.use_count() == 1 );
+    foo f{ "foo" };
+    series_vector<foo> sv1( 66, f );
+    series_vector<foo> sv2( std::move( sv1 ) );
+    REQUIRE(sv1.size() == 0);
+    REQUIRE(sv2.size() == 66);
 }
 
-TEST_CASE( "ctor( initializer_list )", "[series]" )
+TEST_CASE( "ctor( initializer_list )", "[series_vector]" )
 {
-    foo f0{ "f0" };
-    foo f1{ "f1" };
-    foo f2{ "f2" };
-    foo f3{ "f3" };
-    foo f4{ "f4" };
-    series<foo> s1{ f0, f1, f2, f3, f4 };
-    REQUIRE( s1.size() == 5 );
+    vector<int> intv1{ 1,2,3,4,5,6,7,8,9,0 };
+    series_vector<decltype(intv1)::value_type> intsv1( intv1.begin(), intv1.end() );
+    REQUIRE(intv1.size() == 10);
+    REQUIRE(intsv1.size() == 10);
+    REQUIRE(intsv1.at( 0 ) == 1);
+    REQUIRE(intsv1.at( 9 ) == 0);
 }
 
-TEST_CASE( "operator=( const& )", "[series]" )
-{
-    foo f1{ "f1" };
-    foo f2{ "f2" };
-    series<foo> s1( 66, f1 );
-    series<foo> s2( 33, f2 );
-    REQUIRE(s1.size() == 66);
-    REQUIRE(s1.at(0) == f1);
-    REQUIRE(s1.at(65) == f1);
-    REQUIRE(s2.at(0) == f2);
-    REQUIRE(s2.at(32) == f2);
-    REQUIRE(s2.size() == 33);
-    REQUIRE(s1.use_count() == 1);
-    REQUIRE(s2.use_count() == 1);
-    s2 = s1;
-    REQUIRE(s1.size() == 66);
-    REQUIRE(s2.size() == 66);
-    REQUIRE(s1.at(0) == f1);
-    REQUIRE(s1.at(65) == f1);
-    REQUIRE(s2.at(0) == f1);
-    REQUIRE(s2.at(65) == f1);
-    REQUIRE(s1.use_count() == 2);
-    REQUIRE(s2.use_count() == 2);
-}
-
-TEST_CASE( "operator=( && )", "[series]" )
+TEST_CASE( "operator=( const& )", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
-    series<foo> s1( 66, f1 );
-    series<foo> s2( 33, f2 );
-    REQUIRE(s1.size() == 66);
-    REQUIRE(s2.size() == 33);
-    REQUIRE(s1.at(0) == f1);
-    REQUIRE(s1.at(65) == f1);
-    REQUIRE(s2.at(0) == f2);
-    REQUIRE(s2.at(32) == f2);
-    REQUIRE(s1.use_count() == 1);
-    REQUIRE(s2.use_count() == 1);
-    s2 = std::move( s1 );
-    REQUIRE(s1.size() == 0);
-    REQUIRE(s2.size() == 66);
-    REQUIRE(s2.at(0) == f1);
-    REQUIRE(s2.at(65) == f1);
-    REQUIRE(s1.use_count() == 1);
-    REQUIRE(s2.use_count() == 1);
+    series_vector<foo> sv1( 66, f1 );
+    series_vector<foo> sv2( 33, f2 );
+    REQUIRE(sv1.size() == 66);
+    REQUIRE(sv1.at(0) == f1);
+    REQUIRE(sv1.at(65) == f1);
+    REQUIRE(sv2.at(0) == f2);
+    REQUIRE(sv2.at(32) == f2);
+    REQUIRE(sv2.size() == 33);
+    sv2 = sv1;
+    REQUIRE(sv1.size() == 66);
+    REQUIRE(sv2.size() == 66);
+    REQUIRE(sv2.at(0) == f1);
+    REQUIRE(sv2.at(65) == f1);
 }
 
-TEST_CASE( "operator=( initializer_list )", "[series]" )
+TEST_CASE( "operator=( && )", "[series_vector]" )
 {
-    series<int> ints1( 66 );
-    REQUIRE( ints1.size() == 66 );
-    ints1 = { 1, 2, 3, 4, 5 };
-    REQUIRE( ints1.size() == 5 );
-    REQUIRE( ints1.at(0) == 1 );
-    REQUIRE( ints1.at(4) == 5 );
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    series_vector<foo> sv1( 66, f1 );
+    series_vector<foo> sv2( 33, f2 );
+    REQUIRE(sv1.size() == 66);
+    REQUIRE(sv2.size() == 33);
+    REQUIRE(sv1.at(0) == f1);
+    REQUIRE(sv1.at(65) == f1);
+    REQUIRE(sv2.at(0) == f2);
+    REQUIRE(sv2.at(32) == f2);
+    sv2 = std::move( sv1 );
+    REQUIRE(sv1.size() == 0);
+    REQUIRE(sv2.size() == 66);
+    REQUIRE(sv2.at(0) == f1);
+    REQUIRE(sv2.at(65) == f1);
 }
 
-TEST_CASE( "assign( count value )", "[series]" )
+TEST_CASE( "operator=( initializer_list )", "[series_vector]" )
+{
+    series_vector<int> intsv1( 66 );
+    REQUIRE( intsv1.size() == 66 );
+    intsv1 = { 1, 2, 3, 4, 5 };
+    REQUIRE( intsv1.size() == 5 );
+    REQUIRE( intsv1.at(0) == 1 );
+    REQUIRE( intsv1.at(4) == 5 );
+}
+
+TEST_CASE( "assign( count value )", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
     {
-        series<foo> s1( 3, f1 );
-        s1.assign( 2, f2 );
-        REQUIRE( s1.size() == 2 );
-        REQUIRE( s1.at( 0 ) == f2 );
-        REQUIRE( s1.at( 1 ) == f2 );
+        series_vector<foo> sv1( 3, f1 );
+        sv1.assign( 2, f2 );
+        REQUIRE( sv1.size() == 2 );
+        REQUIRE( sv1.at( 0 ) == f2 );
+        REQUIRE( sv1.at( 1 ) == f2 );
     }
     {
-        series<foo> s1( 2, f1 );
-        s1.assign( 3, f2 );
-        REQUIRE( s1.size() == 3 );
-        REQUIRE( s1.at( 0 ) == f2 );
-        REQUIRE( s1.at( 1 ) == f2 );
-        REQUIRE( s1.at( 2 ) == f2 );
+        series_vector<foo> sv1( 2, f1 );
+        sv1.assign( 3, f2 );
+        REQUIRE( sv1.size() == 3 );
+        REQUIRE( sv1.at( 0 ) == f2 );
+        REQUIRE( sv1.at( 1 ) == f2 );
+        REQUIRE( sv1.at( 2 ) == f2 );
     }
 }
 
-TEST_CASE( "assign( begin end )", "[series]" )
+TEST_CASE( "assign( begin end )", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
     {
-        series<foo> s1( 3, f1 );
+        series_vector<foo> sv1( 3, f1 );
         vector<foo> v1( 4, f2 );
-        s1.assign( v1.begin(), v1.begin()+2 );
-        REQUIRE( s1.size() == 2 );
-        REQUIRE( s1.at( 0 ) == f2 );
-        REQUIRE( s1.at( 1 ) == f2 );
+        sv1.assign( v1.begin(), v1.begin()+2 );
+        REQUIRE( sv1.size() == 2 );
+        REQUIRE( sv1.at( 0 ) == f2 );
+        REQUIRE( sv1.at( 1 ) == f2 );
     }
     {
-        series<foo> s1( 3, f1 );
+        series_vector<foo> sv1( 3, f1 );
         vector<foo> v1( 4, f2 );
-        s1.assign( v1.begin(), v1.end() );
-        REQUIRE( s1.size() == 4 );
-        REQUIRE( s1.at( 0 ) == f2 );
-        REQUIRE( s1.at( 1 ) == f2 );
-        REQUIRE( s1.at( 2 ) == f2 );
-        REQUIRE( s1.at( 3 ) == f2 );
+        sv1.assign( v1.begin(), v1.end() );
+        REQUIRE( sv1.size() == 4 );
+        REQUIRE( sv1.at( 0 ) == f2 );
+        REQUIRE( sv1.at( 1 ) == f2 );
+        REQUIRE( sv1.at( 2 ) == f2 );
+        REQUIRE( sv1.at( 3 ) == f2 );
     }
 }
 
-TEST_CASE( "assign( initializer_list )", "[series]" )
+TEST_CASE( "assign( initializer_list )", "[series_vector]" )
 {
     {
-        series<int> s1( 3U, 123 );
-        s1.assign( { 1, 2 } );
-        REQUIRE( s1.size() == 2 );
+        series_vector<int> sv1( 3U, 123 );
+        sv1.assign( { 1, 2 } );
+        REQUIRE( sv1.size() == 2 );
     }
     {
-        series<int> s1( 3U, 123 );
-        s1.assign( { 1, 2, 3, 4 } );
-        REQUIRE( s1.size() == 4 );
+        series_vector<int> sv1( 3U, 123 );
+        sv1.assign( { 1, 2, 3, 4 } );
+        REQUIRE( sv1.size() == 4 );
     }
 }
 
-TEST_CASE( "front()", "[series]" )
+TEST_CASE( "front()", "[series_vector]" )
 {
-    series<int> ints1{ 1, 2, 3, 4 };
-    REQUIRE(ints1.size() == 4);
-    REQUIRE(ints1.front() == 1);
+    series_vector<int> intsv1{ 1, 2, 3, 4 };
+    REQUIRE(intsv1.size() == 4);
+    REQUIRE(intsv1.front() == 1);
 }
 
-TEST_CASE( "back()", "[series]" )
+TEST_CASE( "back()", "[series_vector]" )
 {
-    series<int> ints1{ 1, 2, 3, 4 };
-    REQUIRE(ints1.size() == 4);
-    REQUIRE(ints1.back() == 4);
+    series_vector<int> intsv1{ 1, 2, 3, 4 };
+    REQUIRE(intsv1.size() == 4);
+    REQUIRE(intsv1.back() == 4);
 }
 
-TEST_CASE( "data()", "[series]" )
+TEST_CASE( "data()", "[series_vector]" )
 {
-    series<int> ints1{ 1, 2, 3, 4 };
-    REQUIRE(ints1.size() == 4);
-    REQUIRE(*(ints1.data()) == 1);
+    series_vector<int> intsv1{ 1, 2, 3, 4 };
+    REQUIRE(intsv1.size() == 4);
+    REQUIRE(*(intsv1.data()) == 1);
 }
 
-TEST_CASE( "begin()/end()", "[series]" )
+TEST_CASE( "begin()/end()", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo f3{ "f3" };
-    series<foo> s1{ f1, f2, f3 };
-    auto b = s1.begin();
-    auto e = s1.end();
+    series_vector<foo> sv1{ f1, f2, f3 };
+    auto b = sv1.begin();
+    auto e = sv1.end();
     REQUIRE((e-b) == 3);
     REQUIRE(*b == f1);
     REQUIRE(*(b+1) == f2);
@@ -301,19 +283,19 @@ TEST_CASE( "begin()/end()", "[series]" )
     REQUIRE(*(e-1) == f3);
     b++; ++b; b++;
     REQUIRE( b == e );
-    b = s1.begin();
+    b = sv1.begin();
     e--; --e; e--;
     REQUIRE( b == e );
 }
 
-TEST_CASE( "rbegin()/rend()", "[series]" )
+TEST_CASE( "rbegin()/rend()", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo f3{ "f3" };
-    series<foo> s1{ f1, f2, f3 };
-    auto b = s1.rbegin();
-    auto e = s1.rend();
+    series_vector<foo> sv1{ f1, f2, f3 };
+    auto b = sv1.rbegin();
+    auto e = sv1.rend();
     REQUIRE((e-b) == 3);
     REQUIRE(*b == f3);
     REQUIRE(*(b+1) == f2);
@@ -322,28 +304,28 @@ TEST_CASE( "rbegin()/rend()", "[series]" )
     REQUIRE(*(e-1) == f1);
     b++; ++b; b++;
     REQUIRE( b == e );
-    b = s1.rbegin();
+    b = sv1.rbegin();
     e--; --e; e--;
     REQUIRE( b == e );
 }
 
-TEST_CASE( "empty()", "[series]" )
+TEST_CASE( "empty()", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo f3{ "f3" };
-    series<foo> sv1;
+    series_vector<foo> sv1;
     REQUIRE(sv1.empty());
     sv1.assign( { f1, f2, f3 } );
     REQUIRE(!sv1.empty());
 }
 
-TEST_CASE( "reserve()/capacity()", "[series]" )
+TEST_CASE( "reserve()/capacity()", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo f3{ "f3" };
-    series<foo> sv1{ f1, f2, f3 };
+    series_vector<foo> sv1{ f1, f2, f3 };
     auto c1 = sv1.capacity();
     REQUIRE( c1>=3 );
     sv1.reserve( c1*10 );
@@ -354,18 +336,18 @@ TEST_CASE( "reserve()/capacity()", "[series]" )
     REQUIRE( sv1.at( 2 ) == f3 );
 }
 
-TEST_CASE( "size()/clear()", "[series]" )
+TEST_CASE( "size()/clear()", "[series_vector]" )
 {
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo f3{ "f3" };
-    series<foo> sv1{ f1, f2, f3 };
+    series_vector<foo> sv1{ f1, f2, f3 };
     REQUIRE( sv1.size() == 3 );
     sv1.clear();
     REQUIRE( sv1.size() == 0 );
 }
 
-TEST_CASE( "insert( pos first last )", "[series]" )
+TEST_CASE( "insert( pos first last )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -376,7 +358,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     SECTION( "begin(), empty insert" )
     {
         vector<foo> v2;
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -387,35 +369,11 @@ TEST_CASE( "insert( pos first last )", "[series]" )
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
-    }
-    SECTION( "begin(), empty insert, use_count" )
-    {
-        vector<foo> v2;
-        series<foo> sv1{ f0, f1, f2 };
-        series<foo> sv2{ sv1 };
-        REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv2.size() == 3 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
-        auto it = sv1.insert( sv1.begin(), v2.begin(), v2.end() );
-        REQUIRE( it == sv1.begin() );
-        REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
     }
     SECTION( "begin()+1, empty insert" )
     {
         vector<foo> v2;
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -430,7 +388,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     SECTION( "end(), empty insert" )
     {
         vector<foo> v2;
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -445,7 +403,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     SECTION( "begin(), non-overlapping" )
     {
         vector<foo> v1{ f3, f4, f5 };
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -463,7 +421,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     SECTION( "begin()+1, non-overlapping" )
     {
         vector<foo> v1{ f3, f4, f5 };
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -481,7 +439,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     SECTION( "end(), non-overlapping" )
     {
         vector<foo> v1{ f3, f4, f5 };
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -499,7 +457,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     SECTION( "begin(), overlapping" )
     {
         vector<foo> v1{ f4, f5 };
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -518,7 +476,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     SECTION( "begin()+1, overlapping" )
     {
         vector<foo> v1{ f4, f5 };
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -533,45 +491,11 @@ TEST_CASE( "insert( pos first last )", "[series]" )
         REQUIRE( sv1.at( 3 ) == f1 );
         REQUIRE( sv1.at( 4 ) == f2 );
         REQUIRE( sv1.at( 5 ) == f3 );
-    }
-    SECTION( "begin()+1, overlapping, use_count" )
-    {
-        vector<foo> v1{ f4, f5 };
-        series<foo> sv1{ f0, f1, f2, f3 };
-        series<foo> sv2{ sv1 };
-        REQUIRE( sv1.size() == 4 );
-        REQUIRE( sv2.size() == 4 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv1.at( 3 ) == f3 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 3 ) == f3 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
-        auto it = sv1.insert( sv1.begin()+1, v1.begin(), v1.end() );
-        REQUIRE( it == sv1.begin()+1 );
-        REQUIRE( sv1.size() == 6 );
-        REQUIRE( sv2.size() == 4 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f4 );
-        REQUIRE( sv1.at( 2 ) == f5 );
-        REQUIRE( sv1.at( 3 ) == f1 );
-        REQUIRE( sv1.at( 4 ) == f2 );
-        REQUIRE( sv1.at( 5 ) == f3 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 3 ) == f3 );
-        REQUIRE( sv1.use_count() == 1 );
-        REQUIRE( sv2.use_count() == 1 );
     }
     SECTION( "end(), overlapping" )
     {
         vector<foo> v1{ f4, f5 };
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -589,7 +513,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     }
 }
 
-TEST_CASE( "insert( pos, value )", "[series]" )
+TEST_CASE( "insert( pos value )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -597,7 +521,7 @@ TEST_CASE( "insert( pos, value )", "[series]" )
     foo f3{ "f3" };
     SECTION( "begin()" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -612,34 +536,22 @@ TEST_CASE( "insert( pos, value )", "[series]" )
     }
     SECTION( "begin()+1" )
     {
-        series<foo> sv1{ f0, f1, f2 };
-        series<foo> sv2{ sv1 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        auto it = sv2.insert( sv2.begin()+1, f3 );
-        REQUIRE( it == sv2.begin()+1 );
-        REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv2.size() == 4 );
-        REQUIRE( sv1.use_count() == 1 );
-        REQUIRE( sv2.use_count() == 1 );
+        auto it = sv1.insert( sv1.begin()+1, f3 );
+        REQUIRE( it == sv1.begin()+1 );
+        REQUIRE( sv1.size() == 4 );
         REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f3 );
-        REQUIRE( sv2.at( 2 ) == f1 );
-        REQUIRE( sv2.at( 3 ) == f2 );
+        REQUIRE( sv1.at( 1 ) == f3 );
+        REQUIRE( sv1.at( 2 ) == f1 );
+        REQUIRE( sv1.at( 3 ) == f2 );
     }
     SECTION( "end()" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -654,7 +566,7 @@ TEST_CASE( "insert( pos, value )", "[series]" )
     }
 }
 
-TEST_CASE( "insert( pos, &&value )", "[series]" )
+TEST_CASE( "insert( pos &&value )", "[series_vector]" )
 {
     SECTION( "begin()" )
     {
@@ -662,7 +574,7 @@ TEST_CASE( "insert( pos, &&value )", "[series]" )
         foo f1{ "f1" };
         foo f2{ "f2" };
         foo f3{ "f3" };
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -682,7 +594,7 @@ TEST_CASE( "insert( pos, &&value )", "[series]" )
         foo f1{ "f1" };
         foo f2{ "f2" };
         foo f3{ "f3" };
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -702,7 +614,7 @@ TEST_CASE( "insert( pos, &&value )", "[series]" )
         foo f1{ "f1" };
         foo f2{ "f2" };
         foo f3{ "f3" };
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -718,7 +630,7 @@ TEST_CASE( "insert( pos, &&value )", "[series]" )
     }
 }
 
-TEST_CASE( "insert( pos count value )", "[series]" )
+TEST_CASE( "insert( pos count value )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -726,7 +638,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     foo f3{ "f3" };
     SECTION( "begin(), count == 0" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -740,7 +652,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "begin(), count == 1" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -755,7 +667,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "begin(), count == 2" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -771,7 +683,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "begin()+1, count == 0" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -785,7 +697,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "begin()+1, count == 1" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -800,7 +712,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "begin()+1, count == 2" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -816,7 +728,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "end(), count == 0" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -830,7 +742,7 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "end(), count == 1" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -845,86 +757,44 @@ TEST_CASE( "insert( pos count value )", "[series]" )
     }
     SECTION( "end(), count == 2" )
     {
-        series<foo> sv1{ f0, f1, f2 };
-        series<foo> sv2{ sv1 };
-        series<foo> sv3{ sv2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv2.size() == 3 );
-        REQUIRE( sv3.size() == 3 );
-        REQUIRE( sv1.use_count() == 3 );
-        REQUIRE( sv2.use_count() == 3 );
-        REQUIRE( sv3.use_count() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv3.at( 0 ) == f0 );
-        REQUIRE( sv3.at( 1 ) == f1 );
-        REQUIRE( sv3.at( 2 ) == f2 );
-        auto it = sv2.insert( sv2.end(), 2, f3 );
-        REQUIRE( it == sv2.begin()+3 );
-        REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv2.size() == 5 );
-        REQUIRE( sv3.size() == 3 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 1 );
-        REQUIRE( sv3.use_count() == 2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 3 ) == f3 );
-        REQUIRE( sv2.at( 4 ) == f3 );
+        auto it = sv1.insert( sv1.end(), 2, f3 );
+        REQUIRE( it == sv1.begin()+3 );
+        REQUIRE( sv1.size() == 5 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv3.at( 0 ) == f0 );
-        REQUIRE( sv3.at( 1 ) == f1 );
-        REQUIRE( sv3.at( 2 ) == f2 );
+        REQUIRE( sv1.at( 3 ) == f3 );
+        REQUIRE( sv1.at( 4 ) == f3 );
     }
 }
 
-TEST_CASE( "emplace( pos args... )", "[series]" )
+TEST_CASE( "emplace( pos args... )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
     foo f2{ "f2" };
     SECTION( "begin()" )
     {
-        series<foo> sv1{ f0, f1, f2 };
-        series<foo> sv2{ sv1 };
-        series<foo> sv3{ sv1 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv2.size() == 3 );
-        REQUIRE( sv3.size() == 3 );
-        REQUIRE( sv1.use_count() == 3 );
-        REQUIRE( sv2.use_count() == 3 );
-        REQUIRE( sv3.use_count() == 3 );
-        sv3.emplace( sv3.begin(), "f4" );
-        auto it = sv3.emplace( sv3.begin(), "f3" );
-        REQUIRE( it == sv3.begin() );
-        REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv2.size() == 3 );
-        REQUIRE( sv3.size() == 5 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
-        REQUIRE( sv3.use_count() == 1 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv3.at( 0 ) == "f3" );
-        REQUIRE( sv3.at( 1 ) == "f4" );
-        REQUIRE( sv3.at( 2 ) == f0 );
-        REQUIRE( sv3.at( 3 ) == f1 );
-        REQUIRE( sv3.at( 4 ) == f2 );
+        sv1.emplace( sv1.begin(), "f4" );
+        auto it = sv1.emplace( sv1.begin(), "f3" );
+        REQUIRE( it == sv1.begin() );
+        REQUIRE( sv1.size() == 5 );
+        REQUIRE( sv1.at( 0 ) == "f3" );
+        REQUIRE( sv1.at( 1 ) == "f4" );
+        REQUIRE( sv1.at( 2 ) == f0 );
+        REQUIRE( sv1.at( 3 ) == f1 );
+        REQUIRE( sv1.at( 4 ) == f2 );
     }
     SECTION( "begin()+1" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         sv1.emplace( sv1.begin()+1, "f4" );
         auto it = sv1.emplace( sv1.begin()+1, "f3" );
@@ -938,7 +808,7 @@ TEST_CASE( "emplace( pos args... )", "[series]" )
     }
     SECTION( "end()" )
     {
-        series<foo> sv1{ f0, f1, f2 };
+        series_vector<foo> sv1{ f0, f1, f2 };
         REQUIRE( sv1.size() == 3 );
         sv1.emplace( sv1.end(), "f3" );
         auto it = sv1.emplace( sv1.end(), "f4" );
@@ -952,7 +822,7 @@ TEST_CASE( "emplace( pos args... )", "[series]" )
     }
 }
 
-TEST_CASE( "erase( first last )", "[series]" )
+TEST_CASE( "erase( first last )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -960,7 +830,7 @@ TEST_CASE( "erase( first last )", "[series]" )
     foo f3{ "f3" };
     SECTION( "empty begin()" )
     {
-        series<foo> sv1{ f0, f1 };
+        series_vector<foo> sv1{ f0, f1 };
         REQUIRE( sv1.size() == 2 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -972,28 +842,19 @@ TEST_CASE( "erase( first last )", "[series]" )
     }
     SECTION( "empty begin()+1" )
     {
-        series<foo> sv1{ f0, f1 };
-        series<foo> sv2{ sv1 };
+        series_vector<foo> sv1{ f0, f1 };
         REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv2.size() == 2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
         auto it = sv1.erase( sv1.begin()+1, sv1.begin() );
         REQUIRE( it == sv1.begin()+1 );
         REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv2.size() == 2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
     }
     SECTION( "empty end()" )
     {
-        series<foo> sv1{ f0, f1 };
+        series_vector<foo> sv1{ f0, f1 };
         REQUIRE( sv1.size() == 2 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
@@ -1005,7 +866,7 @@ TEST_CASE( "erase( first last )", "[series]" )
     }
     SECTION( "begin() 1" )
     {
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         auto it = sv1.erase( sv1.begin(), sv1.begin()+1 );
         REQUIRE( it == sv1.begin() );
@@ -1016,7 +877,7 @@ TEST_CASE( "erase( first last )", "[series]" )
     }
     SECTION( "begin()+1 1" )
     {
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         auto it = sv1.erase( sv1.begin()+1, sv1.begin()+2 );
         REQUIRE( it == sv1.begin()+1 );
@@ -1027,29 +888,18 @@ TEST_CASE( "erase( first last )", "[series]" )
     }
     SECTION( "end() 1" )
     {
-        series<foo> sv1{ f0, f1, f2, f3 };
-        series<foo> sv2{ sv1 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
-        REQUIRE( sv2.size() == 4 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
         auto it = sv1.erase( sv1.end()-1, sv1.end() );
         REQUIRE( it == sv1.begin()+3 );
         REQUIRE( sv1.size() == 3 );
-        REQUIRE( sv2.size() == 4 );
-        REQUIRE( sv1.use_count() == 1 );
-        REQUIRE( sv2.use_count() == 1 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 3 ) == f3 );
     }
 }
 
-TEST_CASE( "erase( pos )", "[series]" )
+TEST_CASE( "erase( pos )", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -1057,7 +907,7 @@ TEST_CASE( "erase( pos )", "[series]" )
     foo f3{ "f3" };
     SECTION( "begin()" )
     {
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         auto it = sv1.erase( sv1.begin() );
         REQUIRE( it == sv1.begin() );
@@ -1068,7 +918,7 @@ TEST_CASE( "erase( pos )", "[series]" )
     }
     SECTION( "begin()+1" )
     {
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         auto it = sv1.erase( sv1.begin()+1 );
         REQUIRE( it == sv1.begin()+1 );
@@ -1079,7 +929,7 @@ TEST_CASE( "erase( pos )", "[series]" )
     }
     SECTION( "end()-1" )
     {
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         auto it = sv1.erase( sv1.end()-1 );
         REQUIRE( it == sv1.begin()+3 );
@@ -1090,7 +940,7 @@ TEST_CASE( "erase( pos )", "[series]" )
     }
     SECTION( "end()" )
     {
-        series<foo> sv1{ f0, f1, f2, f3 };
+        series_vector<foo> sv1{ f0, f1, f2, f3 };
         REQUIRE( sv1.size() == 4 );
         auto it = sv1.erase( sv1.end() );
         REQUIRE( it == sv1.end() );
@@ -1102,13 +952,13 @@ TEST_CASE( "erase( pos )", "[series]" )
     }
 }
 
-TEST_CASE( "push_back() emplace_back() pop_back()", "[series]" )
+TEST_CASE( "push_back() emplace_back() pop_back()", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo f3{ "f3" };
-    series<foo> sv1{ f0, f1 };
+    series_vector<foo> sv1{ f0, f1 };
     REQUIRE( sv1.size() == 2 );
     sv1.push_back( std::move( f2 ) );
     REQUIRE( sv1.size() == 3 );
@@ -1137,23 +987,46 @@ TEST_CASE( "push_back() emplace_back() pop_back()", "[series]" )
     REQUIRE( sv1.at( 3 ) == f3 );
 }
 
-TEST_CASE( "resize()", "[series]" )
+TEST_CASE( "resize()", "[series_vector]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo_with_ctor fc0{ "fc0" };
     foo_with_ctor fc1{ "fc1" };
-    series<foo> sv1{ f0, f1 };
+    series_vector<foo> sv1{ f0, f1 };
     sv1.resize( 1 );
     REQUIRE( sv1.size() == 1 );
     REQUIRE_THROWS( sv1.resize( 3 ) );
     sv1.resize( 3, f2 );
     REQUIRE( sv1.size() == 3 );
-    series<foo_with_ctor> sv2{ fc0, fc1 };
+    series_vector<foo_with_ctor> sv2{ fc0, fc1 };
     sv2.resize( 1 );
     REQUIRE( sv2.size() == 1 );
     REQUIRE_NOTHROW( sv2.resize( 3 ) );
     REQUIRE( sv2.size() == 3 );
+}
+
+TEST_CASE( "operator==", "[series_vector]" )
+{
+    foo f0{ "f0" };
+    foo f1{ "f1" };
+    foo f2{ "f2" };
+    foo f3{ "f3" };
+    series_vector<foo> sv1{ f0, f1 };
+    series_vector<foo> sv2{ f0, f1 };
+    REQUIRE( sv1 == sv2 );
+    sv2.resize( 3, f2 );
+    REQUIRE( sv1 != sv2 );
+    REQUIRE( f2 == "f2" );
+    REQUIRE( f3 == "f3" );
+    sv1.emplace_back( f2 );
+    sv1.emplace_back( f3 );
+    REQUIRE( f2 == "f2" );
+    REQUIRE( f3 == "f3" );
+    REQUIRE( sv1 != sv2 );
+    sv2.push_back( f3 );
+    REQUIRE( f3 == "f3" );
+    REQUIRE( sv1 == sv2 );
 }
 

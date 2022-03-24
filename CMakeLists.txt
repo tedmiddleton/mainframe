@@ -5,7 +5,7 @@
 #          https://www.boost.org/LICENSE_1_0.txt)
 
 cmake_minimum_required( VERSION 3.0 )
-project( miniframe )
+project( mainframe )
 
 set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
@@ -26,68 +26,68 @@ endif()
 
 set( version 0.1.0 )
 
-# miniframe_base =============================================================
+# mainframe_base =============================================================
 
-add_library( miniframe_base STATIC
-    miniframe/base.hpp 
-    miniframe/base.cpp 
+add_library( mainframe_base STATIC
+    mainframe/base.hpp 
+    mainframe/base.cpp 
     )
 
-target_include_directories( miniframe_base
+target_include_directories( mainframe_base
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
-# miniframe_series ===========================================================
+# mainframe_series ===========================================================
 
-add_library( miniframe_series STATIC
-    miniframe/series.hpp 
-    miniframe/series_vector.hpp 
-    miniframe/series.cpp 
+add_library( mainframe_series STATIC
+    mainframe/series.hpp 
+    mainframe/series_vector.hpp 
+    mainframe/series.cpp 
     )
 
-target_include_directories( miniframe_series
+target_include_directories( mainframe_series
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
-target_link_libraries( miniframe_series
+target_link_libraries( mainframe_series
     PUBLIC
-        miniframe_base
+        mainframe_base
     )
 
-# miniframe ==================================================================
+# mainframe ==================================================================
 
-add_library( miniframe STATIC
-    miniframe/frame.hpp 
-    miniframe/expression.hpp 
-    miniframe/frame.cpp 
-    miniframe/csv.cpp 
+add_library( mainframe STATIC
+    mainframe/frame.hpp 
+    mainframe/expression.hpp 
+    mainframe/frame.cpp 
+    mainframe/csv.cpp 
     )
 
-#add_subdirectory( tests )
+add_subdirectory( tests )
 
 # config =====================================================================
 
-target_include_directories( miniframe
+target_include_directories( mainframe
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
-target_link_libraries( miniframe
+target_link_libraries( mainframe
     PUBLIC
-        miniframe_base
-        miniframe_series
+        mainframe_base
+        mainframe_series
     )
 
 # cmake bric-a-brac ==========================================================
 
 # install the target and create the export-set
-install( TARGETS miniframe miniframe_series miniframe_base
-         EXPORT miniframe-targets
+install( TARGETS mainframe mainframe_series mainframe_base
+         EXPORT mainframe-targets
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib
          RUNTIME DESTINATION bin
@@ -97,53 +97,53 @@ install( TARGETS miniframe miniframe_series miniframe_base
 # install header files
 install(
     FILES 
-        miniframe/frame.hpp 
-        miniframe/expression.hpp 
-        miniframe/series.hpp 
-        miniframe/series_vector.hpp 
-        miniframe/base.hpp 
-    DESTINATION include/miniframe 
+        mainframe/frame.hpp 
+        mainframe/expression.hpp 
+        mainframe/series.hpp 
+        mainframe/series_vector.hpp 
+        mainframe/base.hpp 
+    DESTINATION include/mainframe 
     )
 
 # generate and install export file
-install( EXPORT miniframe-targets
-         FILE miniframe-targets.cmake
-         DESTINATION lib/cmake/miniframe
+install( EXPORT mainframe-targets
+         FILE mainframe-targets.cmake
+         DESTINATION lib/cmake/mainframe
     )
 
-set_property( TARGET miniframe PROPERTY VERSION ${version} )
-set_property( TARGET miniframe PROPERTY SOVERSION 0 )
-set_property( TARGET miniframe PROPERTY 
-    INTERFACE_miniframe_MAJOR_VERSION 0 )
-set_property( TARGET miniframe PROPERTY 
-    COMPATIBLE_INTERFACE_STRING miniframe_MAJOR_VERSION )
+set_property( TARGET mainframe PROPERTY VERSION ${version} )
+set_property( TARGET mainframe PROPERTY SOVERSION 0 )
+set_property( TARGET mainframe PROPERTY 
+    INTERFACE_mainframe_MAJOR_VERSION 0 )
+set_property( TARGET mainframe PROPERTY 
+    COMPATIBLE_INTERFACE_STRING mainframe_MAJOR_VERSION )
 
 # generate the version file for the config file
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/mainframe-config-version.cmake"
     VERSION "${version}"
     COMPATIBILITY AnyNewerVersion
     )
 
 # generate the export targets for the build tree
-export(EXPORT miniframe-targets
-       FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/miniframe-targets.cmake"
+export(EXPORT mainframe-targets
+       FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/mainframe-targets.cmake"
 )
 
 # create config file
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
-    INSTALL_DESTINATION lib/cmake/miniframe
+    "${CMAKE_CURRENT_BINARY_DIR}/mainframe-config.cmake"
+    INSTALL_DESTINATION lib/cmake/mainframe
     )
 
 # install the config files
 install(
     FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/miniframe-config-version.cmake"
-    DESTINATION lib/cmake/miniframe
+        "${CMAKE_CURRENT_BINARY_DIR}/mainframe-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/mainframe-config-version.cmake"
+    DESTINATION lib/cmake/mainframe
     )
 
     
