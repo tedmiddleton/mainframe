@@ -119,6 +119,24 @@ struct frame_iterator
         return *ptr;
     }
 
+    template< size_t Ind, typename T >
+    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& get()
+    {
+        auto ptr = std::get< Ind >( m_ptrs );
+        return *ptr;
+    }
+
+    template< size_t Ind, typename T, typename U, typename ... Us >
+    T& get_impl()
+    {
+        if constexpr ( sizeof...( Us ) > 0 ) {
+        }
+        else {
+        }
+    }
+
+
+
     frame_row< Ts... >& operator*()
     {
         return *this;

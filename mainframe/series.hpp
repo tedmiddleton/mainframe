@@ -30,10 +30,23 @@ namespace mf
 {
 
 // This is an untyped version of series
-class column
+struct _untyped_series
 {
-public:
+    _untyped_series() = default;
+    _untyped_series( const _untyped_series& ) = default;
+    _untyped_series& operator=( const _untyped_series& ) = default;
+
+    virtual const std::string& name() const { return m_name; }
+    virtual void set_name( const std::string& name ) { m_name = name; }
+    virtual size_t size() const { return m_data->size(); };
+
+private:
+    template< typename T >
+    friend struct Series;
+    std::shared_ptr<iseries_vector> m_data;
+    std::string m_name;
 };
+
 
 template< typename T >
 class series
@@ -357,9 +370,9 @@ public:
         return m_name; 
     }
     
-    std::string& name() 
-    { 
-        return m_name; 
+    void set_name( const std::string& name )
+    {
+        m_name = name;
     }
     
     series unique() const
@@ -403,10 +416,8 @@ private:
         return newit;
     }
 
-
     template< typename U >
     friend std::ostream& operator<<( std::ostream&, const series<U>& );
-
 
     std::string m_name;
     std::shared_ptr<series_vector<T>> m_sharedvec;
