@@ -71,6 +71,12 @@ public:
         return const_iterator{ m_columns, static_cast<int>(size()) };
     }
 
+    template< size_t Ind > 
+    std::string column_name() const
+    {
+        return std::get< Ind >( m_columns ).name();
+    }
+
     size_t num_columns() const
     {
         return sizeof...( Ts );

@@ -60,6 +60,8 @@ public:
     using pointer           = T*;  // or also value_type*
     using reference         = T&;  // or also value_type&u
 
+    sv_iterator() : m_curr( nullptr ) {}
+
     sv_iterator( T* ptr ) : m_curr( ptr ) {}
 
     operator sv_iterator< const T >() const

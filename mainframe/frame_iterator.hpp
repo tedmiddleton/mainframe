@@ -154,6 +154,18 @@ private:
     std::tuple< typename series<Ts>::iterator... > m_ptrs;
 };
 
+template< typename ... Us >
+bool operator==( const frame_iterator< Us... >& l, const frame_iterator< Us... >& r )
+{
+    return l.m_ptrs == r.m_ptrs;
+}
+
+template< typename ... Us >                                                          
+bool operator!=( const frame_iterator< Us... >& l, const frame_iterator< Us... >& r )
+{
+    return l.m_ptrs != r.m_ptrs;
+}
+
 } // namespace mf
 
 #endif // INCLUDED_mainframe_frame_iterator_h
