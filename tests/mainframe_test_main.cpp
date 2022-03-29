@@ -149,14 +149,18 @@ TEST_CASE( "generic" "[mainframe]" )
 {
     frame<year_month_day, double, bool> f1;
     f1.set_column_names( "date", "temperature", "rain" );
+    f1.push_back( 2022_y/January/2, 10.9, true );
+    f1.push_back( 2022_y/January/3, 11.0, true );
+    f1.push_back( 2022_y/January/4, 11.1, false );
+    f1.push_back( 2022_y/January/5, 11.2, true );
     REQUIRE( f1.column_name<0>() == "date" );
     REQUIRE( f1.column_name<1>() == "temperature" );
     REQUIRE( f1.column_name<2>() == "rain" );
     REQUIRE( f1.size() == 4 );
 
-    //auto f1i = f1.begin();
-    //auto f1e = f1.end();
-    //REQUIRE( (f1e - f1i) == 4 );
+    auto f1i = f1.begin();
+    auto f1e = f1.end();
+    REQUIRE( (f1e - f1i) == 4 );
 
     frame<year_month_day, double, optional<bool>> f2;
     f2.push_back( 2022_y/January/2, 10.9, true );
@@ -164,7 +168,7 @@ TEST_CASE( "generic" "[mainframe]" )
     f2.push_back( 2022_y/January/4, 11.1, false );
     f2.push_back( 2022_y/January/5, 11.2, true );
     f2.push_back( 2022_y/January/6, 11.3, true );
-    f2.push_back( 2022_y/January/7, 11.2, true );
+    f2.push_back( 2022_y/January/7, 11.2, nullopt );
     f2.push_back( 2022_y/January/8, 11.1, true );
     f2.push_back( 2022_y/January/9, 11.0, true );
 

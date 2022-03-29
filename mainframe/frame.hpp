@@ -39,7 +39,9 @@ public:
 
     frame() = default;
     frame( const frame& ) = default;
+    frame( frame&& ) = default;
     frame& operator=( const frame& ) = default;
+    frame& operator=( frame&& ) = default;
 
     iterator begin()
     {

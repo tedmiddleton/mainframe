@@ -74,6 +74,12 @@ struct frame_iterator
         return out;
     }
 
+    ptrdiff_t operator-( const frame_iterator<Ts...>& other )
+    {
+        return std::get<0>(m_ptrs) -
+            std::get<0>(other.m_ptrs);
+    }
+
     void operator++()
     {
         operator+=( 1 );
@@ -135,17 +141,17 @@ struct frame_iterator
         }
     }
 
-
-
     frame_row< Ts... >& operator*()
     {
         return *this;
     }
 
     template< typename ... Us >
-    friend bool operator==( const frame_iterator< Us... >& l, const frame_iterator< Us... >& r );
-    template< typename ... Us >                                                          
-    friend bool operator!=( const frame_iterator< Us... >& l, const frame_iterator< Us... >& r );
+    friend bool operator==( const frame_iterator< Us... >& l, 
+                            const frame_iterator< Us... >& r );
+    template< typename ... Us >
+    friend bool operator!=( const frame_iterator< Us... >& l, 
+                            const frame_iterator< Us... >& r );
 
 private:
     template< typename ... Us >
