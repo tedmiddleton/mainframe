@@ -233,10 +233,30 @@ TEST_CASE( "rbegin()/rend()", "[frame]" )
 
 TEST_CASE( "empty()", "[frame]" )
 {
+    frame<year_month_day, double, bool> f1;
+    REQUIRE( f1.empty() );
+    f1.set_column_names( "date", "temperature", "rain" );
+    REQUIRE( f1.empty() );
+    f1.push_back( 2022_y/January/2, 10.9, true );
+    REQUIRE( !f1.empty() );
+    f1.push_back( 2022_y/January/3, 11.0, true );
+    REQUIRE( !f1.empty() );
 }
 
 TEST_CASE( "size()/clear()", "[frame]" )
 {
+    frame<year_month_day, double, bool> f1;
+    REQUIRE( f1.size() == 0 );
+    f1.push_back( 2022_y/January/2, 10.9, true );
+    REQUIRE( f1.size() == 1 );
+    f1.clear();
+    REQUIRE( f1.size() == 0 );
+    f1.set_column_names( "date", "temperature", "rain" );
+    REQUIRE( f1.size() == 0 );
+    f1.push_back( 2022_y/January/2, 10.9, true );
+    REQUIRE( f1.size() == 1 );
+    f1.push_back( 2022_y/January/3, 11.0, true );
+    REQUIRE( f1.size() == 2 );
 }
 
 TEST_CASE( "insert( pos first last )", "[frame]" )

@@ -95,6 +95,25 @@ public:
         return const_reverse_iterator{ m_columns, static_cast<int>(size()) };
     }
 
+    bool empty() const
+    {
+        return std::get< 0 >( m_columns ).empty();
+    }
+
+    void clear()
+    {
+        clear_impl< 0 >();
+    }
+
+    template< size_t Ind > 
+    void clear_impl()
+    {
+        std::get< Ind >( m_columns ).clear();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            clear_impl< Ind+1 >();
+        }
+    }
+
     template< size_t Ind > 
     std::string column_name() const
     {
