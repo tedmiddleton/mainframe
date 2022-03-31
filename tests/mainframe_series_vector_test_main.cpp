@@ -281,10 +281,10 @@ TEST_CASE( "begin()/end()", "[series_vector]" )
     REQUIRE(*(b+2) == f3);
     REQUIRE(b+3 == e);
     REQUIRE(*(e-1) == f3);
-    b++; ++b; b++;
+    b++; ++b; b+=1;
     REQUIRE( b == e );
     b = sv1.begin();
-    e--; --e; e--;
+    e--; --e; e-=1;
     REQUIRE( b == e );
 }
 
@@ -302,10 +302,10 @@ TEST_CASE( "rbegin()/rend()", "[series_vector]" )
     REQUIRE(*(b+2) == f1);
     REQUIRE(b+3 == e);
     REQUIRE(*(e-1) == f1);
-    b++; ++b; b++;
+    b++; ++b; b+=1;
     REQUIRE( b == e );
     b = sv1.rbegin();
-    e--; --e; e--;
+    e--; --e; e-=1;
     REQUIRE( b == e );
 }
 

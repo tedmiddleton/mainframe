@@ -109,7 +109,7 @@ protected:
 };
 
 template< typename T >
-class reverse_sv_iterator : public sv_iterator<T>
+class reverse_sv_iterator
 {
 public:
     using iterator_category = std::random_access_iterator_tag;
@@ -118,27 +118,52 @@ public:
     using pointer           = T*;  // or also value_type*
     using reference         = T&;  // or also value_type&u
 
-    using sv_iterator<T>::sv_iterator;
+    reverse_sv_iterator() : m_curr( nullptr ) {}
+
+    reverse_sv_iterator( T* ptr ) : m_curr( ptr ) {}
+
+    operator reverse_sv_iterator< const T >() const
+    {
+        return reverse_sv_iterator< const T >{ m_curr };
+    }
+
+    operator T*() const
+    {
+        return m_curr;
+    }
 
     difference_type operator-( const reverse_sv_iterator<T>& other ) const
     {
-        return other.m_curr - this->m_curr;
+        return other.m_curr - m_curr;
     }
 
-    sv_iterator<T> operator+( difference_type p ) const
+    reverse_sv_iterator<T> operator+( difference_type p ) const
     {
-        return sv_iterator<T>{ this->m_curr - p };
+        return reverse_sv_iterator<T>{ m_curr - p };
     }
 
-    sv_iterator<T> operator-( difference_type p ) const
+    reverse_sv_iterator<T> operator-( difference_type p ) const
     {
-        return sv_iterator<T>{ this->m_curr + p };
+        return reverse_sv_iterator<T>{ m_curr + p };
     }
 
-    void operator++() { this->m_curr--; }
-    void operator--() { this->m_curr++; }
-    void operator++(int) { --this->m_curr; }
-    void operator--(int) { ++this->m_curr; }
+    void operator++() { m_curr--; }
+    void operator--() { m_curr++; }
+    void operator++(int) { --m_curr; }
+    void operator--(int) { ++m_curr; }
+    void operator+=( difference_type p ) { m_curr -= p; }
+    void operator-=( difference_type p ) { m_curr += p; }
+
+    reference operator*() { return *m_curr; }
+    pointer operator->() { return m_curr; }
+
+protected:
+    template< typename U >
+    friend bool operator==( const reverse_sv_iterator<U>&, const reverse_sv_iterator<U>& );
+    template< typename U >
+    friend bool operator!=( const reverse_sv_iterator<U>&, const reverse_sv_iterator<U>& );
+
+    T* m_curr;
 };
 
 template< typename T >
@@ -149,6 +174,18 @@ bool operator==( const sv_iterator<T>& l, const sv_iterator<T>& r )
 
 template< typename T >
 bool operator!=( const sv_iterator<T>& l, const sv_iterator<T>& r )
+{
+    return l.m_curr != r.m_curr;
+}
+
+template< typename T >
+bool operator==( const reverse_sv_iterator<T>& l, const reverse_sv_iterator<T>& r )
+{
+    return l.m_curr == r.m_curr;
+}
+
+template< typename T >
+bool operator!=( const reverse_sv_iterator<T>& l, const reverse_sv_iterator<T>& r )
 {
     return l.m_curr != r.m_curr;
 }

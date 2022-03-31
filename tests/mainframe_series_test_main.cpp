@@ -589,7 +589,7 @@ TEST_CASE( "insert( pos first last )", "[series]" )
     }
 }
 
-TEST_CASE( "insert( pos, value )", "[series]" )
+TEST_CASE( "insert( pos value )", "[series]" )
 {
     foo f0{ "f0" };
     foo f1{ "f1" };
@@ -654,7 +654,7 @@ TEST_CASE( "insert( pos, value )", "[series]" )
     }
 }
 
-TEST_CASE( "insert( pos, &&value )", "[series]" )
+TEST_CASE( "insert( pos &&value )", "[series]" )
 {
     SECTION( "begin()" )
     {

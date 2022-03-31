@@ -36,6 +36,8 @@ class frame
 public:
     using iterator = frame_iterator< Ts... >;
     using const_iterator = frame_iterator< const Ts... >;
+    using reverse_iterator = reverse_frame_iterator< Ts... >;
+    using const_reverse_iterator = reverse_frame_iterator< const Ts... >;
 
     frame() = default;
     frame( const frame& ) = default;
@@ -47,30 +49,50 @@ public:
     {
         return iterator{ m_columns, 0 };
     }
-
     iterator end()
     {
         return iterator{ m_columns, static_cast<int>(size()) };
     }
-
     const_iterator begin() const
     {
         return const_iterator{ m_columns, 0 };
     }
-
     const_iterator end() const
     {
         return const_iterator{ m_columns, static_cast<int>(size()) };
     }
-
     const_iterator cbegin() const
     {
         return const_iterator{ m_columns, 0 };
     }
-
     const_iterator cend() const
     {
         return const_iterator{ m_columns, static_cast<int>(size()) };
+    }
+
+    reverse_iterator rbegin()
+    {
+        return reverse_iterator{ m_columns, 0 };
+    }
+    reverse_iterator rend()
+    {
+        return reverse_iterator{ m_columns, static_cast<int>(size()) };
+    }
+    const_reverse_iterator rbegin() const
+    {
+        return const_reverse_iterator{ m_columns, 0 };
+    }
+    const_reverse_iterator rend() const
+    {
+        return const_reverse_iterator{ m_columns, static_cast<int>(size()) };
+    }
+    const_reverse_iterator crbegin() const
+    {
+        return const_reverse_iterator{ m_columns, 0 };
+    }
+    const_reverse_iterator crend() const
+    {
+        return const_reverse_iterator{ m_columns, static_cast<int>(size()) };
     }
 
     template< size_t Ind > 

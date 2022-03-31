@@ -111,13 +111,13 @@ ostream& operator<<( ostream& o, const TestTypeX<X>& tt )
     return o;
 }
 
-TEST_CASE( "ctor" "[mainframe]" )
+TEST_CASE( "ctor" "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
     REQUIRE( f1.size() == 0 );
 }
 
-TEST_CASE( "ctor( const& )" "[mainframe]" )
+TEST_CASE( "ctor( const& )" "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
     REQUIRE( f1.size() == 0 );
@@ -131,7 +131,7 @@ TEST_CASE( "ctor( const& )" "[mainframe]" )
     REQUIRE( f2.size() == 4 );
 }
 
-TEST_CASE( "ctor( && )" "[mainframe]" )
+TEST_CASE( "ctor( && )" "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
     REQUIRE( f1.size() == 0 );
@@ -144,8 +144,131 @@ TEST_CASE( "ctor( && )" "[mainframe]" )
     REQUIRE( f1.size() == 0 );
     REQUIRE( f2.size() == 4 );
 }
+/*
+TEST_CASE( "begin()/end()", "[frame]" )
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names( "date", "temperature", "rain" );
+    f1.push_back( 2022_y/January/2, 10.9, true );
+    f1.push_back( 2022_y/January/3, 11.0, true );
+    f1.push_back( 2022_y/January/4, 11.1, false );
+    f1.push_back( 2022_y/January/5, 11.2, true );
+    REQUIRE( f1.column_name<0>() == "date" );
+    REQUIRE( f1.column_name<1>() == "temperature" );
+    REQUIRE( f1.column_name<2>() == "rain" );
+    REQUIRE( f1.size() == 4 );
 
-TEST_CASE( "generic" "[mainframe]" )
+    auto f1i = f1.begin();
+    auto f1e = f1.end();
+    REQUIRE( (f1e - f1i) == 4 );
+    REQUIRE( f1i->get<0>() == 2022_y/January/2 );
+    REQUIRE( f1i->get<1>() == 10.9 );
+    REQUIRE( f1i->get<2>() == true );
+    f1i+=2;
+    REQUIRE( f1i->get<0>() == 2022_y/January/4 );
+    REQUIRE( f1i->get<1>() == 11.1 );
+    REQUIRE( f1i->get<2>() == false );
+    ++f1i;
+    REQUIRE( f1i->get<0>() == 2022_y/January/5 );
+    REQUIRE( f1i->get<1>() == 11.2 );
+    REQUIRE( f1i->get<2>() == true );
+    f1i++;
+    REQUIRE( f1i == f1e );
+    f1i--;
+    REQUIRE( f1i->get<0>() == 2022_y/January/5 );
+    REQUIRE( f1i->get<1>() == 11.2 );
+    REQUIRE( f1i->get<2>() == true );
+    f1i-=2;
+    REQUIRE( f1i->get<0>() == 2022_y/January/3 );
+    REQUIRE( f1i->get<1>() == 11.0 );
+    REQUIRE( f1i->get<2>() == true );
+    --f1i;
+    REQUIRE( f1i->get<0>() == 2022_y/January/2 );
+    REQUIRE( f1i->get<1>() == 10.9 );
+    REQUIRE( f1i->get<2>() == true );
+}
+*/
+TEST_CASE( "rbegin()/rend()", "[frame]" )
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names( "date", "temperature", "rain" );
+    f1.push_back( 2022_y/January/2, 10.9, true );
+    f1.push_back( 2022_y/January/3, 11.0, true );
+    f1.push_back( 2022_y/January/4, 11.1, false );
+    f1.push_back( 2022_y/January/5, 11.2, true );
+    REQUIRE( f1.column_name<0>() == "date" );
+    REQUIRE( f1.column_name<1>() == "temperature" );
+    REQUIRE( f1.column_name<2>() == "rain" );
+    REQUIRE( f1.size() == 4 );
+
+    auto f1i = f1.rbegin();
+    auto f1e = f1.rend();
+    REQUIRE( (f1e - f1i) == 4 );
+    REQUIRE( f1i->get<0>() == 2022_y/January/5 );
+    REQUIRE( f1i->get<1>() == 11.2 );
+    REQUIRE( f1i->get<2>() == true );
+    f1i+=2;
+    REQUIRE( f1i->get<0>() == 2022_y/January/3 );
+    REQUIRE( f1i->get<1>() == 11.0 );
+    REQUIRE( f1i->get<2>() == true );
+    ++f1i;
+    REQUIRE( f1i->get<0>() == 2022_y/January/2 );
+    REQUIRE( f1i->get<1>() == 10.9 );
+    REQUIRE( f1i->get<2>() == true );
+    f1i++;
+    REQUIRE( f1i == f1e );
+    f1i--;
+    REQUIRE( f1i->get<0>() == 2022_y/January/2 );
+    REQUIRE( f1i->get<1>() == 10.9 );
+    REQUIRE( f1i->get<2>() == true );
+    f1i-=2;
+    REQUIRE( f1i->get<0>() == 2022_y/January/4 );
+    REQUIRE( f1i->get<1>() == 11.1 );
+    REQUIRE( f1i->get<2>() == false );
+    --f1i;
+    REQUIRE( f1i->get<0>() == 2022_y/January/5 );
+    REQUIRE( f1i->get<1>() == 11.2 );
+    REQUIRE( f1i->get<2>() == true );
+}
+
+TEST_CASE( "empty()", "[frame]" )
+{
+}
+
+TEST_CASE( "size()/clear()", "[frame]" )
+{
+}
+
+TEST_CASE( "insert( pos first last )", "[frame]" )
+{
+}
+
+TEST_CASE( "insert( pos value )", "[frame]" )
+{
+}
+
+TEST_CASE( "insert( pos count value )", "[frame]" )
+{
+}
+
+TEST_CASE( "erase( first last )", "[frame]" )
+{
+}
+
+TEST_CASE( "erase( pos )", "[frame]" )
+{
+}
+
+TEST_CASE( "push_back() pop_back()", "[frame]" )
+{
+}
+
+TEST_CASE( "resize()", "[frame]" )
+{
+}
+
+/*
+TEST_CASE( "generic", "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
     f1.set_column_names( "date", "temperature", "rain" );
@@ -179,5 +302,6 @@ TEST_CASE( "generic" "[mainframe]" )
             << f1.column_name<2>() << "=" << row.get<2>() << "\n";
     }
 }
+*/
 
 
