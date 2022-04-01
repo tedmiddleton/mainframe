@@ -121,7 +121,12 @@ public:
 
     iterator insert( iterator pos, const Ts&... ts )
     {
-        return insert_impl< 0, Ts... >( pos, ts... );
+        return insert_impl< 0, Ts... >( pos, 1, ts... );
+    }
+
+    iterator insert( iterator pos, size_t count, const Ts&... ts )
+    {
+        return insert_impl< 0, Ts... >( pos, count, ts... );
     }
 
     template< size_t Ind, typename U, typename ... Us >
@@ -147,14 +152,15 @@ public:
     }
 
     template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> insert_impl( iterator pos, const U& u, const Us& ... us )
+    frame_iterator<U, Us...> insert_impl( iterator pos, size_t count, 
+                                          const U& u, const Us& ... us )
     {
         series<U>& s = std::get< Ind >( m_columns );
         auto column_pos = pos.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.insert( column_pos, u );
+        typename series<U>::iterator newcpos = s.insert( column_pos, count, u );
         frame_iterator<U> out{ std::make_tuple( newcpos ) };
         if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = insert_impl<Ind+1, Us...>( pos, us... );
+            frame_iterator<Us...> dstream = insert_impl<Ind+1, Us...>( pos, count, us... );
             return out.combine( dstream );
         }
         else {
