@@ -22,10 +22,9 @@ class frame_row
 public:
     frame_row() = default;
 
-    frame_row( std::tuple< Iter<Ts>... >& iter ) 
+    frame_row( const std::tuple< Iter<Ts>... >& iter ) 
         : m_iters( iter ) 
     {}
-
 
     template< size_t Ind >
     typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& get()
@@ -75,44 +74,15 @@ public:
 
     _frame_iterator() = default;
 
-    _frame_iterator( std::tuple<Iter<Ts> ...>& its )
+    _frame_iterator( const std::tuple<Iter<Ts> ...>& its )
         : m_row( its )
     {
-    }
-
-    template< typename ... Us >
-    _frame_iterator< Iter, Ts..., Us... > combine( 
-        const _frame_iterator< Iter, Us... >& other )
-    {
-        auto ptr = tuple_cat( m_row.m_iters, other.m_iters );
-        _frame_iterator< Iter, Ts..., Us... > out{ ptr };
-        return out;
     }
 
     template< size_t Ind >
     typename series_vector<typename std::tuple_element< Ind, std::tuple< Ts ... > >::type>::iterator column_iterator()
     {
         return std::get< Ind >( m_row.m_iters );
-    }
-
-    _frame_iterator<Iter, Ts...> operator+( size_t n )
-    {
-        _frame_iterator<Iter, Ts...> out{ *this };
-        out += n;
-        return out;
-    }
-
-    _frame_iterator<Iter, Ts...> operator-( size_t n )
-    {
-        _frame_iterator<Iter, Ts...> out{ *this };
-        out -= n;
-        return out;
-    }
-
-    ptrdiff_t operator-( const _frame_iterator<Iter, Ts...>& other )
-    {
-        return std::get<0>(m_row.m_iters) -
-            std::get<0>(other.m_row.m_iters);
     }
 
     void operator++()
@@ -168,7 +138,17 @@ public:
         return m_row;
     }
 
+    const frame_row< Iter, Ts... >& operator*() const
+    {
+        return m_row;
+    }
+
     frame_row< Iter, Ts... >* operator->()
+    {
+        return &m_row;
+    }
+
+    const frame_row< Iter, Ts... >* operator->() const
     {
         return &m_row;
     }
@@ -189,7 +169,7 @@ template< typename ... Ts >
 class frame_iterator : public _frame_iterator< series_iterator, Ts... >
 {
 public:
-    frame_iterator( std::tuple<series_iterator<Ts> ...>& its )
+    frame_iterator( const std::tuple<series_iterator<Ts> ...>& its )
         : _frame_iterator<series_iterator, Ts...>( its )
     {
     }
@@ -209,13 +189,44 @@ public:
             init_impl< Ind+1, Us... >( cols, offset );
         }
     }
+
+    ptrdiff_t operator-( const frame_iterator<Ts...>& other ) const
+    {
+        const auto& t = std::get<0>(this->m_row.m_iters);
+        const auto& o = std::get<0>(other->m_iters);
+        return t - o;
+    }
+
+    template< typename ... Us >
+    frame_iterator< Ts..., Us... > combine( 
+        const frame_iterator< Us... >& other )
+    {
+        auto ptr = tuple_cat( 
+            this->m_row.m_iters, other->m_iters );
+        frame_iterator< Ts..., Us... > out{ ptr };
+        return out;
+    }
+
+    frame_iterator<Ts...> operator+( size_t n )
+    {
+        frame_iterator<Ts...> out{ *this };
+        out += n;
+        return out;
+    }
+
+    frame_iterator<Ts...> operator-( size_t n )
+    {
+        frame_iterator<Ts...> out{ *this };
+        out -= n;
+        return out;
+    }
 };
 
 template< typename ... Ts >
 class reverse_frame_iterator : public _frame_iterator< series_reverse_iterator, Ts... >
 {
 public:
-    reverse_frame_iterator( std::tuple<series_reverse_iterator<Ts> ...>& its )
+    reverse_frame_iterator( const std::tuple<series_reverse_iterator<Ts> ...>& its )
         : _frame_iterator<series_reverse_iterator, Ts...>( its )
     {
     }
@@ -234,6 +245,37 @@ public:
         if constexpr ( sizeof...( Us ) > 0 ) {
             init_impl< Ind+1, Us... >( cols, offset );
         }
+    }
+
+    ptrdiff_t operator-( const reverse_frame_iterator<Ts...>& other ) const
+    {
+        const auto& t = std::get<0>(this->m_row.m_iters);
+        const auto& o = std::get<0>(other->m_iters);
+        return t - o;
+    }
+
+    template< typename ... Us >
+    reverse_frame_iterator< Ts..., Us... > combine( 
+        const reverse_frame_iterator< Us... >& other )
+    {
+        auto ptr = tuple_cat( 
+            this->m_row.m_iters, other->m_iters );
+        reverse_frame_iterator< Ts..., Us... > out{ ptr };
+        return out;
+    }
+
+    reverse_frame_iterator<Ts...> operator+( size_t n )
+    {
+        reverse_frame_iterator<Ts...> out{ *this };
+        out += n;
+        return out;
+    }
+
+    reverse_frame_iterator<Ts...> operator-( size_t n )
+    {
+        reverse_frame_iterator<Ts...> out{ *this };
+        out -= n;
+        return out;
     }
 };
 
