@@ -211,6 +211,36 @@ public:
         }
     }
 
+    void pop_back()
+    {
+        pop_back_impl<0>();
+    }
+
+    template< size_t Ind >
+    void pop_back_impl()
+    {
+        auto& s = std::get<Ind>( m_columns );
+        s.pop_back();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            pop_back_impl< Ind+1 >();
+        }
+    }
+
+    void resize( size_t newsize )
+    {
+        resize_impl<0>( newsize );
+    }
+
+    template< size_t Ind >
+    void resize_impl( size_t newsize )
+    {
+        auto& s = std::get<Ind>( m_columns );
+        s.resize( newsize );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            resize_impl< Ind+1 >( newsize );
+        }
+    }
+
     template< size_t Ind > 
     std::string column_name() const
     {
