@@ -415,10 +415,100 @@ TEST_CASE( "insert( pos count value )", "[frame]" )
 
 TEST_CASE( "erase( first last )", "[frame]" )
 {
+    SECTION( "begin" )
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/2, 10.0, false );
+        f1.push_back( 2022_y/January/3, 11.1, false );
+        f1.push_back( 2022_y/January/4, 12.2, false );
+        REQUIRE( f1.size() == 3 );
+        auto resit = f1.erase( f1.begin(), f1.begin()+1 );
+        REQUIRE( resit == f1.begin() );
+        REQUIRE( f1.size() == 2 );
+        REQUIRE( f1.begin()->get<0>() == 2022_y/January/3 );
+        REQUIRE( f1.begin()->get<1>() == 11.1 );
+        REQUIRE( f1.begin()->get<2>() == false );
+        REQUIRE( (f1.begin() + 1)->get<0>() == 2022_y/January/4 );
+        REQUIRE( (f1.begin() + 1)->get<1>() == 12.2 );
+        REQUIRE( (f1.begin() + 1)->get<2>() == false );
+    }
+
+    SECTION( "begin multiple" )
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/2, 10.0, false );
+        f1.push_back( 2022_y/January/3, 11.1, false );
+        f1.push_back( 2022_y/January/4, 12.2, false );
+        REQUIRE( f1.size() == 3 );
+        auto resit = f1.erase( f1.begin(), f1.begin()+2 );
+        REQUIRE( resit == f1.begin() );
+        REQUIRE( f1.size() == 1 );
+        REQUIRE( f1.begin()->get<0>() == 2022_y/January/4 );
+        REQUIRE( f1.begin()->get<1>() == 12.2 );
+        REQUIRE( f1.begin()->get<2>() == false );
+    }
+
+    SECTION( "end 1" )
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/2, 10.0, false );
+        f1.push_back( 2022_y/January/3, 11.1, false );
+        f1.push_back( 2022_y/January/4, 12.2, false );
+        REQUIRE( f1.size() == 3 );
+        auto resit = f1.erase( f1.end()-1, f1.end() );
+        REQUIRE( resit == f1.end() );
+        REQUIRE( f1.size() == 2 );
+        REQUIRE( f1.begin()->get<0>() == 2022_y/January/2 );
+        REQUIRE( f1.begin()->get<1>() == 10.0 );
+        REQUIRE( f1.begin()->get<2>() == false );
+        REQUIRE( (f1.begin() + 1)->get<0>() == 2022_y/January/3 );
+        REQUIRE( (f1.begin() + 1)->get<1>() == 11.1 );
+        REQUIRE( (f1.begin() + 1)->get<2>() == false );
+    }
 }
 
 TEST_CASE( "erase( pos )", "[frame]" )
 {
+    SECTION( "begin" )
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/2, 10.0, false );
+        f1.push_back( 2022_y/January/3, 11.1, false );
+        f1.push_back( 2022_y/January/4, 12.2, false );
+        REQUIRE( f1.size() == 3 );
+        auto resit = f1.erase( f1.begin() );
+        REQUIRE( resit == f1.begin() );
+        REQUIRE( f1.size() == 2 );
+        REQUIRE( f1.begin()->get<0>() == 2022_y/January/3 );
+        REQUIRE( f1.begin()->get<1>() == 11.1 );
+        REQUIRE( f1.begin()->get<2>() == false );
+        REQUIRE( (f1.begin() + 1)->get<0>() == 2022_y/January/4 );
+        REQUIRE( (f1.begin() + 1)->get<1>() == 12.2 );
+        REQUIRE( (f1.begin() + 1)->get<2>() == false );
+    }
+
+    SECTION( "end -1" )
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/2, 10.0, false );
+        f1.push_back( 2022_y/January/3, 11.1, false );
+        f1.push_back( 2022_y/January/4, 12.2, false );
+        REQUIRE( f1.size() == 3 );
+        auto resit = f1.erase( f1.end()-1 );
+        REQUIRE( resit == f1.end() );
+        REQUIRE( f1.size() == 2 );
+        REQUIRE( f1.begin()->get<0>() == 2022_y/January/2 );
+        REQUIRE( f1.begin()->get<1>() == 10.0 );
+        REQUIRE( f1.begin()->get<2>() == false );
+        REQUIRE( (f1.begin() + 1)->get<0>() == 2022_y/January/3 );
+        REQUIRE( (f1.begin() + 1)->get<1>() == 11.1 );
+        REQUIRE( (f1.begin() + 1)->get<2>() == false );
+    }
 }
 
 TEST_CASE( "push_back() pop_back()", "[frame]" )

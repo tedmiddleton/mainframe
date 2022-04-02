@@ -168,6 +168,49 @@ public:
         }
     }
 
+    iterator erase( iterator first, iterator last )
+    {
+        return erase_impl< 0, Ts... >( first, last );
+    }
+
+    iterator erase( iterator pos )
+    {
+        return erase_impl< 0, Ts... >( pos );
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    frame_iterator<U, Us...> erase_impl( iterator first, iterator last )
+    {
+        series<U>& s = std::get< Ind >( m_columns );
+        auto column_first = first.template column_iterator< Ind >();
+        auto column_last = last.template column_iterator< Ind >();
+        typename series<U>::iterator newcpos = s.erase( column_first, column_last );
+        frame_iterator<U> out{ std::make_tuple( newcpos ) };
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            frame_iterator<Us...> dstream = erase_impl<Ind+1, Us...>( first, last );
+            return out.combine( dstream );
+        }
+        else {
+            return out;
+        }
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    frame_iterator<U, Us...> erase_impl( iterator pos )
+    {
+        series<U>& s = std::get< Ind >( m_columns );
+        auto column_pos = pos.template column_iterator< Ind >();
+        typename series<U>::iterator newcpos = s.erase( column_pos );
+        frame_iterator<U> out{ std::make_tuple( newcpos ) };
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            frame_iterator<Us...> dstream = erase_impl<Ind+1, Us...>( pos );
+            return out.combine( dstream );
+        }
+        else {
+            return out;
+        }
+    }
+
     template< size_t Ind > 
     std::string column_name() const
     {

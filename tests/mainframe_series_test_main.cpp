@@ -958,51 +958,6 @@ TEST_CASE( "erase( first last )", "[series]" )
     foo f1{ "f1" };
     foo f2{ "f2" };
     foo f3{ "f3" };
-    SECTION( "empty begin()" )
-    {
-        series<foo> sv1{ f0, f1 };
-        REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        auto it = sv1.erase( sv1.begin(), sv1.begin() );
-        REQUIRE( it == sv1.begin() );
-        REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-    }
-    SECTION( "empty begin()+1" )
-    {
-        series<foo> sv1{ f0, f1 };
-        series<foo> sv2{ sv1 };
-        REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv2.size() == 2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        auto it = sv1.erase( sv1.begin()+1, sv1.begin() );
-        REQUIRE( it == sv1.begin()+1 );
-        REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv2.size() == 2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-    }
-    SECTION( "empty end()" )
-    {
-        series<foo> sv1{ f0, f1 };
-        REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        auto it = sv1.erase( sv1.end(), sv1.begin() );
-        REQUIRE( it == sv1.end() );
-        REQUIRE( sv1.size() == 2 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-    }
     SECTION( "begin() 1" )
     {
         series<foo> sv1{ f0, f1, f2, f3 };
@@ -1035,6 +990,7 @@ TEST_CASE( "erase( first last )", "[series]" )
         REQUIRE( sv2.use_count() == 2 );
         auto it = sv1.erase( sv1.end()-1, sv1.end() );
         REQUIRE( it == sv1.begin()+3 );
+        REQUIRE( it == sv1.end() );
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv2.size() == 4 );
         REQUIRE( sv1.use_count() == 1 );
@@ -1083,22 +1039,11 @@ TEST_CASE( "erase( pos )", "[series]" )
         REQUIRE( sv1.size() == 4 );
         auto it = sv1.erase( sv1.end()-1 );
         REQUIRE( it == sv1.begin()+3 );
+        REQUIRE( it == sv1.end() );
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
-    }
-    SECTION( "end()" )
-    {
-        series<foo> sv1{ f0, f1, f2, f3 };
-        REQUIRE( sv1.size() == 4 );
-        auto it = sv1.erase( sv1.end() );
-        REQUIRE( it == sv1.end() );
-        REQUIRE( sv1.size() == 4 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv1.at( 3 ) == f3 );
     }
 }
 

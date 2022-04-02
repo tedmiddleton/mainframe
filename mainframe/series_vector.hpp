@@ -494,6 +494,11 @@ public:
     template< typename U >
     iterator insert( const_iterator cpos, U&& value )
     {
+#ifdef MFDEBUG
+        if ( cpos < begin() || end() < cpos ) {
+            throw std::invalid_argument{ "insert() invalid argument" };
+        }
+#endif
         auto offset = cpos - begin();
         reserve( size() + 1 ); // possibly invalidates pos
         iterator pos = begin() + offset; // Fix pos
@@ -507,8 +512,11 @@ public:
     }
     iterator insert( const_iterator cpos, size_type count, const T& value )
     {
-        if ( count == 0 )
-            return remove_const( cpos );
+#ifdef MFDEBUG
+        if ( cpos < begin() || end() < cpos ) {
+            throw std::invalid_argument{ "insert() invalid argument" };
+        }
+#endif
         auto offset = cpos - begin();
         reserve( size() + count ); // possibly invalidates pos
         iterator pos = begin() + offset; // Fix pos
@@ -535,8 +543,11 @@ public:
     template< typename InputIt >
     iterator insert( const_iterator cpos, InputIt fst, InputIt lst )
     {
-        if ( lst <= fst )
-            return remove_const( cpos );
+#ifdef MFDEBUG
+        if ( cpos < begin() || end() < cpos || lst <= fst ) {
+            throw std::invalid_argument{ "insert() invalid argument" };
+        }
+#endif
         auto offset = cpos - begin();
         size_t count = lst - fst;
         reserve( size() + count ); // possibly invalidates pos
@@ -561,6 +572,11 @@ public:
     template< typename... Args >
     iterator emplace( const_iterator cpos, Args&&... args )
     {
+#ifdef MFDEBUG
+        if ( cpos < begin() || end() < cpos ) {
+            throw std::invalid_argument{ "emplace() invalid argument" };
+        }
+#endif
         size_type offset = cpos - begin();
         reserve( size() + 1 );
         iterator pos = begin() + offset; // Fix pos
@@ -579,20 +595,24 @@ public:
     {
         auto fst = remove_const( cfst );
         auto lst = remove_const( clst );
-        if ( fst >= lst || fst >= end() )
-            return fst;
-
-        auto icurr = lst;
-        auto ocurr = fst;
-        auto count = lst - fst;
-        auto nend = m_begin + (size() - count);
-        for ( ; ocurr != m_end; ++ocurr, ++icurr ) {
-            ocurr->~T();
-            if ( icurr < m_end ) {
-                new( ocurr ) T{ *icurr };
-            }
+#ifdef MFDEBUG
+        if ( fst < begin() || fst >= lst || end() < lst ) {
+            throw std::invalid_argument{ "erase() invalid argument" };
         }
-        m_end = nend;
+#endif
+        if ( fst != lst ) {
+            auto icurr = lst;
+            auto ocurr = fst;
+            auto count = lst - fst;
+            auto nend = m_begin + (size() - count);
+            for ( ; ocurr != m_end; ++ocurr, ++icurr ) {
+                ocurr->~T();
+                if ( icurr < m_end ) {
+                    new( ocurr ) T{ *icurr };
+                }
+            }
+            m_end = nend;
+        }
         return fst;
     }
 
@@ -660,6 +680,9 @@ private:
 
     void split_array( const_iterator pos, size_t count )
     {
+        if ( count == 0 )
+            return;
+
         T* ricurr = m_end-1;
         T* riend = remove_const( pos )-1;
         T* rocurr = ricurr+count;
