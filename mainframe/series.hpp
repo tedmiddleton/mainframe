@@ -30,11 +30,11 @@ namespace mf
 {
 
 // This is an untyped version of series
-struct _untyped_series
+struct series_untyped
 {
-    _untyped_series() = default;
-    _untyped_series( const _untyped_series& ) = default;
-    _untyped_series& operator=( const _untyped_series& ) = default;
+    series_untyped() = default;
+    series_untyped( const series_untyped& ) = default;
+    series_untyped& operator=( const series_untyped& ) = default;
 
     virtual const std::string& name() const { return m_name; }
     virtual void set_name( const std::string& name ) { m_name = name; }
@@ -42,7 +42,7 @@ struct _untyped_series
 
 private:
     template< typename T >
-    friend struct Series;
+    friend class series;
     std::shared_ptr<iseries_vector> m_data;
     std::string m_name;
 };
@@ -86,7 +86,8 @@ public:
     series( const series& other ) = default;
 
     series( series&& other )
-        : m_sharedvec( std::move( other.m_sharedvec ) )
+        : m_name( std::move( other.m_name ) )
+        , m_sharedvec( std::move( other.m_sharedvec ) )
     {
         // Don't leave other with nullptr
         other.m_sharedvec = std::make_shared< series_vector<T> >();
@@ -96,11 +97,18 @@ public:
         : m_sharedvec( std::make_shared< series_vector<T> >( init ) )
     {}
      
+    series( const series_untyped& su )
+    {
+        m_name = su.m_name;
+        m_sharedvec = std::dynamic_pointer_cast<series_vector<T>>( su.m_data );
+    }
+
     virtual ~series() = default;
 
     // operator=
     series& operator=( series&& other ) 
     {
+        m_name = other.m_name;
         m_sharedvec = std::move( other.m_sharedvec );
         other.m_sharedvec = std::make_shared< series_vector<T> >();
         return *this;
@@ -112,6 +120,14 @@ public:
     {
         m_sharedvec = std::make_shared< series_vector<T> >( init );
         return *this;
+    }
+
+    operator series_untyped()
+    {
+        series_untyped su;
+        su.m_name = m_name;
+        su.m_data = std::dynamic_pointer_cast<iseries_vector>(m_sharedvec);
+        return su;
     }
 
     // assign

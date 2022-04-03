@@ -31,7 +31,31 @@ namespace mf
 {
 
 template< typename ... Ts >
-class frame 
+class frame;
+
+class frame_untyped
+{
+public:
+    template< typename ... Ts >
+    frame< Ts... > to_frame()
+    {
+        frame< Ts... > out;
+        out.populate( m_columns );
+        return out;
+    }
+
+    void add_column( series_untyped& s )
+    {
+        m_columns.push_back( s );
+    }
+
+private:
+
+    std::vector< series_untyped > m_columns;
+};
+
+template< typename ... Ts >
+class frame
 {
 public:
     using iterator = frame_iterator< Ts... >;
@@ -241,7 +265,61 @@ public:
         }
     }
 
-    template< size_t Ind > 
+    template< typename ... Us >
+    frame_untyped columns( const Us& ... us )
+    {
+        frame_untyped f;
+        columns_impl( f, us... );
+        return f;
+    }
+
+    template< typename U, typename ... Us >
+    void columns_impl( frame_untyped& f, const U& u, const Us& ... us )
+    {
+        series_untyped s = column( u );
+        f.add_column( s );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            columns_impl( f, us... );
+        }
+    }
+
+    void populate( std::vector<series_untyped>& columns )
+    {
+        populate_impl< 0, Ts... >( columns );
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void populate_impl( std::vector<series_untyped>& columns )
+    {
+        series_untyped& su = columns.at( Ind );
+        series<U>& s = std::get< Ind >(m_columns);
+        s = series<U>( su );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            populate_impl< Ind+1, Us... >( columns );
+        }
+    }
+
+    series_untyped column( const std::string& colname )
+    {
+        return column_impl< 0, Ts... >( colname );
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    series_untyped column_impl( const std::string& colname )
+    {
+        series<U>& s = std::get<Ind>( m_columns );
+        if ( s.name() == colname ) {
+            return s;
+        }
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            return column_impl< Ind+1, Us... >( colname );
+        }
+        else {
+            throw std::out_of_range{ "out of range" };
+        }
+    }
+
+    template< size_t Ind >
     std::string column_name() const
     {
         return std::get< Ind >( m_columns ).name();
