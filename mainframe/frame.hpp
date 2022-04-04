@@ -345,6 +345,38 @@ public:
         }
     }
 
+    std::array< std::string, sizeof...(Ts) > column_names() const
+    {
+        std::array< std::string, sizeof...(Ts) > out;
+        column_names_impl< 0 >( out );
+        return out;
+    }
+
+    template< size_t Ind >
+    void column_names_impl( std::array< std::string, sizeof...(Ts) >& out ) const
+    {
+        auto& s = std::get<Ind>( m_columns );
+        out[Ind] = s.name();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            column_names_impl< Ind+1 >( out );
+        }
+    }
+
+    void set_column_names( const std::array< std::string, sizeof...( Ts ) >& names )
+    {
+        set_column_names_impl< 0 >( names );
+    }
+
+    template< size_t Ind >
+    void set_column_names_impl( const std::array< std::string, sizeof...( Ts ) >& names )
+    {
+        auto& s = std::get< Ind >( m_columns );
+        s.set_name( names[ Ind ] );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            set_column_names_impl< Ind+1 >( names );
+        }
+    }
+
     template< typename ... Us >
     void set_column_names( const Us& ... colnames )
     {
