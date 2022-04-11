@@ -5,6 +5,8 @@
 #include "date.h"
 #include "debug_cout.hpp"
 
+#define TRAP() asm ( "int $3\n" )
+
 using namespace std;
 using namespace std::chrono;
 using namespace std::literals;
@@ -288,6 +290,8 @@ TEST_CASE( "begin()/end()", "[series_vector]" )
     REQUIRE( b == e );
 }
 
+template< class T >
+class TD;
 TEST_CASE( "rbegin()/rend()", "[series_vector]" )
 {
     foo f1{ "f1" };
