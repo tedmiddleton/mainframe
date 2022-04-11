@@ -59,9 +59,9 @@ class frame
 {
 public:
     using iterator = frame_iterator< Ts... >;
-    using const_iterator = frame_iterator< const Ts... >;
+    using const_iterator = const_frame_iterator< Ts... >;
     using reverse_iterator = reverse_frame_iterator< Ts... >;
-    using const_reverse_iterator = reverse_frame_iterator< const Ts... >;
+    using const_reverse_iterator = const_reverse_frame_iterator< Ts... >;
 
     frame() = default;
     frame( const frame& ) = default;
@@ -325,15 +325,51 @@ public:
         return std::get< Ind >( m_columns ).name();
     }
 
+    template< typename Ex >
+    frame< Ts... > rows( Ex ) const
+    {
+        frame< Ts... > out;
+        //auto cn = column_names();
+        //out.set_column_names( cn );
+        //for ( unsigned n = 0; n < cn.size(); ++n ) {
+        //    ex.set_column_name( n, cn[n] );
+        //}
+
+        //auto fi = cbegin();
+        //for ( ; fi != cend(); ++fi ) {
+        //    if ( ex.get_value( fi ) ) {
+        //        out.push_back( *fi );
+        //    }
+        //}
+
+        return out;
+    }
+
     size_t num_columns() const
     {
         return sizeof...( Ts );
     }
 
-    template< typename ...Us >
-    void push_back( Us... args )
+    template< template<typename> typename Iter >
+    void push_back( const frame_row< Iter, Ts... >& fr )
     {
-        push_back_impl<0, Us...>( args... );
+        push_back_impl<0>( fr );
+    }
+
+    template< size_t Ind, template<typename> typename Iter >
+    void push_back_impl( const frame_row< Iter, Ts... >& fr )
+    {
+        auto elem = fr.template get< Ind >();
+        std::get< Ind >( m_columns ).push_back( elem );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            push_back_impl< Ind+1 >( fr );
+        }
+    }
+
+    template< typename U, typename V, typename ...Us >
+    void push_back( U first_arg, V second_arg, Us... args )
+    {
+        push_back_impl<0, U, V, Us...>( first_arg, second_arg, args... );
     }
 
     template< size_t Ind, typename U, typename ... Us >

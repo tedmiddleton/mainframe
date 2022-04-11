@@ -14,27 +14,32 @@ namespace mf
 {
 
 template< template<typename> class Iter, typename ... Ts >
-class _frame_iterator;
-
-template< template<typename> class Iter, typename ... Ts >
 class frame_row
 {
 public:
     frame_row() = default;
 
-    frame_row( const std::tuple< Iter<Ts>... >& iter ) 
+    frame_row( std::tuple< Iter<Ts>... > iter ) 
         : m_iters( iter ) 
     {}
 
+    template< template<typename> class OtherIter >
+    frame_row( std::tuple< OtherIter<Ts>...> otheriters )
+    {
+        init_from_other_iter< 0, OtherIter, Ts... >( otheriters );
+    }
+
     template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& get()
+    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    get()
     {
         auto ptr = std::get< Ind >( m_iters );
         return *ptr;
     }
 
-    template< size_t Ind, typename T >
-    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& get()
+    template< size_t Ind >
+    const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    get() const
     {
         auto ptr = std::get< Ind >( m_iters );
         return *ptr;
@@ -43,38 +48,122 @@ public:
 private:
 
     template< template<typename> class It, typename ... Us >
-    friend class _frame_iterator;
+    friend class base_frame_iterator;
     template< typename ... Us >
     friend class frame_iterator;
     template< typename ... Us >
+    friend class const_frame_iterator;
+    template< typename ... Us >
     friend class reverse_frame_iterator;
+    template< typename ... Us >
+    friend class const_reverse_frame_iterator;
 
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator==( const frame_row< It, Us... >& l, 
-                            const frame_row< It, Us... >& r );
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator!=( const frame_row< It, Us... >& l, 
-                            const frame_row< It, Us... >& r );
+    template< 
+        size_t Ind, 
+        template<typename> class OtherIter, 
+        typename U, 
+        typename ... Us >
+    void init_from_other_iter( std::tuple< OtherIter<Ts>...>& otheriters )
+    {
+        OtherIter<U>& oiter = std::get< Ind >( otheriters );
+        Iter<U>& iter = std::get< Ind >( m_iters );
+        iter = Iter<U>( oiter );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            init_from_other_iter< Ind+1, OtherIter, Us... >( otheriters );
+        }
+    }
+
+    template< size_t Ind >
+    typename std::tuple_element< Ind, std::tuple< Iter<Ts> ... > >::type
+    get_iterator() const
+    {
+        auto& iter = std::get< Ind >( m_iters );
+        return iter;
+    }
+
+    template< size_t Ind >
+    void set_iterator(
+        typename std::tuple_element< Ind, std::tuple< Iter<Ts> ... > >::type it ) 
+    {
+        std::get< Ind >( m_iters ) = it;
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void inc( size_t n )
+    {
+        std::get< Ind >( m_iters ) += n;
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            inc< Ind+1, Us... >( n );
+        }
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void dec( size_t n )
+    {
+        std::get< Ind >( m_iters ) -= n;
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            dec< Ind+1, Us... >( n );
+        }
+    }
+
+    template< 
+        template<typename> typename ItLeft, 
+        template<typename> typename ItRight, 
+        typename ... Us >
+    friend bool operator==( const frame_row< ItLeft, Us... >& l, 
+                            const frame_row< ItRight, Us... >& r );
+    template< 
+        template<typename> typename ItLeft, 
+        template<typename> typename ItRight, 
+        typename ... Us >
+    friend bool operator!=( const frame_row< ItLeft, Us... >& l, 
+                            const frame_row< ItRight, Us... >& r );
 
     std::tuple< Iter<Ts>... > m_iters;
 };
+
+template< 
+    template<typename> typename ItLeft, 
+    template<typename> typename ItRight, 
+    typename ... Us >
+bool operator==( const frame_row< ItLeft, Us... >& l, 
+                 const frame_row< ItRight, Us... >& r )
+{
+    return l.m_iters == r.m_iters;
+}
+
+template< 
+    template<typename> typename ItLeft, 
+    template<typename> typename ItRight, 
+    typename ... Us >
+bool operator!=( const frame_row< ItLeft, Us... >& l, 
+                 const frame_row< ItRight, Us... >& r )
+{
+    return l.m_iters != r.m_iters;
+}
 
 template< typename T >
 using series_iterator = typename series<T>::iterator;
 
 template< typename T >
-using series_reverse_iterator = typename series<T>::reverse_iterator;
+using const_series_iterator = typename series<T>::const_iterator;
+
+template< typename T >
+using reverse_series_iterator = typename series<T>::reverse_iterator;
+
+template< typename T >
+using const_reverse_series_iterator = typename series<T>::const_reverse_iterator;
 
 template< template<typename> class Iter, typename ... Ts >
-class _frame_iterator
+class base_frame_iterator
 {
 public:
     using iterator_category = std::random_access_iterator_tag;
     using difference_type   = ptrdiff_t;
 
-    _frame_iterator() = default;
+    base_frame_iterator() = default;
 
-    _frame_iterator( const std::tuple<Iter<Ts> ...>& its )
+    base_frame_iterator( const std::tuple<Iter<Ts> ...>& its )
         : m_row( its )
     {
     }
@@ -85,94 +174,72 @@ public:
         return std::get< Ind >( m_row.m_iters );
     }
 
-    void operator++()
-    {
-        operator+=( 1 );
-    }
-
-    void operator++(int)
-    {
-        operator+=( 1 );
-    }
-
-    void operator--()
-    {
-        operator-=( 1 );
-    }
-
-    void operator--(int)
-    {
-        operator-=( 1 );
-    }
+    void operator++() { operator+=( 1 ); }
+    void operator++(int) { operator+=( 1 ); }
+    void operator--() { operator-=( 1 ); }
+    void operator--(int) { operator-=( 1 ); }
 
     void operator+=( size_t n )
     {
-        inc< 0, Ts... >( n );
+        m_row.template inc< 0, Ts... >( n );
     }
-
     void operator-=( size_t n )
     {
-        dec< 0, Ts... >( n );
+        m_row.template dec< 0, Ts... >( n );
     }
 
-    template< size_t Ind, typename U, typename ... Us >
-    void inc( size_t n )
-    {
-        std::get< Ind >( m_row.m_iters ) += n;
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            inc< Ind+1, Us... >( n );
-        }
-    }
-
-    template< size_t Ind, typename U, typename ... Us >
-    void dec( size_t n )
-    {
-        std::get< Ind >( m_row.m_iters ) -= n;
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            dec< Ind+1, Us... >( n );
-        }
-    }
-
-    frame_row< Iter, Ts... >& operator*()
-    {
-        return m_row;
-    }
-
-    const frame_row< Iter, Ts... >& operator*() const
-    {
-        return m_row;
-    }
-
-    frame_row< Iter, Ts... >* operator->()
-    {
-        return &m_row;
-    }
-
-    const frame_row< Iter, Ts... >* operator->() const
-    {
-        return &m_row;
-    }
-
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator==( const _frame_iterator< It, Us... >& l, 
-                            const _frame_iterator< It, Us... >& r );
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator!=( const _frame_iterator< It, Us... >& l, 
-                            const _frame_iterator< It, Us... >& r );
+    frame_row< Iter, Ts... >& operator*() { return this->m_row; }
+    const frame_row< Iter, Ts... >& operator*() const { return this->m_row; }
+    frame_row< Iter, Ts... >* operator->() { return &this->m_row; }
+    const frame_row< Iter, Ts... >* operator->() const { return &this->m_row; }
 
 protected:
+
+    template< size_t Ind >
+    typename std::tuple_element< Ind, std::tuple< Iter<Ts> ... > >::type
+    get_iterator() const   
+    {
+        auto iter = m_row.template get_iterator<Ind>();
+        return iter;
+    }
+
+    template< template<typename> typename It, typename ... Us >
+    friend bool operator==( const base_frame_iterator< It, Us... >& l, 
+                            const base_frame_iterator< It, Us... >& r );
+    template< template<typename> typename It, typename ... Us >
+    friend bool operator!=( const base_frame_iterator< It, Us... >& l, 
+                            const base_frame_iterator< It, Us... >& r );
+    template< 
+        template<typename> typename ItLeft, 
+        template<typename> typename ItRight, 
+        typename ... Us >
+    friend ptrdiff_t operator-( 
+        const base_frame_iterator<ItLeft, Us...>& left,
+        const base_frame_iterator<ItRight, Us...>& right );
 
     frame_row< Iter, Ts... > m_row;
 };
 
+template< 
+    template<typename> typename ItLeft, 
+    template<typename> typename ItRight, 
+    typename ... Us >
+ptrdiff_t operator-( 
+    const base_frame_iterator<ItLeft, Us...>& left,
+    const base_frame_iterator<ItRight, Us...>& right )
+{
+    auto itleft = left.template get_iterator<0>();
+    auto itright = right.template get_iterator<0>();
+    return itleft - itright;
+}
+
 template< typename ... Ts >
-class frame_iterator : public _frame_iterator< series_iterator, Ts... >
+class frame_iterator : public base_frame_iterator< series_iterator, Ts... >
 {
 public:
     frame_iterator( const std::tuple<series_iterator<Ts> ...>& its )
-        : _frame_iterator<series_iterator, Ts...>( its )
-    {
-    }
+        : base_frame_iterator<series_iterator, Ts...>( its )
+    {}
 
     frame_iterator( std::tuple<series<Ts>...>& cols, int offset )
     {
@@ -184,17 +251,10 @@ public:
     {
         series<U>& s = std::get< Ind >( cols );
         auto begin = s.begin();
-        std::get< Ind >( this->m_row.m_iters ) = begin + offset;
+        this->m_row.template set_iterator< Ind >( begin + offset );
         if constexpr ( sizeof...( Us ) > 0 ) {
             init_impl< Ind+1, Us... >( cols, offset );
         }
-    }
-
-    ptrdiff_t operator-( const frame_iterator<Ts...>& other ) const
-    {
-        const auto& t = std::get<0>(this->m_row.m_iters);
-        const auto& o = std::get<0>(other->m_iters);
-        return t - o;
     }
 
     template< typename ... Us >
@@ -223,11 +283,60 @@ public:
 };
 
 template< typename ... Ts >
-class reverse_frame_iterator : public _frame_iterator< series_reverse_iterator, Ts... >
+class const_frame_iterator : public base_frame_iterator< const_series_iterator, Ts... >
 {
 public:
-    reverse_frame_iterator( const std::tuple<series_reverse_iterator<Ts> ...>& its )
-        : _frame_iterator<series_reverse_iterator, Ts...>( its )
+    const_frame_iterator( const std::tuple<const_series_iterator<Ts> ...>& its )
+        : base_frame_iterator<const_series_iterator, Ts...>( its )
+    {}
+
+    const_frame_iterator( const std::tuple<series<Ts>...>& cols, int offset )
+    {
+        init_impl<0, Ts...>( cols, offset );
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void init_impl( const std::tuple<series<Ts>...>& cols, int offset )
+    {
+        const series<U>& s = std::get< Ind >( cols );
+        auto begin = s.cbegin();
+        this->m_row.template set_iterator< Ind >( begin + offset );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            init_impl< Ind+1, Us... >( cols, offset );
+        }
+    }
+
+    template< typename ... Us >
+    const_frame_iterator< Ts..., Us... > combine( 
+        const const_frame_iterator< Us... >& other )
+    {
+        auto ptr = tuple_cat( 
+            this->m_row.m_iters, other->m_iters );
+        const_frame_iterator< Ts..., Us... > out{ ptr };
+        return out;
+    }
+
+    const_frame_iterator<Ts...> operator+( size_t n )
+    {
+        const_frame_iterator<Ts...> out{ *this };
+        out += n;
+        return out;
+    }
+
+    const_frame_iterator<Ts...> operator-( size_t n )
+    {
+        const_frame_iterator<Ts...> out{ *this };
+        out -= n;
+        return out;
+    }
+};
+
+template< typename ... Ts >
+class reverse_frame_iterator : public base_frame_iterator< reverse_series_iterator, Ts... >
+{
+public:
+    reverse_frame_iterator( const std::tuple<reverse_series_iterator<Ts> ...>& its )
+        : base_frame_iterator<reverse_series_iterator, Ts...>( its )
     {
     }
 
@@ -241,17 +350,10 @@ public:
     {
         series<U>& s = std::get< Ind >( cols );
         auto begin = s.rbegin();
-        std::get< Ind >( this->m_row.m_iters ) = begin + offset;
+        this->m_row.template set_iterator< Ind >( begin + offset );
         if constexpr ( sizeof...( Us ) > 0 ) {
             init_impl< Ind+1, Us... >( cols, offset );
         }
-    }
-
-    ptrdiff_t operator-( const reverse_frame_iterator<Ts...>& other ) const
-    {
-        const auto& t = std::get<0>(this->m_row.m_iters);
-        const auto& o = std::get<0>(other->m_iters);
-        return t - o;
     }
 
     template< typename ... Us >
@@ -279,28 +381,67 @@ public:
     }
 };
 
+template< typename ... Ts >
+class const_reverse_frame_iterator : public base_frame_iterator< const_reverse_series_iterator, Ts... >
+{
+public:
+    const_reverse_frame_iterator( const std::tuple<const_reverse_series_iterator<Ts> ...>& its )
+        : base_frame_iterator<const_reverse_series_iterator, Ts...>( its )
+    {}
+
+    const_reverse_frame_iterator( const std::tuple<series<Ts>...>& cols, int offset )
+    {
+        init_impl<0, Ts...>( cols, offset );
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    void init_impl( const std::tuple<series<Ts>...>& cols, int offset )
+    {
+        const series<U>& s = std::get< Ind >( cols );
+        auto begin = s.crbegin();
+        this->m_row.template set_iterator< Ind >( begin + offset );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            init_impl< Ind+1, Us... >( cols, offset );
+        }
+    }
+
+    template< typename ... Us >
+    const_reverse_frame_iterator< Ts..., Us... > combine( 
+        const const_reverse_frame_iterator< Us... >& other )
+    {
+        auto ptr = tuple_cat( 
+            this->m_row.m_iters, other->m_iters );
+        const_reverse_frame_iterator< Ts..., Us... > out{ ptr };
+        return out;
+    }
+
+    const_reverse_frame_iterator<Ts...> operator+( size_t n )
+    {
+        const_reverse_frame_iterator<Ts...> out{ *this };
+        out += n;
+        return out;
+    }
+
+    const_reverse_frame_iterator<Ts...> operator-( size_t n )
+    {
+        const_reverse_frame_iterator<Ts...> out{ *this };
+        out -= n;
+        return out;
+    }
+};
+
 template< template<typename> typename It, typename ... Us >
-bool operator==( const _frame_iterator< It, Us... >& l, const _frame_iterator< It, Us... >& r )
+bool operator==( const base_frame_iterator< It, Us... >& l, 
+                 const base_frame_iterator< It, Us... >& r )
 {
     return l.m_row == r.m_row;
 }
 
 template< template<typename> typename It, typename ... Us >                                                          
-bool operator!=( const _frame_iterator< It, Us... >& l, const _frame_iterator< It, Us... >& r )
+bool operator!=( const base_frame_iterator< It, Us... >& l, 
+                 const base_frame_iterator< It, Us... >& r )
 {
     return l.m_row != r.m_row;
-}
-
-template< template<typename> typename It, typename ... Us >
-bool operator==( const frame_row< It, Us... >& l, const frame_row< It, Us... >& r )
-{
-    return l.m_iters == r.m_iters;
-}
-
-template< template<typename> typename It, typename ... Us >
-bool operator!=( const frame_row< It, Us... >& l, const frame_row< It, Us... >& r )
-{
-    return l.m_iters != r.m_iters;
 }
 
 } // namespace mf
