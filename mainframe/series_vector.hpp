@@ -67,6 +67,20 @@ public:
 };
 
 template< typename T >
+bool operator==( const base_sv_iterator<T>& l, 
+                 const base_sv_iterator<T>& r )
+{
+    return l.m_curr == r.m_curr;
+}
+
+template< typename T >
+bool operator!=( const base_sv_iterator<T>& l, 
+                 const base_sv_iterator<T>& r )
+{
+    return l.m_curr != r.m_curr;
+}
+
+template< typename T >
 class incrementing_sv_iterator : public base_sv_iterator<T>
 {
 public:
@@ -79,7 +93,48 @@ public:
     void operator--(int) { --this->m_curr; }
     void operator+=( difference_type p ) { this->m_curr += p; }
     void operator-=( difference_type p ) { this->m_curr -= p; }
+
+    template< typename U >
+    friend bool operator<( const incrementing_sv_iterator<U>&, 
+                            const incrementing_sv_iterator<U>& );
+    template< typename U >
+    friend bool operator>( const incrementing_sv_iterator<U>&, 
+                            const incrementing_sv_iterator<U>& );
+    template< typename U >
+    friend bool operator<=( const incrementing_sv_iterator<U>&, 
+                            const incrementing_sv_iterator<U>& );
+    template< typename U >
+    friend bool operator>=( const incrementing_sv_iterator<U>&, 
+                            const incrementing_sv_iterator<U>& );
 };
+
+template< typename T >
+bool operator<=( const incrementing_sv_iterator<T>& l, 
+                 const incrementing_sv_iterator<T>& r )
+{
+    return l.m_curr <= r.m_curr;
+}
+
+template< typename T >
+bool operator>=( const incrementing_sv_iterator<T>& l, 
+                 const incrementing_sv_iterator<T>& r )
+{
+    return l.m_curr >= r.m_curr;
+}
+
+template< typename T >
+bool operator<( const incrementing_sv_iterator<T>& l, 
+                const incrementing_sv_iterator<T>& r )
+{
+    return l.m_curr < r.m_curr;
+}
+
+template< typename T >
+bool operator>( const incrementing_sv_iterator<T>& l, 
+                const incrementing_sv_iterator<T>& r )
+{
+    return l.m_curr > r.m_curr;
+}
 
 template< typename T >
 class decrementing_sv_iterator : public base_sv_iterator<T>
@@ -94,7 +149,48 @@ public:
     void operator--(int) { ++this->m_curr; }
     void operator+=( difference_type p ) { this->m_curr -= p; }
     void operator-=( difference_type p ) { this->m_curr += p; }
+
+    template< typename U >
+    friend bool operator<( const decrementing_sv_iterator<U>&, 
+                            const decrementing_sv_iterator<U>& );
+    template< typename U >
+    friend bool operator>( const decrementing_sv_iterator<U>&, 
+                            const decrementing_sv_iterator<U>& );
+    template< typename U >
+    friend bool operator<=( const decrementing_sv_iterator<U>&, 
+                            const decrementing_sv_iterator<U>& );
+    template< typename U >
+    friend bool operator>=( const decrementing_sv_iterator<U>&, 
+                            const decrementing_sv_iterator<U>& );
 };
+
+template< typename T >
+bool operator<=( const decrementing_sv_iterator<T>& l, 
+                 const decrementing_sv_iterator<T>& r )
+{
+    return l.m_curr >= r.m_curr;
+}
+
+template< typename T >
+bool operator>=( const decrementing_sv_iterator<T>& l, 
+                 const decrementing_sv_iterator<T>& r )
+{
+    return l.m_curr <= r.m_curr;
+}
+
+template< typename T >
+bool operator<( const decrementing_sv_iterator<T>& l, 
+                const decrementing_sv_iterator<T>& r )
+{
+    return l.m_curr > r.m_curr;
+}
+
+template< typename T >
+bool operator>( const decrementing_sv_iterator<T>& l, 
+                const decrementing_sv_iterator<T>& r )
+{
+    return l.m_curr < r.m_curr;
+}
 
 template< typename T >
 class const_sv_iterator;
@@ -233,20 +329,6 @@ public:
     const T& operator*() { return *this->m_curr; }
     const T* operator->() { return this->m_curr; }
 };
-
-template< typename T >
-bool operator==( const base_sv_iterator<T>& l, 
-                 const base_sv_iterator<T>& r )
-{
-    return l.m_curr == r.m_curr;
-}
-
-template< typename T >
-bool operator!=( const base_sv_iterator<T>& l, 
-                 const base_sv_iterator<T>& r )
-{
-    return l.m_curr != r.m_curr;
-}
 
 template< typename T >
 class series_vector : public iseries_vector

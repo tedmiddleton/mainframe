@@ -277,6 +277,10 @@ TEST_CASE( "begin()/end()", "[series_vector]" )
     series_vector<foo> sv1{ f1, f2, f3 };
     auto b = sv1.begin();
     auto e = sv1.end();
+    REQUIRE( e > b );
+    REQUIRE( e >= b );
+    REQUIRE( b < e );
+    REQUIRE( b <= e );
     REQUIRE((e-b) == 3);
     REQUIRE(*b == f1);
     REQUIRE(*(b+1) == f2);
@@ -300,6 +304,10 @@ TEST_CASE( "rbegin()/rend()", "[series_vector]" )
     series_vector<foo> sv1{ f1, f2, f3 };
     auto b = sv1.rbegin();
     auto e = sv1.rend();
+    REQUIRE( e > b );
+    REQUIRE( e >= b );
+    REQUIRE( b < e );
+    REQUIRE( b <= e );
     REQUIRE((e-b) == 3);
     REQUIRE(*b == f3);
     REQUIRE(*(b+1) == f2);
