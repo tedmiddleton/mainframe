@@ -15,100 +15,99 @@
 namespace mf
 {
 
-namespace expr_op
-{
 template< typename T >
 struct quickval { static T value; };
-
-template< typename L, typename R > 
+namespace expr_op
+{
 struct GT 
 {
-    using return_type = decltype( quickval<L>::value > quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l > r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l > r )
+    { return l > r; }
 };
-template< typename L, typename R > 
 struct GE 
 {
-    using return_type = decltype( quickval<L>::value >= quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l >= r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l >= r )
+    { return l >= r; }
 };
-template< typename L, typename R > 
 struct LT 
 {
-    using return_type = decltype( quickval<L>::value < quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l < r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l < r )
+    { return l < r; }
 };
-template< typename L, typename R > 
 struct LE
 {
-    using return_type = decltype( quickval<L>::value <= quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l <= r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l <= r )
+    { return l <= r; }
 };
-template< typename L, typename R > 
 struct EQ
 {
-    using return_type = decltype( quickval<L>::value == quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l == r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l == r )
+    { return l == r; }
 };
-template< typename L, typename R > 
 struct NE
 {
-    using return_type = decltype( quickval<L>::value != quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l != r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l != r )
+    { return l != r; }
 };
-template< typename L, typename R > 
 struct AND
 {
-    using return_type = decltype( quickval<L>::value && quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l && r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l && r )
+    { return l && r; }
 };
-template< typename L, typename R > 
 struct OR
 {
-    using return_type = decltype( quickval<L>::value || quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l || r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l || r )
+    { return l || r; }
 };
-template< typename L, typename R >
 struct PLUS
 {
-    using return_type = decltype( quickval<L>::value + quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l + r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l + r )
+    { return l + r; }
 };
-template< typename L, typename R >
 struct MINUS
 {
-    using return_type = decltype( quickval<L>::value - quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l - r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l - r )
+    { return l - r; }
 };
-template< typename L, typename R >
 struct MULTIPLY
 {
-    using return_type = decltype( quickval<L>::value * quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l * r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l * r )
+    { return l * r; }
 };
-template< typename L, typename R >
 struct DIVIDE
 {
-    using return_type = decltype( quickval<L>::value / quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l / r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l / r )
+    { return l / r; }
 };
-template< typename L, typename R >
 struct MODULUS
 {
-    using return_type = decltype( quickval<L>::value % quickval<R>::value );
-    static return_type exec( const L& l, const R& r ) { return l % r; }
+    template< typename L, typename R >
+    static auto exec( const L& l, const R& r ) -> decltype( l % r )
+    { return l % r; }
 };
-template< typename T >
 struct NOT
 {
-    using return_type = decltype( !quickval<T>::value );
-    static return_type exec( const T& t ) { return !t; }
+    template< typename T >
+    static auto exec( const T& t ) -> decltype( !t )
+    { return !t; }
 };
-template< typename T >
 struct NEGATE
 {
-    using return_type = decltype( -quickval<T>::value );
-    static return_type exec( const T& t ) { return -t; }
+    template< typename T >
+    static auto exec( const T& t ) -> decltype( -t )
+    { return -t; }
 };
 
 } // namespace expr_op
@@ -131,57 +130,28 @@ struct is_expression<T &, void>
   : is_expression<T>
 {};
 
-template< typename T >
-struct column_name
+template< size_t Ind >
+struct column
 {
-    column_name() 
-        : m_colnum( std::numeric_limits<decltype(m_colnum)>::max )
-    {
-    }
-
-    void set_column_name( size_t col, std::string name )
-    {
-        if ( name == m_name ) {
-            m_colnum = col;
-        }
-    }
+    static const size_t index = Ind;
 
     template< typename ... Ts >
-    const T& get_value( const frame_iterator< Ts... >& fi ) const
+    typename std::tuple_element<Ind, std::tuple<Ts...>>::type 
+    get_value( const const_frame_iterator< Ts... >& fi ) const
     {
-        return fi.get( m_colnum );
+        return fi->template get<Ind>();
     }
-
-    template< typename ... Ts >
-    T& get_value( frame_iterator< Ts... >& fi ) const
-    {
-        return fi.get( m_colnum );
-    }
-
-    std::string m_name;
-    size_t m_colnum;
 };
 
 template< typename T >
 struct terminal
 {
     using is_expr = void;
-    using return_type = T;
 
     terminal( T _t ) : t( _t ) {}
 
-    void set_column_name( size_t, std::string )
-    {
-    }
-
     template< typename ... Ts >
-    const T& get_value( const frame_iterator<Ts...>& )
-    {
-        return t;
-    }
-
-    template< typename ... Ts >
-    T& get_value( const frame_iterator<Ts...>& )
+    T get_value( const const_frame_iterator<Ts...>& )
     {
         return t;
     }
@@ -189,61 +159,37 @@ struct terminal
     T t;
 };
 
-template< typename T >
-struct terminal< column_name<T> >
+template< size_t Ind >
+struct terminal< column<Ind> >
 {
     using is_expr = void;
-    using return_type = T;
 
-    terminal( column_name<T> _t ) : t( _t ) {}
-
-    void set_column_name( size_t colind, std::string colname )
-    {
-        t.set_column_name( colind, colname );
-    }
+    terminal( column<Ind> _t ) : t( _t ) {}
 
     template< typename ... Ts >
-    const T& get_value( const frame_iterator< Ts... >& fi ) const
+    typename std::tuple_element<Ind, std::tuple<Ts...>>::type 
+    get_value( const_frame_iterator< Ts... >& fi )
     {
         return t.get_value( fi );
     }
 
-    template< typename ... Ts >
-    T& get_value( frame_iterator< Ts... >& fi )
-    {
-        return t.get_value( fi );
-    }
-
-    column_name<T> t;
+    column<Ind> t;
 };
 
-template< template <typename, typename> class Op, typename L, typename R >
+template< typename Op, typename L, typename R >
 struct binary_expr
 {
     using is_expr = void;
-    using op = Op<typename L::return_type, typename R::return_type>;
-    using return_type = typename op::return_type;
     static_assert( is_expression<L>::value , "binary expression left must be expression" );
     static_assert( is_expression<R>::value , "binary expression right must be expression" );
 
     binary_expr( L _l, R _r ) : l( _l ), r( _r ) {}
 
-    void set_column_name( size_t colind, std::string colname )
-    {
-        l.set_column_name( colind, colname );
-        r.set_column_name( colind, colname );
-    }
-
     template< typename ... Ts >
-    const return_type& get_value( const frame_iterator< Ts... >& fi ) const
+    auto get_value( const_frame_iterator< Ts... >& fi ) -> 
+    decltype( Op::exec( quickval<L>::value.get_value( fi ), quickval<R>::value.get_value( fi ) ) )
     {
-        return op::exec( l.get_value( fi ), r.get_value( fi ) );
-    }
-
-    template< typename ... Ts >
-    return_type& get_value( frame_iterator< Ts... >& fi )
-    {
-        return op::exec( l.get_value( fi ), r.get_value( fi ) );
+        return Op::exec( l.get_value( fi ), r.get_value( fi ) );
     }
 
     L l;
@@ -253,31 +199,19 @@ struct binary_expr
 // Op is a member type in expr_op
 // T must be either terminal<>, unary_expr<>, or binary_expr<> (no 
 // unwrapped types - that's why make_unary_expr exists)
-template< template <typename> class Op, typename T >
+template< typename Op, typename T >
 struct unary_expr
 {
     using is_expr = void;
-    using op = Op<typename T::return_type>;
-    using return_type = typename op::return_type;
     static_assert( is_expression<T>::value , "unary expression must contain expression");
 
     unary_expr( T _t ) : t( _t ) {}
 
-    void set_column_name( size_t colind, std::string colname )
-    {
-        t.set_column_name( colind, colname );
-    }
-
     template< typename ... Ts >
-    const return_type& get_value( const frame_iterator< Ts... >& fi ) const
+    auto get_value( const_frame_iterator< Ts... >& fi ) -> 
+    decltype( Op::exec( quickval<T>::value.get_value( fi ) ) )
     {
-        return op::exec( t.get_value( fi ) );
-    }
-
-    template< typename ... Ts >
-    return_type& get_value( frame_iterator< Ts... >& fi )
-    {
-        return op::exec( t.get_value( fi ) );
+        return Op::exec( t.get_value( fi ) );
     }
 
     T t;
@@ -308,7 +242,7 @@ struct maybe_wrap<terminal<T>>
     }
 };
 
-template<template <typename> class Op, typename T>
+template<typename Op, typename T>
 struct maybe_wrap<unary_expr<Op, T>>
 {
     maybe_wrap() = delete;
@@ -319,7 +253,7 @@ struct maybe_wrap<unary_expr<Op, T>>
     }
 };
 
-template<template <typename, typename> class Op, typename L, typename R>
+template<typename Op, typename L, typename R>
 struct maybe_wrap<binary_expr<Op, L, R>>
 {
     maybe_wrap() = delete;
@@ -330,7 +264,7 @@ struct maybe_wrap<binary_expr<Op, L, R>>
     }
 };
 
-template< template <typename> class Op, typename T >
+template< typename Op, typename T >
 struct make_unary_expr
 {
     make_unary_expr() = delete;
@@ -343,7 +277,7 @@ struct make_unary_expr
     }
 };
 
-template< template <typename, typename> class Op, typename L, typename R >
+template< typename Op, typename L, typename R >
 struct make_binary_expr
 {
     make_binary_expr() = delete;
@@ -355,14 +289,6 @@ struct make_binary_expr
         return out;
     }
 };
-
-template< typename T >
-terminal<column_name<T>> col( const char * colname )
-{
-    column_name<T> c;
-    c.name = colname;
-    return maybe_wrap<column_name<T>>::wrap( c );
-}
 
 template< typename L, typename R >
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value, typename make_binary_expr<expr_op::LT, L, R>::type>::type operator<( L l, R r )
@@ -454,12 +380,11 @@ typename std::enable_if<is_expression<T>::value, typename make_unary_expr<expr_o
     return make_unary_expr<expr_op::NOT, T>::create( t );
 }
 
-template< typename T >
-terminal< column_name<T> > col( const std::string & colname )
+template< size_t Ind >
+terminal<column<Ind>> col()
 {
-    return terminal< column_name<T> >{ column_name<T>{ colname } };
+    return terminal<column<Ind>>{ column<Ind>{} };
 }
-
 
 } // namespace mf
 

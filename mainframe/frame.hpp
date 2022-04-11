@@ -24,7 +24,7 @@
 
 #include "mainframe/base.hpp"
 #include "mainframe/frame_iterator.hpp"
-//#include "mainframe/expression.hpp"
+#include "mainframe/expression.hpp"
 #include "mainframe/series.hpp"
 
 namespace mf
@@ -326,21 +326,18 @@ public:
     }
 
     template< typename Ex >
-    frame< Ts... > rows( Ex ) const
+    frame< Ts... > rows( Ex ex ) const
     {
         frame< Ts... > out;
-        //auto cn = column_names();
-        //out.set_column_names( cn );
-        //for ( unsigned n = 0; n < cn.size(); ++n ) {
-        //    ex.set_column_name( n, cn[n] );
-        //}
+        auto cn = column_names();
 
-        //auto fi = cbegin();
-        //for ( ; fi != cend(); ++fi ) {
-        //    if ( ex.get_value( fi ) ) {
-        //        out.push_back( *fi );
-        //    }
-        //}
+        auto fi = cbegin();
+        for ( ; fi != cend(); ++fi ) {
+            auto e = ex.get_value( fi );
+            if ( e ) {
+                out.push_back( *fi );
+            }
+        }
 
         return out;
     }
@@ -450,8 +447,6 @@ public:
 
     template< typename ... Us >
     friend std::ostream & operator<<( std::ostream&, const frame< Us... >& );
-
-
 
     std::tuple<series<Ts>...> m_columns;
 };

@@ -606,42 +606,42 @@ TEST_CASE( "rows()", "[frame]" )
     f1.push_back( 2022_y/January/6, 14.4, true );
     f1.push_back( 2022_y/January/7, 15.5, false );
 
-    //auto frain = f1.rows( col<2>() == true );
-    //auto fnorain = f1.rows( false == col<2>() );
-    //auto fhot = f1.rows( col<1>() >= 14 );
-    //auto fhotandrain = f1.rows( col<1>() >= 13 &&
-    //                            col<2>() == true );
+    auto frain = f1.rows( col<2>() == true );
+    auto fnorain = f1.rows( false == col<2>() );
+    auto fhot = f1.rows( col<1>() >= 14 );
+    auto fhotandrain = f1.rows( col<1>() >= 13 &&
+                                col<2>() == true );
 
-    //REQUIRE( frain.size() == 2 );
-    //REQUIRE( fnorain.size() == 4 );
-    //REQUIRE( fhot.size() == 2 );
-    //REQUIRE( fhotandrain.size() == 1 );
+    REQUIRE( frain.size() == 2 );
+    REQUIRE( fnorain.size() == 4 );
+    REQUIRE( fhot.size() == 2 );
+    REQUIRE( fhotandrain.size() == 1 );
 
-    //REQUIRE( (frain.begin() + 0)->get<0>() == 2022_y/January/3 );
-    //REQUIRE( (frain.begin() + 0)->get<1>() == 11.1 );
-    //REQUIRE( (frain.begin() + 0)->get<2>() == true );
-    //REQUIRE( (frain.begin() + 1)->get<0>() == 2022_y/January/6 );
-    //REQUIRE( (frain.begin() + 1)->get<1>() == 14.4 );
-    //REQUIRE( (frain.begin() + 1)->get<2>() == true );
+    REQUIRE( (frain.begin() + 0)->get<0>() == 2022_y/January/3 );
+    REQUIRE( (frain.begin() + 0)->get<1>() == 11.1 );
+    REQUIRE( (frain.begin() + 0)->get<2>() == true );
+    REQUIRE( (frain.begin() + 1)->get<0>() == 2022_y/January/6 );
+    REQUIRE( (frain.begin() + 1)->get<1>() == 14.4 );
+    REQUIRE( (frain.begin() + 1)->get<2>() == true );
 
-    //REQUIRE( (fnorain.begin() + 0)->get<0>() == 2022_y/January/2 );
-    //REQUIRE( (fnorain.begin() + 0)->get<1>() == 10.0 );
-    //REQUIRE( (fnorain.begin() + 0)->get<2>() == false );
-    //REQUIRE( (fnorain.begin() + 1)->get<0>() == 2022_y/January/4 );
-    //REQUIRE( (fnorain.begin() + 1)->get<1>() == 12.2 );
-    //REQUIRE( (fnorain.begin() + 1)->get<2>() == false );
-    //REQUIRE( (fnorain.begin() + 2)->get<0>() == 2022_y/January/5 );
-    //REQUIRE( (fnorain.begin() + 2)->get<1>() == 13.3 );
-    //REQUIRE( (fnorain.begin() + 2)->get<2>() == false );
-    //REQUIRE( (fnorain.begin() + 3)->get<0>() == 2022_y/January/7 );
-    //REQUIRE( (fnorain.begin() + 3)->get<1>() == 15.5 );
-    //REQUIRE( (fnorain.begin() + 3)->get<2>() == false );
+    REQUIRE( (fnorain.begin() + 0)->get<0>() == 2022_y/January/2 );
+    REQUIRE( (fnorain.begin() + 0)->get<1>() == 10.0 );
+    REQUIRE( (fnorain.begin() + 0)->get<2>() == false );
+    REQUIRE( (fnorain.begin() + 1)->get<0>() == 2022_y/January/4 );
+    REQUIRE( (fnorain.begin() + 1)->get<1>() == 12.2 );
+    REQUIRE( (fnorain.begin() + 1)->get<2>() == false );
+    REQUIRE( (fnorain.begin() + 2)->get<0>() == 2022_y/January/5 );
+    REQUIRE( (fnorain.begin() + 2)->get<1>() == 13.3 );
+    REQUIRE( (fnorain.begin() + 2)->get<2>() == false );
+    REQUIRE( (fnorain.begin() + 3)->get<0>() == 2022_y/January/7 );
+    REQUIRE( (fnorain.begin() + 3)->get<1>() == 15.5 );
+    REQUIRE( (fnorain.begin() + 3)->get<2>() == false );
 
-    //REQUIRE( (fhot.begin() + 0)->get<0>() == 2022_y/January/6 );
-    //REQUIRE( (fhot.begin() + 0)->get<1>() == 14.4 );
-    //REQUIRE( (fhot.begin() + 0)->get<2>() == true );
-    //REQUIRE( (fhot.begin() + 1)->get<0>() == 2022_y/January/7 );
-    //REQUIRE( (fhot.begin() + 1)->get<1>() == 15.5 );
-    //REQUIRE( (fhot.begin() + 1)->get<2>() == false );
+    REQUIRE( (fhot.begin() + 0)->get<0>() == 2022_y/January/6 );
+    REQUIRE( (fhot.begin() + 0)->get<1>() == 14.4 );
+    REQUIRE( (fhot.begin() + 0)->get<2>() == true );
+    REQUIRE( (fhot.begin() + 1)->get<0>() == 2022_y/January/7 );
+    REQUIRE( (fhot.begin() + 1)->get<1>() == 15.5 );
+    REQUIRE( (fhot.begin() + 1)->get<2>() == false );
 }
 
