@@ -29,22 +29,39 @@
 namespace mf
 {
 
+template< typename T >
+class series;
+
 // This is an untyped version of series
-struct useries
-{
+class useries
+{ 
+public:
     useries() = default;
     useries( const useries& ) = default;
     useries& operator=( const useries& ) = default;
+
+    template< typename T >
+    useries( const series<T>& s )
+        : m_name( s.m_name )
+        , m_data( std::dynamic_pointer_cast<iseries_vector>(s.m_sharedvec) )
+    {}
+
+    template< typename T >
+    operator series<T>() const
+    {
+        series<T> s;
+        s.m_name = m_name;
+        s.m_sharedvec = std::dynamic_pointer_cast<series_vector<T>>( m_data );
+        return s;
+    }
 
     virtual const std::string& name() const { return m_name; }
     virtual void set_name( const std::string& name ) { m_name = name; }
     virtual size_t size() const { return m_data->size(); };
 
 private:
-    template< typename T >
-    friend class series;
-    std::shared_ptr<iseries_vector> m_data;
     std::string m_name;
+    std::shared_ptr<iseries_vector> m_data;
 };
 
 
@@ -96,12 +113,6 @@ public:
     series( std::initializer_list<T> init )
         : m_sharedvec( std::make_shared< series_vector<T> >( init ) )
     {}
-     
-    series( const useries& su )
-    {
-        m_name = su.m_name;
-        m_sharedvec = std::dynamic_pointer_cast<series_vector<T>>( su.m_data );
-    }
 
     virtual ~series() = default;
 
@@ -120,14 +131,6 @@ public:
     {
         m_sharedvec = std::make_shared< series_vector<T> >( init );
         return *this;
-    }
-
-    operator useries()
-    {
-        useries su;
-        su.m_name = m_name;
-        su.m_data = std::dynamic_pointer_cast<iseries_vector>(m_sharedvec);
-        return su;
     }
 
     // assign
@@ -432,6 +435,7 @@ private:
         return newit;
     }
 
+    friend class useries;
     template< typename U >
     friend std::ostream& operator<<( std::ostream&, const series<U>& );
 
