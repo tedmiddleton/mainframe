@@ -119,23 +119,50 @@ public:
         return const_reverse_iterator{ m_columns, static_cast<int>(size()) };
     }
 
-    bool empty() const
-    {
-        return std::get< 0 >( m_columns ).empty();
-    }
-
     void clear()
     {
         clear_impl< 0 >();
     }
 
-    template< size_t Ind > 
-    void clear_impl()
+    useries column( const std::string& colname )
     {
-        std::get< Ind >( m_columns ).clear();
-        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            clear_impl< Ind+1 >();
-        }
+        return column_impl< 0, Ts... >( colname );
+    }
+
+    template< size_t Ind >
+    std::string column_name() const
+    {
+        return std::get< Ind >( m_columns ).name();
+    }
+
+    std::array< std::string, sizeof...(Ts) > column_names() const
+    {
+        std::array< std::string, sizeof...(Ts) > out;
+        column_names_impl< 0 >( out );
+        return out;
+    }
+
+    template< typename ... Us >
+    uframe columns( const Us& ... us )
+    {
+        uframe f;
+        columns_impl( f, us... );
+        return f;
+    }
+
+    bool empty() const
+    {
+        return std::get< 0 >( m_columns ).empty();
+    }
+
+    iterator erase( iterator first, iterator last )
+    {
+        return erase_impl< 0, Ts... >( first, last );
+    }
+
+    iterator erase( iterator pos )
+    {
+        return erase_impl< 0, Ts... >( pos );
     }
 
     iterator insert( iterator pos, iterator first, iterator last )
@@ -153,21 +180,138 @@ public:
         return insert_impl< 0, Ts... >( pos, count, ts... );
     }
 
+    size_t num_columns() const
+    {
+        return sizeof...( Ts );
+    }
+
+    void pop_back()
+    {
+        pop_back_impl<0>();
+    }
+
+    template< template<typename> typename Iter >
+    void push_back( const frame_row< Iter, Ts... >& fr )
+    {
+        push_back_impl<0>( fr );
+    }
+
+    template< typename U, typename V, typename ...Us >
+    void push_back( U first_arg, V second_arg, Us... args )
+    {
+        push_back_impl<0, U, V, Us...>( first_arg, second_arg, args... );
+    }
+
+    void resize( size_t newsize )
+    {
+        resize_impl<0>( newsize );
+    }
+
+    template< typename Ex >
+    frame< Ts... > rows( Ex ex ) const
+    {
+        frame< Ts... > out;
+        auto cn = column_names();
+
+        auto fi = cbegin();
+        for ( ; fi != cend(); ++fi ) {
+            auto e = ex.get_value( fi );
+            if ( e ) {
+                out.push_back( *fi );
+            }
+        }
+
+        return out;
+    }
+
+    void set_column_names( const std::array< std::string, sizeof...( Ts ) >& names )
+    {
+        set_column_names_impl< 0 >( names );
+    }
+
+    template< typename ... Us >
+    void set_column_names( const Us& ... colnames )
+    {
+        set_column_names_impl< 0, Us... >( colnames... );
+    }
+
+    size_t size() const
+    {
+        return size_impl_with_check<0, Ts...>();
+    }
+
+private:
+
+    template< size_t Ind > 
+    void clear_impl()
+    {
+        std::get< Ind >( m_columns ).clear();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            clear_impl< Ind+1 >();
+        }
+    }
+
     template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> insert_impl( iterator pos, iterator first, iterator last )
+    useries column_impl( const std::string& colname )
+    {
+        series<U>& s = std::get<Ind>( m_columns );
+        if ( s.name() == colname ) {
+            return s;
+        }
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            return column_impl< Ind+1, Us... >( colname );
+        }
+        else {
+            throw std::out_of_range{ "out of range" };
+        }
+    }
+
+    template< size_t Ind >
+    void column_names_impl( std::array< std::string, sizeof...(Ts) >& out ) const
+    {
+        auto& s = std::get<Ind>( m_columns );
+        out[Ind] = s.name();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            column_names_impl< Ind+1 >( out );
+        }
+    }
+
+    template< typename U, typename ... Us >
+    void columns_impl( uframe& f, const U& u, const Us& ... us )
+    {
+        useries s = column( u );
+        f.add_column( s );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            columns_impl( f, us... );
+        }
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    frame_iterator<U, Us...> erase_impl( iterator pos )
     {
         series<U>& s = std::get< Ind >( m_columns );
         auto column_pos = pos.template column_iterator< Ind >();
-        auto column_first = first.template column_iterator< Ind >();
-        auto column_last = last.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.insert( 
-            column_pos, 
-            column_first, 
-            column_last
-            );
+        typename series<U>::iterator newcpos = s.erase( column_pos );
         frame_iterator<U> out{ std::make_tuple( newcpos ) };
         if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = insert_impl<Ind+1, Us...>( pos, first, last );
+            frame_iterator<Us...> dstream = erase_impl<Ind+1, Us...>( pos );
+            return out.combine( dstream );
+        }
+        else {
+            return out;
+        }
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    frame_iterator<U, Us...> erase_impl( iterator first, iterator last )
+    {
+        series<U>& s = std::get< Ind >( m_columns );
+        auto column_first = first.template column_iterator< Ind >();
+        auto column_last = last.template column_iterator< Ind >();
+        typename series<U>::iterator newcpos = s.erase( column_first, column_last );
+        frame_iterator<U> out{ std::make_tuple( newcpos ) };
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            frame_iterator<Us...> dstream = erase_impl<Ind+1, Us...>( first, last );
             return out.combine( dstream );
         }
         else {
@@ -192,52 +336,26 @@ public:
         }
     }
 
-    iterator erase( iterator first, iterator last )
-    {
-        return erase_impl< 0, Ts... >( first, last );
-    }
-
-    iterator erase( iterator pos )
-    {
-        return erase_impl< 0, Ts... >( pos );
-    }
-
     template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> erase_impl( iterator first, iterator last )
-    {
-        series<U>& s = std::get< Ind >( m_columns );
-        auto column_first = first.template column_iterator< Ind >();
-        auto column_last = last.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.erase( column_first, column_last );
-        frame_iterator<U> out{ std::make_tuple( newcpos ) };
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = erase_impl<Ind+1, Us...>( first, last );
-            return out.combine( dstream );
-        }
-        else {
-            return out;
-        }
-    }
-
-    template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> erase_impl( iterator pos )
+    frame_iterator<U, Us...> insert_impl( iterator pos, iterator first, iterator last )
     {
         series<U>& s = std::get< Ind >( m_columns );
         auto column_pos = pos.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.erase( column_pos );
+        auto column_first = first.template column_iterator< Ind >();
+        auto column_last = last.template column_iterator< Ind >();
+        typename series<U>::iterator newcpos = s.insert( 
+            column_pos, 
+            column_first, 
+            column_last
+            );
         frame_iterator<U> out{ std::make_tuple( newcpos ) };
         if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = erase_impl<Ind+1, Us...>( pos );
+            frame_iterator<Us...> dstream = insert_impl<Ind+1, Us...>( pos, first, last );
             return out.combine( dstream );
         }
         else {
             return out;
         }
-    }
-
-    void pop_back()
-    {
-        pop_back_impl<0>();
     }
 
     template< size_t Ind >
@@ -247,39 +365,6 @@ public:
         s.pop_back();
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
             pop_back_impl< Ind+1 >();
-        }
-    }
-
-    void resize( size_t newsize )
-    {
-        resize_impl<0>( newsize );
-    }
-
-    template< size_t Ind >
-    void resize_impl( size_t newsize )
-    {
-        auto& s = std::get<Ind>( m_columns );
-        s.resize( newsize );
-        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            resize_impl< Ind+1 >( newsize );
-        }
-    }
-
-    template< typename ... Us >
-    uframe columns( const Us& ... us )
-    {
-        uframe f;
-        columns_impl( f, us... );
-        return f;
-    }
-
-    template< typename U, typename ... Us >
-    void columns_impl( uframe& f, const U& u, const Us& ... us )
-    {
-        useries s = column( u );
-        f.add_column( s );
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            columns_impl( f, us... );
         }
     }
 
@@ -299,60 +384,6 @@ public:
         }
     }
 
-    useries column( const std::string& colname )
-    {
-        return column_impl< 0, Ts... >( colname );
-    }
-
-    template< size_t Ind, typename U, typename ... Us >
-    useries column_impl( const std::string& colname )
-    {
-        series<U>& s = std::get<Ind>( m_columns );
-        if ( s.name() == colname ) {
-            return s;
-        }
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            return column_impl< Ind+1, Us... >( colname );
-        }
-        else {
-            throw std::out_of_range{ "out of range" };
-        }
-    }
-
-    template< size_t Ind >
-    std::string column_name() const
-    {
-        return std::get< Ind >( m_columns ).name();
-    }
-
-    template< typename Ex >
-    frame< Ts... > rows( Ex ex ) const
-    {
-        frame< Ts... > out;
-        auto cn = column_names();
-
-        auto fi = cbegin();
-        for ( ; fi != cend(); ++fi ) {
-            auto e = ex.get_value( fi );
-            if ( e ) {
-                out.push_back( *fi );
-            }
-        }
-
-        return out;
-    }
-
-    size_t num_columns() const
-    {
-        return sizeof...( Ts );
-    }
-
-    template< template<typename> typename Iter >
-    void push_back( const frame_row< Iter, Ts... >& fr )
-    {
-        push_back_impl<0>( fr );
-    }
-
     template< size_t Ind, template<typename> typename Iter >
     void push_back_impl( const frame_row< Iter, Ts... >& fr )
     {
@@ -361,12 +392,6 @@ public:
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
             push_back_impl< Ind+1 >( fr );
         }
-    }
-
-    template< typename U, typename V, typename ...Us >
-    void push_back( U first_arg, V second_arg, Us... args )
-    {
-        push_back_impl<0, U, V, Us...>( first_arg, second_arg, args... );
     }
 
     template< size_t Ind, typename U, typename ... Us >
@@ -378,26 +403,14 @@ public:
         }
     }
 
-    std::array< std::string, sizeof...(Ts) > column_names() const
-    {
-        std::array< std::string, sizeof...(Ts) > out;
-        column_names_impl< 0 >( out );
-        return out;
-    }
-
     template< size_t Ind >
-    void column_names_impl( std::array< std::string, sizeof...(Ts) >& out ) const
+    void resize_impl( size_t newsize )
     {
         auto& s = std::get<Ind>( m_columns );
-        out[Ind] = s.name();
+        s.resize( newsize );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            column_names_impl< Ind+1 >( out );
+            resize_impl< Ind+1 >( newsize );
         }
-    }
-
-    void set_column_names( const std::array< std::string, sizeof...( Ts ) >& names )
-    {
-        set_column_names_impl< 0 >( names );
     }
 
     template< size_t Ind >
@@ -410,12 +423,6 @@ public:
         }
     }
 
-    template< typename ... Us >
-    void set_column_names( const Us& ... colnames )
-    {
-        set_column_names_impl< 0, Us... >( colnames... );
-    }
-
     template< size_t Ind, typename U, typename ... Us >
     void set_column_names_impl( const U& colname, const Us& ... colnames )
     {
@@ -424,11 +431,6 @@ public:
         if constexpr ( sizeof...( Us ) > 0 ) {
             set_column_names_impl< Ind+1, Us... >( colnames... );
         }
-    }
-
-    size_t size() const
-    {
-        return size_impl_with_check<0, Ts...>();
     }
 
     template< size_t Ind, typename U, typename ... Us >
@@ -447,6 +449,7 @@ public:
 
     template< typename ... Us >
     friend std::ostream & operator<<( std::ostream&, const frame< Us... >& );
+    friend class uframe;
 
     std::tuple<series<Ts>...> m_columns;
 };

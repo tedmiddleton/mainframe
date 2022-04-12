@@ -155,9 +155,17 @@ public:
     {
         return m_sharedvec->at( n );
     }
+    const_reference at( size_type n ) const
+    {
+        return m_sharedvec->at( n );
+    }
 
-    // operator=
-    T& operator[]( size_type n )
+    // operator[]
+    reference operator[]( size_type n )
+    {
+        return m_sharedvec[ n ];
+    }
+    const_reference operator[]( size_type n ) const
     {
         return m_sharedvec[ n ];
     }
