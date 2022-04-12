@@ -164,8 +164,6 @@ struct terminal< column<Ind> >
 {
     using is_expr = void;
 
-    terminal( column<Ind> _t ) : t( _t ) {}
-
     template< typename ... Ts >
     typename std::tuple_element<Ind, std::tuple<Ts...>>::type 
     get_value( const_frame_iterator< Ts... >& fi )
@@ -385,6 +383,91 @@ terminal<column<Ind>> col()
 {
     return terminal<column<Ind>>{ column<Ind>{} };
 }
+
+namespace placeholders
+{
+    inline constexpr terminal<column<0>> _0;
+    inline constexpr terminal<column<1>> _1;
+    inline constexpr terminal<column<2>> _2;
+    inline constexpr terminal<column<3>> _3;
+    inline constexpr terminal<column<4>> _4;
+    inline constexpr terminal<column<5>> _5;
+    inline constexpr terminal<column<6>> _6;
+    inline constexpr terminal<column<7>> _7;
+    inline constexpr terminal<column<8>> _8;
+    inline constexpr terminal<column<9>> _9;
+    inline constexpr terminal<column<10>> _10;
+    inline constexpr terminal<column<11>> _11;
+    inline constexpr terminal<column<12>> _12;
+    inline constexpr terminal<column<13>> _13;
+    inline constexpr terminal<column<14>> _14;
+    inline constexpr terminal<column<15>> _15;
+    inline constexpr terminal<column<16>> _16;
+    inline constexpr terminal<column<17>> _17;
+    inline constexpr terminal<column<18>> _18;
+    inline constexpr terminal<column<19>> _19;
+    inline constexpr terminal<column<20>> _20;
+    inline constexpr terminal<column<21>> _21;
+    inline constexpr terminal<column<22>> _22;
+    inline constexpr terminal<column<23>> _23;
+    inline constexpr terminal<column<24>> _24;
+    inline constexpr terminal<column<25>> _25;
+    inline constexpr terminal<column<26>> _26;
+    inline constexpr terminal<column<27>> _27;
+    inline constexpr terminal<column<28>> _28;
+    inline constexpr terminal<column<29>> _29;
+    inline constexpr terminal<column<30>> _30;
+    inline constexpr terminal<column<31>> _31;
+    inline constexpr terminal<column<32>> _32;
+    inline constexpr terminal<column<33>> _33;
+    inline constexpr terminal<column<34>> _34;
+    inline constexpr terminal<column<35>> _35;
+    inline constexpr terminal<column<36>> _36;
+    inline constexpr terminal<column<37>> _37;
+    inline constexpr terminal<column<38>> _38;
+    inline constexpr terminal<column<39>> _39;
+    inline constexpr terminal<column<0>> col0;
+    inline constexpr terminal<column<1>> col1;
+    inline constexpr terminal<column<2>> col2;
+    inline constexpr terminal<column<3>> col3;
+    inline constexpr terminal<column<4>> col4;
+    inline constexpr terminal<column<5>> col5;
+    inline constexpr terminal<column<6>> col6;
+    inline constexpr terminal<column<7>> col7;
+    inline constexpr terminal<column<8>> col8;
+    inline constexpr terminal<column<9>> col9;
+    inline constexpr terminal<column<10>> col10;
+    inline constexpr terminal<column<11>> col11;
+    inline constexpr terminal<column<12>> col12;
+    inline constexpr terminal<column<13>> col13;
+    inline constexpr terminal<column<14>> col14;
+    inline constexpr terminal<column<15>> col15;
+    inline constexpr terminal<column<16>> col16;
+    inline constexpr terminal<column<17>> col17;
+    inline constexpr terminal<column<18>> col18;
+    inline constexpr terminal<column<19>> col19;
+    inline constexpr terminal<column<20>> col20;
+    inline constexpr terminal<column<21>> col21;
+    inline constexpr terminal<column<22>> col22;
+    inline constexpr terminal<column<23>> col23;
+    inline constexpr terminal<column<24>> col24;
+    inline constexpr terminal<column<25>> col25;
+    inline constexpr terminal<column<26>> col26;
+    inline constexpr terminal<column<27>> col27;
+    inline constexpr terminal<column<28>> col28;
+    inline constexpr terminal<column<29>> col29;
+    inline constexpr terminal<column<30>> col30;
+    inline constexpr terminal<column<31>> col31;
+    inline constexpr terminal<column<32>> col32;
+    inline constexpr terminal<column<33>> col33;
+    inline constexpr terminal<column<34>> col34;
+    inline constexpr terminal<column<35>> col35;
+    inline constexpr terminal<column<36>> col36;
+    inline constexpr terminal<column<37>> col37;
+    inline constexpr terminal<column<38>> col38;
+    inline constexpr terminal<column<39>> col39;
+
+} // namespace placeholders
 
 } // namespace mf
 

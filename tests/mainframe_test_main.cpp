@@ -16,6 +16,7 @@ using namespace std::literals;
 using namespace date::literals;
 using namespace date;
 using namespace mf;
+using namespace mf::placeholders;
 
 namespace std
 {
@@ -608,9 +609,9 @@ TEST_CASE( "rows()", "[frame]" )
 
     auto frain = f1.rows( col<2>() == true );
     auto fnorain = f1.rows( false == col<2>() );
-    auto fhot = f1.rows( col<1>() >= 14 );
-    auto fhotandrain = f1.rows( col<1>() >= 13 &&
-                                col<2>() == true );
+    auto fhot = f1.rows( _1 >= 14 );
+    auto fhotandrain = f1.rows( col1 >= 13 &&
+                                col2 == true );
 
     REQUIRE( frain.size() == 2 );
     REQUIRE( fnorain.size() == 4 );
