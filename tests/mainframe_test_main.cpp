@@ -615,13 +615,19 @@ TEST_CASE( "rows()", "[frame]" )
     auto frain = f1.rows( col<2>() == true );
     auto fnorain = f1.rows( false == col<2>() );
     auto fhot = f1.rows( _1 >= 14 );
-    auto fhotandrain = f1.rows( col1 >= 13 &&
-                                col2 == true );
+    auto fhotandrain = f1.rows( col1 >= 13 && col2 == true );
+    auto fcoldandrain = f1.rows( _1 <= 12 && _2 == true && _0 > 2022_y/January/4 );
+    auto f2or3orhotandrain = 
+        f1.rows( (_1 >= 13 && _2 == true) || 
+                  _0 == 2022_y/January/2 || 
+                  _0 == 2022_y/January/3 );
 
     REQUIRE( frain.size() == 2 );
     REQUIRE( fnorain.size() == 4 );
     REQUIRE( fhot.size() == 2 );
     REQUIRE( fhotandrain.size() == 1 );
+    REQUIRE( fcoldandrain.empty() );
+    REQUIRE( f2or3orhotandrain.size() == 3 );
 
     REQUIRE( (frain.begin() + 0)->get<0>() == 2022_y/January/3 );
     REQUIRE( (frain.begin() + 0)->get<1>() == 11.1 );
@@ -653,5 +659,15 @@ TEST_CASE( "rows()", "[frame]" )
     REQUIRE( (fhotandrain.begin() + 0)->get<0>() == 2022_y/January/6 );
     REQUIRE( (fhotandrain.begin() + 0)->get<1>() == 14.4 );
     REQUIRE( (fhotandrain.begin() + 0)->get<2>() == true );
+
+    REQUIRE( (f2or3orhotandrain.begin() + 0)->get<0>() == 2022_y/January/2 );
+    REQUIRE( (f2or3orhotandrain.begin() + 0)->get<1>() == 10.0 );
+    REQUIRE( (f2or3orhotandrain.begin() + 0)->get<2>() == false );
+    REQUIRE( (f2or3orhotandrain.begin() + 1)->get<0>() == 2022_y/January/3 );
+    REQUIRE( (f2or3orhotandrain.begin() + 1)->get<1>() == 11.1 );
+    REQUIRE( (f2or3orhotandrain.begin() + 1)->get<2>() == true );
+    REQUIRE( (f2or3orhotandrain.begin() + 2)->get<0>() == 2022_y/January/6 );
+    REQUIRE( (f2or3orhotandrain.begin() + 2)->get<1>() == 14.4 );
+    REQUIRE( (f2or3orhotandrain.begin() + 2)->get<2>() == true );
 }
 
