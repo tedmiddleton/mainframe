@@ -649,5 +649,9 @@ TEST_CASE( "rows()", "[frame]" )
     REQUIRE( (fhot.begin() + 1)->get<0>() == 2022_y/January/7 );
     REQUIRE( (fhot.begin() + 1)->get<1>() == 15.5 );
     REQUIRE( (fhot.begin() + 1)->get<2>() == false );
+
+    REQUIRE( (fhotandrain.begin() + 0)->get<0>() == 2022_y/January/6 );
+    REQUIRE( (fhotandrain.begin() + 0)->get<1>() == 14.4 );
+    REQUIRE( (fhotandrain.begin() + 0)->get<2>() == true );
 }
 
