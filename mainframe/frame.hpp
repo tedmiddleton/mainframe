@@ -130,6 +130,14 @@ public:
     }
 
     template< size_t Ind >
+    useries column( terminal<::mf::column<Ind>> )
+    {
+        auto& s = std::get<Ind>( m_columns );
+        useries us( s );
+        return us;
+    }
+
+    template< size_t Ind >
     std::string column_name() const
     {
         return std::get< Ind >( m_columns ).name();

@@ -593,6 +593,12 @@ TEST_CASE( "columns() to_frame()", "[frame]" )
     REQUIRE( (f2.begin() + 1)->get<1>() == 2022_y/January/3 );
     REQUIRE( (f2.begin() + 2)->get<0>() == 12.2 );
     REQUIRE( (f2.begin() + 2)->get<1>() == 2022_y/January/4 );
+
+    frame<bool, year_month_day> f3 = f1.columns( _2, _0 );
+    REQUIRE( f3.column_name<0>() == "rain" );
+    REQUIRE( f3.column_name<1>() == "date" );
+    REQUIRE( f3.begin()->get<0>() == false );
+    REQUIRE( f3.begin()->get<1>() == 2022_y/January/2 );
 }
 
 TEST_CASE( "rows()", "[frame]" )
