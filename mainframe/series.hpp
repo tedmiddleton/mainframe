@@ -30,11 +30,11 @@ namespace mf
 {
 
 // This is an untyped version of series
-struct series_untyped
+struct useries
 {
-    series_untyped() = default;
-    series_untyped( const series_untyped& ) = default;
-    series_untyped& operator=( const series_untyped& ) = default;
+    useries() = default;
+    useries( const useries& ) = default;
+    useries& operator=( const useries& ) = default;
 
     virtual const std::string& name() const { return m_name; }
     virtual void set_name( const std::string& name ) { m_name = name; }
@@ -97,7 +97,7 @@ public:
         : m_sharedvec( std::make_shared< series_vector<T> >( init ) )
     {}
      
-    series( const series_untyped& su )
+    series( const useries& su )
     {
         m_name = su.m_name;
         m_sharedvec = std::dynamic_pointer_cast<series_vector<T>>( su.m_data );
@@ -122,9 +122,9 @@ public:
         return *this;
     }
 
-    operator series_untyped()
+    operator useries()
     {
-        series_untyped su;
+        useries su;
         su.m_name = m_name;
         su.m_data = std::dynamic_pointer_cast<iseries_vector>(m_sharedvec);
         return su;

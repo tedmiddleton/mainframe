@@ -583,8 +583,7 @@ TEST_CASE( "columns() to_frame()", "[frame]" )
     f1.push_back( 2022_y/January/2, 10.0, false );
     f1.push_back( 2022_y/January/3, 11.1, false );
     f1.push_back( 2022_y/January/4, 12.2, false );
-    auto f2 = f1.columns( "temperature", "date" )
-        .to_frame<double, year_month_day>();
+    frame<double, year_month_day> f2 = f1.columns( "temperature", "date" );
     REQUIRE( f2.num_columns() == 2 );
     REQUIRE( f2.column_name<0>() == "temperature" );
     REQUIRE( f2.column_name<1>() == "date" );

@@ -33,25 +33,25 @@ namespace mf
 template< typename ... Ts >
 class frame;
 
-class frame_untyped
+class uframe
 {
 public:
     template< typename ... Ts >
-    frame< Ts... > to_frame()
+    operator frame< Ts... >()
     {
         frame< Ts... > out;
         out.populate( m_columns );
         return out;
     }
 
-    void add_column( series_untyped& s )
+    void add_column( useries& s )
     {
         m_columns.push_back( s );
     }
 
 private:
 
-    std::vector< series_untyped > m_columns;
+    std::vector< useries > m_columns;
 };
 
 template< typename ... Ts >
@@ -266,32 +266,32 @@ public:
     }
 
     template< typename ... Us >
-    frame_untyped columns( const Us& ... us )
+    uframe columns( const Us& ... us )
     {
-        frame_untyped f;
+        uframe f;
         columns_impl( f, us... );
         return f;
     }
 
     template< typename U, typename ... Us >
-    void columns_impl( frame_untyped& f, const U& u, const Us& ... us )
+    void columns_impl( uframe& f, const U& u, const Us& ... us )
     {
-        series_untyped s = column( u );
+        useries s = column( u );
         f.add_column( s );
         if constexpr ( sizeof...( Us ) > 0 ) {
             columns_impl( f, us... );
         }
     }
 
-    void populate( std::vector<series_untyped>& columns )
+    void populate( std::vector<useries>& columns )
     {
         populate_impl< 0, Ts... >( columns );
     }
 
     template< size_t Ind, typename U, typename ... Us >
-    void populate_impl( std::vector<series_untyped>& columns )
+    void populate_impl( std::vector<useries>& columns )
     {
-        series_untyped& su = columns.at( Ind );
+        useries& su = columns.at( Ind );
         series<U>& s = std::get< Ind >(m_columns);
         s = series<U>( su );
         if constexpr ( sizeof...( Us ) > 0 ) {
@@ -299,13 +299,13 @@ public:
         }
     }
 
-    series_untyped column( const std::string& colname )
+    useries column( const std::string& colname )
     {
         return column_impl< 0, Ts... >( colname );
     }
 
     template< size_t Ind, typename U, typename ... Us >
-    series_untyped column_impl( const std::string& colname )
+    useries column_impl( const std::string& colname )
     {
         series<U>& s = std::get<Ind>( m_columns );
         if ( s.name() == colname ) {
