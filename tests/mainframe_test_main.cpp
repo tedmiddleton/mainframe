@@ -280,7 +280,7 @@ TEST_CASE( "insert( pos first last )", "[frame]" )
     f2.push_back( 2021_y/March/14, -112.1, true );
     REQUIRE( f2.size() == 3 );
 
-    auto resit = f1.insert( f1.begin()+1, f2.begin(), f2.end() );
+    auto resit = f1.insert( f1.begin()+1, f2.cbegin(), f2.cend() );
     REQUIRE( f1.size() == 6 );
     auto b = f1.begin();
     REQUIRE( resit == b+1 );
@@ -576,7 +576,7 @@ TEST_CASE( "resize()", "[frame]" )
     }
 }
 
-TEST_CASE( "columns() to_frame()", "[frame]" )
+TEST_CASE( "columns()", "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
     f1.set_column_names( "date", "temperature", "rain" );
@@ -669,5 +669,46 @@ TEST_CASE( "rows()", "[frame]" )
     REQUIRE( (f2or3orhotandrain.begin() + 2)->get<0>() == 2022_y/January/6 );
     REQUIRE( (f2or3orhotandrain.begin() + 2)->get<1>() == 14.4 );
     REQUIRE( (f2or3orhotandrain.begin() + 2)->get<2>() == true );
+}
+
+TEST_CASE( "operator+", "[frame]" )
+{
+    frame<year_month_day, double, bool> f1;
+    frame<year_month_day, double, bool> f2;
+    f1.set_column_names( "date", "temperature", "rain" );
+    f2.set_column_names( "date", "temperature", "rain" );
+    f1.push_back( 2022_y/January/2, 10.0, false );
+    f1.push_back( 2022_y/January/3, 11.1, true );
+    f1.push_back( 2022_y/January/4, 12.2, false );
+    f2.push_back( 2022_y/January/5, 13.3, false );
+    f2.push_back( 2022_y/January/6, 14.4, true );
+    f2.push_back( 2022_y/January/7, 15.5, false );
+    REQUIRE( f1.size() == 3 );
+    REQUIRE( f2.size() == 3 );
+
+    auto f3 = f2 + f1;
+
+    REQUIRE( f1.size() == 3 );
+    REQUIRE( f2.size() == 3 );
+    REQUIRE( f3.size() == 6 );
+
+    REQUIRE( (f3.begin() + 0)->get<0>() == 2022_y/January/5 );
+    REQUIRE( (f3.begin() + 0)->get<1>() == 13.3 );
+    REQUIRE( (f3.begin() + 0)->get<2>() == false );
+    REQUIRE( (f3.begin() + 1)->get<0>() == 2022_y/January/6 );
+    REQUIRE( (f3.begin() + 1)->get<1>() == 14.4 );
+    REQUIRE( (f3.begin() + 1)->get<2>() == true );
+    REQUIRE( (f3.begin() + 2)->get<0>() == 2022_y/January/7 );
+    REQUIRE( (f3.begin() + 2)->get<1>() == 15.5 );
+    REQUIRE( (f3.begin() + 2)->get<2>() == false );
+    REQUIRE( (f3.begin() + 3)->get<0>() == 2022_y/January/2 );
+    REQUIRE( (f3.begin() + 3)->get<1>() == 10.0 );
+    REQUIRE( (f3.begin() + 3)->get<2>() == false );
+    REQUIRE( (f3.begin() + 4)->get<0>() == 2022_y/January/3 );
+    REQUIRE( (f3.begin() + 4)->get<1>() == 11.1 );
+    REQUIRE( (f3.begin() + 4)->get<2>() == true );
+    REQUIRE( (f3.begin() + 5)->get<0>() == 2022_y/January/4 );
+    REQUIRE( (f3.begin() + 5)->get<1>() == 12.2 );
+    REQUIRE( (f3.begin() + 5)->get<2>() == false );
 }
 

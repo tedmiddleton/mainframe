@@ -69,6 +69,13 @@ public:
     frame& operator=( const frame& ) = default;
     frame& operator=( frame&& ) = default;
 
+    frame< Ts... > operator+( const frame< Ts... >& other ) const
+    {
+        frame< Ts... > out{ *this };
+        out.insert( out.end(), other.cbegin(), other.cend() );
+        return out;
+    }
+
     iterator begin()
     {
         return iterator{ m_columns, 0 };
@@ -173,7 +180,7 @@ public:
         return erase_impl< 0, Ts... >( pos );
     }
 
-    iterator insert( iterator pos, iterator first, iterator last )
+    iterator insert( iterator pos, const_iterator first, const_iterator last )
     {
         return insert_impl< 0, Ts... >( pos, first, last );
     }
@@ -345,7 +352,9 @@ private:
     }
 
     template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> insert_impl( iterator pos, iterator first, iterator last )
+    frame_iterator<U, Us...> insert_impl( iterator pos, 
+                                          const_iterator first, 
+                                          const_iterator last )
     {
         series<U>& s = std::get< Ind >( m_columns );
         auto column_pos = pos.template column_iterator< Ind >();

@@ -13,6 +13,12 @@
 namespace mf
 {
 
+template< size_t Ind >
+struct column;
+
+template< typename T >
+struct terminal;
+
 template< template<typename> class Iter, typename ... Ts >
 class frame_row
 {
@@ -22,12 +28,6 @@ public:
     frame_row( std::tuple< Iter<Ts>... > iter ) 
         : m_iters( iter ) 
     {}
-
-    template< template<typename> class OtherIter >
-    frame_row( std::tuple< OtherIter<Ts>...> otheriters )
-    {
-        init_from_other_iter< 0, OtherIter, Ts... >( otheriters );
-    }
 
     template< size_t Ind >
     typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
@@ -40,6 +40,22 @@ public:
     template< size_t Ind >
     const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
     get() const
+    {
+        auto ptr = std::get< Ind >( m_iters );
+        return *ptr;
+    }
+
+    template< size_t Ind >
+    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    get( terminal<column<Ind>> )
+    {
+        auto ptr = std::get< Ind >( m_iters );
+        return *ptr;
+    }
+
+    template< size_t Ind >
+    const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    get( terminal<column<Ind>> ) const
     {
         auto ptr = std::get< Ind >( m_iters );
         return *ptr;
@@ -169,7 +185,8 @@ public:
     }
 
     template< size_t Ind >
-    typename series_vector<typename std::tuple_element< Ind, std::tuple< Ts ... > >::type>::iterator column_iterator()
+    Iter<typename std::tuple_element< Ind, std::tuple< Ts ... > >::type> 
+    column_iterator()
     {
         return std::get< Ind >( m_row.m_iters );
     }
@@ -280,6 +297,10 @@ public:
         out -= n;
         return out;
     }
+
+private:
+    template< typename ... Us >
+    friend class const_frame_iterator;
 };
 
 template< typename ... Ts >
@@ -293,6 +314,11 @@ public:
     const_frame_iterator( const std::tuple<series<Ts>...>& cols, int offset )
     {
         init_impl<0, Ts...>( cols, offset );
+    }
+
+    const_frame_iterator( const frame_iterator<Ts...>& fi )
+        : base_frame_iterator<const_series_iterator, Ts...>( fi.m_row.m_iters )
+    {
     }
 
     template< size_t Ind, typename U, typename ... Us >
@@ -379,6 +405,10 @@ public:
         out -= n;
         return out;
     }
+
+private:
+    template< typename ... Us >
+    friend class const_reverse_frame_iterator;
 };
 
 template< typename ... Ts >
@@ -392,6 +422,11 @@ public:
     const_reverse_frame_iterator( const std::tuple<series<Ts>...>& cols, int offset )
     {
         init_impl<0, Ts...>( cols, offset );
+    }
+
+    const_reverse_frame_iterator( const reverse_frame_iterator<Ts...>& fi )
+        : base_frame_iterator<const_reverse_series_iterator, Ts...>( fi.m_row.m_iters )
+    {
     }
 
     template< size_t Ind, typename U, typename ... Us >
