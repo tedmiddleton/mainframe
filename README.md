@@ -16,7 +16,7 @@ mainframe supports flexible data of nearly any type for columns - as long as the
         f1.push_back( 2022_y/January/7, 15.5, false );
         f1.push_back( 2022_y/January/8, 9.1, true );
 
-mainframe supports an expression format that allows for simple row filtering. Here, `fcoldandrain` is a new dataframe that will contain a single row for 2022-January-7:
+mainframe supports an expression format that allows for simple row filtering. Here, `fcoldandrain` is a new dataframe that will contain a single row for `2022/January/8`:
 
          frame<year_month_day, double, bool> fcoldandrain = f1.rows( _1 <= 12 && _2 == true && _0 > 2022_y/January/4 );
 
