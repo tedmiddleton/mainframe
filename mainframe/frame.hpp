@@ -36,6 +36,18 @@ class frame;
 class uframe
 {
 public:
+    uframe() = default;
+    uframe( const uframe& ) = default;
+    uframe( uframe&& ) = default;
+    uframe& operator=( const uframe& ) = default;
+    uframe& operator=( uframe&& ) = default;
+
+    template< typename ... Ts >
+    uframe( frame< Ts... >& f )
+    {
+        init_impl< 0 >( f );
+    }
+
     template< typename ... Ts >
     operator frame< Ts... >()
     {
@@ -44,12 +56,27 @@ public:
         return out;
     }
 
-    void add_column( useries& s )
+    void add_series( useries& s )
     {
         m_columns.push_back( s );
     }
 
+    size_t num_columns() const
+    {
+        return m_columns.size();
+    }
+
 private:
+
+    template< size_t Ind, typename ... Ts >
+    void init_impl( frame< Ts... >& f )
+    {
+        useries s = f.template column<Ind>();
+        m_columns.push_back( s );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            init_impl< Ind+1 >( f );
+        }
+    }
 
     std::vector< useries > m_columns;
 };
@@ -137,7 +164,15 @@ public:
     }
 
     template< size_t Ind >
-    useries column( terminal<::mf::column<Ind>> )
+    useries column()
+    {
+        auto& s = std::get<Ind>( m_columns );
+        useries us( s );
+        return us;
+    }
+
+    template< size_t Ind >
+    useries column( terminal<expr_column<Ind>> )
     {
         auto& s = std::get<Ind>( m_columns );
         useries us( s );
@@ -193,6 +228,33 @@ public:
     iterator insert( iterator pos, size_t count, const Ts&... ts )
     {
         return insert_impl< 0, Ts... >( pos, count, ts... );
+    }
+
+    template< typename T >
+    frame< Ts..., T > new_series( const std::string& series_name )
+    {
+        uframe plust( *this );
+        series<T> ns( size() );
+        ns.set_name( series_name );
+        useries us( ns );
+        plust.add_series( us );
+        return plust;
+    }
+
+    template< typename T, typename Ex >
+    frame< Ts..., T > new_series( const std::string& series_name, Ex expr )
+    {
+        uframe plust( *this );
+        series<T> ns( size() );
+        ns.set_name( series_name );
+        useries us( ns );
+        plust.add_series( us );
+        frame< Ts..., T > out = plust;
+        for ( auto it = out.begin(); it != out.end(); ++it ) {
+            auto val = expr.get_value( it );
+            it->template at<sizeof...(Ts)>() = val;
+        }
+        return out;
     }
 
     size_t num_columns() const
@@ -295,7 +357,7 @@ private:
     void columns_impl( uframe& f, const U& u, const Us& ... us )
     {
         useries s = column( u );
-        f.add_column( s );
+        f.add_series( s );
         if constexpr ( sizeof...( Us ) > 0 ) {
             columns_impl( f, us... );
         }
@@ -404,7 +466,7 @@ private:
     template< size_t Ind, template<typename> typename Iter >
     void push_back_impl( const frame_row< Iter, Ts... >& fr )
     {
-        auto elem = fr.template get< Ind >();
+        auto elem = fr.template at< Ind >();
         std::get< Ind >( m_columns ).push_back( elem );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
             push_back_impl< Ind+1 >( fr );

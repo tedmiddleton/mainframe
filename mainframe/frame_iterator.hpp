@@ -14,7 +14,7 @@ namespace mf
 {
 
 template< size_t Ind >
-struct column;
+struct expr_column;
 
 template< typename T >
 struct terminal;
@@ -31,7 +31,7 @@ public:
 
     template< size_t Ind >
     typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
-    get()
+    at()
     {
         auto ptr = std::get< Ind >( m_iters );
         return *ptr;
@@ -39,7 +39,7 @@ public:
 
     template< size_t Ind >
     const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
-    get() const
+    at() const
     {
         auto ptr = std::get< Ind >( m_iters );
         return *ptr;
@@ -47,7 +47,7 @@ public:
 
     template< size_t Ind >
     typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
-    get( terminal<column<Ind>> )
+    at( terminal<expr_column<Ind>> )
     {
         auto ptr = std::get< Ind >( m_iters );
         return *ptr;
@@ -55,7 +55,23 @@ public:
 
     template< size_t Ind >
     const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
-    get( terminal<column<Ind>> ) const
+    at( terminal<expr_column<Ind>> ) const
+    {
+        auto ptr = std::get< Ind >( m_iters );
+        return *ptr;
+    }
+
+    template< size_t Ind >
+    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    operator[]( terminal<expr_column<Ind>> )
+    {
+        auto ptr = std::get< Ind >( m_iters );
+        return *ptr;
+    }
+
+    template< size_t Ind >
+    const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    operator[]( terminal<expr_column<Ind>> ) const
     {
         auto ptr = std::get< Ind >( m_iters );
         return *ptr;
