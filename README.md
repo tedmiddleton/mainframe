@@ -8,6 +8,7 @@ mainframe supports flexible data of nearly any type for columns - as long as the
 
     frame<year_month_day, double, bool> f1;
     f1.set_column_names( "date", "temperature" , "rain" );
+    f1.push_back( 2022_y/January/1, 8.9, true );
     f1.push_back( 2022_y/January/2, 10.0, false );
     f1.push_back( 2022_y/January/3, 11.1, true );
     f1.push_back( 2022_y/January/4, 12.2, false );
