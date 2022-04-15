@@ -802,3 +802,22 @@ TEST_CASE( "new_series()", "[frame]" )
         REQUIRE( (f2.begin() + 5)->at( _3 ) == 2023_y/January/7 );
     }
 }
+
+TEST_CASE( "operator<<()", "[frame]" )
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names( "date", "temperature", "rain" );
+    f1.push_back( 2022_y/January/2, 10.0, false );
+    f1.push_back( 2022_y/January/3, 11.1, true );
+    f1.push_back( 2022_y/January/4, 12.2, false );
+    f1.push_back( 2022_y/January/5, 13.3, false );
+    f1.push_back( 2022_y/January/6, 14.4, true );
+    f1.push_back( 2022_y/January/7, 15.5, false );
+
+    dout << f1;
+
+    series<year_month_day> s = f1.column( _0 );
+    dout << s;
+}
+
+

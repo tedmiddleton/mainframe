@@ -7,9 +7,11 @@
 #ifndef INCLUDED_mainframe_series_h
 #define INCLUDED_mainframe_series_h
 
+#include <cmath>
 #include <type_traits>
 #include <vector>
 #include <stdexcept>
+#include <iomanip>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -402,6 +404,20 @@ public:
         m_name = name;
     }
     
+    std::vector< std::string > to_string() const
+    {
+        std::vector< std::string > s;
+        s.reserve( size() );
+
+        for ( const T& t : *m_sharedvec ) {
+            std::stringstream ss;
+            ss << std::boolalpha;
+            ss << t;
+            s.push_back( ss.str() );
+        }
+        return s;
+    }
+
     series unique() const
     { 
         series out;
@@ -450,6 +466,32 @@ private:
     std::string m_name;
     std::shared_ptr<series_vector<T>> m_sharedvec;
 };
+
+template< typename T >
+std::ostream & operator<<( std::ostream& o, const series< T >& s )
+{
+    std::ios_base::fmtflags fl( o.flags() );
+
+    std::vector<std::string> us = s.to_string();
+    auto name = s.name();
+    auto width = std::max( name.size(), get_max_string_length( us ) );
+    const size_t num_rows = s.size();
+
+    auto gutter_width = 
+        num_rows > 0 ? std::ceil( std::log10( num_rows ) ) + 1 : 1;
+
+    o << std::boolalpha;
+    o << get_emptyspace( gutter_width ) << "| " << std::setw( width ) << name << "\n";
+    o << get_horzrule( gutter_width ) << "|" << get_horzrule( width + 2 ) << "\n";
+
+    for ( size_t rowind = 0; rowind < num_rows; ++rowind ) {
+        std::string& datum = us[ rowind ];
+        o << std::setw( gutter_width ) << rowind << "| " << std::setw( width ) << datum << "\n";
+    }
+
+    o.flags( fl );
+    return o;
+}
 
 } // namespace mf
 

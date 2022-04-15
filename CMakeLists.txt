@@ -46,7 +46,6 @@ target_include_directories( mainframe_base
 add_library( mainframe_series STATIC
     mainframe/series.hpp 
     mainframe/series_vector.hpp 
-    mainframe/series.cpp 
     )
 
 target_include_directories( mainframe_series
@@ -65,7 +64,6 @@ target_link_libraries( mainframe_series
 add_library( mainframe STATIC
     mainframe/frame.hpp 
     mainframe/expression.hpp 
-    mainframe/frame.cpp 
     mainframe/csv.cpp 
     )
 

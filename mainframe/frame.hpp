@@ -14,6 +14,7 @@
 #include <cmath>
 #include <string>
 #include <list>
+#include <iomanip>
 #include <optional>
 #include <variant>
 #include <unordered_map>
@@ -317,6 +318,13 @@ public:
         return size_impl_with_check<0, Ts...>();
     }
 
+    std::vector<std::vector<std::string>> to_string() const
+    {
+        std::vector<std::vector<std::string>> out;
+        to_string_impl<0, Ts...>( out );
+        return out;
+    }
+
 private:
 
     template< size_t Ind > 
@@ -526,6 +534,17 @@ private:
         return s;
     }
 
+    template< size_t Ind, typename U, typename ... Us >
+    void to_string_impl( std::vector< std::vector< std::string > >& strs ) const
+    {
+        const series<U>& s = std::get< Ind >( m_columns );
+        std::vector< std::string > colstrs = s.to_string();
+        strs.push_back( colstrs );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            to_string_impl< Ind+1, Us... >( strs );
+        }
+    }
+
     template< typename ... Us >
     friend std::ostream & operator<<( std::ostream&, const frame< Us... >& );
     friend class uframe;
@@ -533,8 +552,54 @@ private:
     std::tuple<series<Ts>...> m_columns;
 };
 
-} // namespace mf
+template< typename ... Ts >
+std::ostream & operator<<( std::ostream& o, const frame< Ts... >& f )
+{
+    std::ios_base::fmtflags fl( o.flags() );
 
+    std::vector<std::vector<std::string>> uf = f.to_string();
+    auto names = f.column_names();
+    auto widths = get_max_string_lengths( uf );
+    constexpr size_t num_columns = sizeof...(Ts);
+    const size_t num_rows = f.size();
+
+    auto gutter_width = 
+        num_rows > 0 ? std::ceil( std::log10( num_rows ) ) + 1 : 1;
+
+    o << std::boolalpha;
+    o << get_emptyspace( gutter_width );
+    for ( size_t i = 0; i < num_columns; ++i ) {
+        auto& name = names[ i ];
+        auto& width = widths[ i ];
+        width = std::max( width, name.size() );
+        o << "| " << std::setw( width ) << name << " ";
+    }
+    o << "\n";
+
+    o << get_horzrule( gutter_width );
+    for ( size_t i = 0; i < num_columns; ++i ) {
+        auto& width = widths[ i ];
+        o << "|" << get_horzrule( width + 2 );
+    }
+    o << "\n";
+
+    for ( size_t rowind = 0; rowind < num_rows; ++rowind ) {
+        o << std::setw( gutter_width ) << rowind;
+        for ( size_t colind = 0; colind < num_columns; ++colind ) {
+
+            std::string& datum = uf[ colind ][ rowind ];
+            auto width = widths[ colind ];
+
+            o << "| " << std::setw( width ) << datum << " ";
+        }
+        o << "\n";
+    }
+
+    o.flags( fl );
+    return o;
+}
+
+} // namespace mf
 
 #endif // INCLUDED_mainframe_frame_h
 

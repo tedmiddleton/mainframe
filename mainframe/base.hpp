@@ -8,6 +8,7 @@
 #define INCLUDED_mainframe_base_h
 #include <ostream>
 #include <optional>
+#include <vector>
 
 namespace mf
 {
@@ -16,6 +17,9 @@ void set_use_termio( bool enable );
 bool use_termio();
 int get_termwidth();
 const char * get_horzrule( size_t num );
+const char * get_emptyspace( size_t num );
+size_t get_max_string_length( const std::vector<std::string>& );
+std::vector<size_t> get_max_string_lengths( const std::vector<std::vector<std::string>>& );
 
 namespace detail
 {
