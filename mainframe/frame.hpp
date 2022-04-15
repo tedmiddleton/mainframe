@@ -289,7 +289,7 @@ public:
     frame< Ts... > rows( Ex ex ) const
     {
         frame< Ts... > out;
-        auto cn = column_names();
+        out.set_column_names( column_names() );
 
         auto fi = cbegin();
         for ( ; fi != cend(); ++fi ) {
