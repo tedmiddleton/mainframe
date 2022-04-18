@@ -83,6 +83,37 @@ private:
 };
 
 template< typename ... Ts >
+class frame;
+
+template<typename T, typename Tpl>
+struct prepend;
+
+template<typename T, typename ... Ts>
+struct prepend<T, frame<Ts...>>
+{
+    using type = frame<T, Ts...>;
+};
+
+template<typename tpl, size_t...Inds> 
+struct rearrange;
+
+template<size_t Ind, size_t...Inds, typename ... Ts>
+struct rearrange<frame<Ts...>, Ind, Inds...>
+{
+    using indexed_type = typename std::tuple_element<Ind, std::tuple<Ts...>>::type;
+    using remaining_frame = typename rearrange<frame<Ts...>, Inds...>::type;
+    using type = typename prepend<indexed_type, remaining_frame>::type;
+};
+
+template<size_t Ind, typename ... Ts>
+struct rearrange<frame<Ts...>, Ind>
+{
+    using indexed_type = typename std::tuple_element<Ind, std::tuple<Ts...>>::type;
+    using frame_indexed_type = frame<indexed_type>;
+    using type = frame_indexed_type;
+};
+
+template< typename ... Ts >
 class frame
 {
 public:
@@ -191,6 +222,15 @@ public:
         std::array< std::string, sizeof...(Ts) > out;
         column_names_impl< 0 >( out );
         return out;
+    }
+
+    template< size_t ... Inds >
+    typename rearrange<frame<Ts...>, Inds...>::type 
+    columns( terminal<expr_column<Inds>>... cols )
+    {
+        uframe f;
+        columns_impl( f, cols... );
+        return f;
     }
 
     template< typename ... Us >

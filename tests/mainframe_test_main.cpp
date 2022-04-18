@@ -594,7 +594,7 @@ TEST_CASE( "columns()", "[frame]" )
     REQUIRE( (f2.begin() + 2)->at<0>() == 12.2 );
     REQUIRE( (f2.begin() + 2)->at<1>() == 2022_y/January/4 );
 
-    frame<bool, year_month_day> f3 = f1.columns( _2, _0 );
+    auto f3 = f1.columns( _2, _0 );
     REQUIRE( f3.column_name<0>() == "rain" );
     REQUIRE( f3.column_name<1>() == "date" );
     REQUIRE( f3.begin()->at<0>() == false );
