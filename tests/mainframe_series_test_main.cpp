@@ -1102,3 +1102,78 @@ TEST_CASE( "resize()", "[series]" )
     REQUIRE( sv2.size() == 3 );
 }
 
+TEST_CASE( "allow_missing()", "[series]" )
+{
+    SECTION( "convert" )
+    {
+        foo f0{ "f0" };
+        foo f1{ "f1" };
+        foo f2{ "f2" };
+        foo f3{ "f3" };
+        series<foo> sv1{ f0, f1, f2 };
+        auto sv2 = sv1.allow_missing();
+        REQUIRE( sv2.size() == 3 );
+        REQUIRE( sv2[ 0 ] == f0 );
+        REQUIRE( sv2[ 1 ] == f1 );
+        REQUIRE( sv2[ 2 ] == f2 );
+        sv2.push_back( nullopt );
+        sv2.push_back( f3 );
+        REQUIRE( sv2.size() == 5 );
+        REQUIRE( sv2[ 3 ] == nullopt );
+        REQUIRE( sv2[ 4 ] == f3 );
+    }
+
+    SECTION( "no conversion" )
+    {
+        foo f0{ "f0" };
+        foo f1{ "f1" };
+        foo f2{ "f2" };
+        foo f3{ "f3" };
+        series<std::optional<foo>> sv1{ f0, nullopt, f2 };
+        auto sv2 = sv1.allow_missing();
+        REQUIRE( sv2.size() == 3 );
+        REQUIRE( sv2[ 0 ] == f0 );
+        REQUIRE( sv2[ 1 ] == nullopt );
+        REQUIRE( sv2[ 2 ] == f2 );
+        sv2.push_back( nullopt );
+        sv2.push_back( f3 );
+        REQUIRE( sv2.size() == 5 );
+        REQUIRE( sv2[ 3 ] == nullopt );
+        REQUIRE( sv2[ 4 ] == f3 );
+    }
+
+}
+
+TEST_CASE( "disallow_missing()", "[series]" )
+{
+    SECTION( "convert" )
+    {
+        foo_with_ctor f0{ "f0" };
+        foo_with_ctor f1{ "f1" };
+        foo_with_ctor f2{ "f2" };
+        foo_with_ctor fdefault;
+        series<std::optional<foo_with_ctor>> sv1{ f0, f1, f2 };
+        sv1.push_back( nullopt );
+        auto sv2 = sv1.disallow_missing();
+        REQUIRE( sv2.size() == 4 );
+        REQUIRE( sv2[ 0 ] == f0 );
+        REQUIRE( sv2[ 1 ] == f1 );
+        REQUIRE( sv2[ 2 ] == f2 );
+        REQUIRE( sv2[ 3 ] == fdefault );
+    }
+
+    SECTION( "no conversion" )
+    {
+        foo f0{ "f0" };
+        foo f1{ "f1" };
+        foo f2{ "f2" };
+        series<foo> sv1{ f0, f1, f2 };
+        auto sv2 = sv1.disallow_missing();
+        REQUIRE( sv2.size() == 3 );
+        REQUIRE( sv2[ 0 ] == f0 );
+        REQUIRE( sv2[ 1 ] == f1 );
+        REQUIRE( sv2[ 2 ] == f2 );
+    }
+
+}
+

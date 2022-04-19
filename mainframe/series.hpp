@@ -66,6 +66,11 @@ private:
     std::shared_ptr<iseries_vector> m_data;
 };
 
+template< typename T >
+struct is_optional : std::false_type {};
+
+template< typename T >
+struct is_optional<std::optional<T>> : std::true_type {};
 
 template< typename T >
 class series
@@ -135,6 +140,53 @@ public:
         return *this;
     }
 
+    template<typename U = T,
+        std::enable_if_t<is_optional<U>::value, bool> = true>
+    series<T> allow_missing() const
+    {
+        return *this;
+    }
+
+    template<typename U = T,
+        std::enable_if_t<!is_optional<U>::value, bool> = true>
+    series<std::optional<T>> allow_missing() const
+    {
+        series<std::optional<T>> os;
+        for ( auto& e : *m_sharedvec ) {
+            os.push_back( e );
+        }
+        os.set_name( name() );
+        return os;
+    }
+
+    // This requires default-construction. Can we do better?
+    template<typename U = T,
+        std::enable_if_t<is_optional<U>::value && 
+            std::is_default_constructible<typename U::value_type>::value, 
+        bool> = true>
+    series<typename U::value_type> disallow_missing() const
+    {
+        using V = typename T::value_type;
+        series<V> s;
+        for ( auto& e : *m_sharedvec ) {
+            if ( e ) {
+                s.push_back( *e );
+            }
+            else {
+                s.push_back( V{} );
+            }
+        }
+        s.set_name( name() );
+        return s;
+    }
+
+    template<typename U = T,
+        std::enable_if_t<!is_optional<U>::value, bool> = true>
+    series<T> disallow_missing() const
+    {
+        return *this;
+    }
+
     // assign
     void assign( size_type count, const T& value )
     {
@@ -165,11 +217,11 @@ public:
     // operator[]
     reference operator[]( size_type n )
     {
-        return m_sharedvec[ n ];
+        return (*m_sharedvec)[ n ];
     }
     const_reference operator[]( size_type n ) const
     {
-        return m_sharedvec[ n ];
+        return (*m_sharedvec)[ n ];
     }
 
     // front & back
