@@ -189,7 +189,7 @@ struct add_opt<frame<T, Ts...>, Curr, IndList...>
 template<typename T, size_t Curr, size_t ... IndList>
 struct add_opt<frame<std::optional<T>>, Curr, IndList...>
 {
-    using type = std::optional<T>;
+    using type = frame<std::optional<T>>;
 };
 
 template<typename T, size_t Curr, size_t ... IndList>
@@ -232,7 +232,7 @@ struct remove_opt<frame<std::optional<T>>, Curr, IndList...>
 template<typename T, size_t Curr, size_t ... IndList>
 struct remove_opt<frame<T>, Curr, IndList...>
 {
-    using type = T;
+    using type = frame<T>;
 };
 
 template<typename T>
