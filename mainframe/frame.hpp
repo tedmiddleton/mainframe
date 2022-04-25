@@ -57,9 +57,14 @@ public:
         return out;
     }
 
-    void add_series( useries& s )
+    void add_series( const useries& s )
     {
         m_columns.push_back( s );
+    }
+
+    void set_series( size_t idx, const useries& s )
+    {
+        m_columns.at( idx ) = s;
     }
 
     size_t num_columns() const
@@ -94,23 +99,110 @@ struct prepend<T, frame<Ts...>>
     using type = frame<T, Ts...>;
 };
 
+// This makes frame::columns(_0, ...) work
 template<typename tpl, size_t...Inds> 
 struct rearrange;
 
-template<size_t Ind, size_t...Inds, typename ... Ts>
-struct rearrange<frame<Ts...>, Ind, Inds...>
+template<size_t IndHead, size_t...IndRest, typename ... Ts>
+struct rearrange<frame<Ts...>, IndHead, IndRest...>
 {
-    using indexed_type = typename std::tuple_element<Ind, std::tuple<Ts...>>::type;
-    using remaining_frame = typename rearrange<frame<Ts...>, Inds...>::type;
+    using indexed_type = typename std::tuple_element<IndHead, std::tuple<Ts...>>::type;
+    using remaining_frame = typename rearrange<frame<Ts...>, IndRest...>::type;
     using type = typename prepend<indexed_type, remaining_frame>::type;
 };
 
-template<size_t Ind, typename ... Ts>
-struct rearrange<frame<Ts...>, Ind>
+template<size_t IndHead, typename ... Ts>
+struct rearrange<frame<Ts...>, IndHead>
 {
-    using indexed_type = typename std::tuple_element<Ind, std::tuple<Ts...>>::type;
-    using frame_indexed_type = frame<indexed_type>;
-    using type = frame_indexed_type;
+    using indexed_type = typename std::tuple_element<IndHead, std::tuple<Ts...>>::type;
+    using type = frame<indexed_type>;
+};
+
+template < size_t Ind, size_t ... List >
+struct contains : std::true_type {};
+
+template < size_t Ind, size_t IndHead, size_t... IndRest >
+struct contains<Ind, IndHead, IndRest...> : 
+    std::conditional< 
+        Ind == IndHead,
+        std::true_type,
+        contains<Ind, IndRest ... >
+    >::type {};
+
+template < size_t Ind >
+struct contains<Ind> : std::false_type {};
+
+template< typename T, typename U >
+struct join_frames;
+
+template< typename ... Ts, typename ... Us >
+struct join_frames<frame< Ts... >, frame< Us... > >
+{
+    using type = frame< Ts..., Us... >;
+};
+
+template<typename T, size_t Curr, size_t ... IndList>
+struct add_opt;
+
+template<typename T, typename ... Ts, size_t Curr, size_t ... IndList>
+struct add_opt<frame<std::optional<T>, Ts...>, Curr, IndList...>
+{
+    using frame_type = frame<std::optional<T>>; 
+    using add_opt_type = typename add_opt<frame<Ts...>, Curr+1, IndList...>::type;
+    using type = typename join_frames< frame_type, add_opt_type >::type;
+};
+
+template<typename T, typename ... Ts, size_t Curr, size_t ... IndList>
+struct add_opt<frame<T, Ts...>, Curr, IndList...>
+{
+    static const bool inds_contains = contains< Curr, IndList... >::value;
+    using frame_type = typename 
+        std::conditional<inds_contains, frame<std::optional<T>>, frame<T> >::type; 
+    using add_opt_type = typename add_opt<frame<Ts...>, Curr+1, IndList...>::type;
+    using type = typename join_frames< frame_type, add_opt_type >::type;
+};
+
+template<typename T, size_t Curr, size_t ... IndList>
+struct add_opt<frame<std::optional<T>>, Curr, IndList...>
+{
+    using type = std::optional<T>;
+};
+
+template<typename T, size_t Curr, size_t ... IndList>
+struct add_opt<frame<T>, Curr, IndList...>
+{
+    static const bool inds_contains = contains< Curr, IndList... >::value;
+    using type = typename 
+        std::conditional< inds_contains, frame<std::optional<T>>,  frame<T>>::type;
+};
+
+template<typename T>
+struct add_all_opt;
+
+template<typename T, typename ... Ts>
+struct add_all_opt<frame<std::optional<T>, Ts...>>
+{
+    using remaining_frame = typename add_all_opt<frame<Ts...>>::type;
+    using type = typename prepend<std::optional<T>, remaining_frame>::type;
+};
+
+template<typename T, typename ... Ts>
+struct add_all_opt<frame<T, Ts...>>
+{
+    using remaining_frame = typename add_all_opt<frame<Ts...>>::type;
+    using type = typename prepend<std::optional<T>, remaining_frame>::type;
+};
+
+template<typename T>
+struct add_all_opt<frame<std::optional<T>>>
+{
+    using type = frame<std::optional<T>>;
+};
+
+template<typename T>
+struct add_all_opt<frame<T>>
+{
+    using type = frame<std::optional<T>>;
 };
 
 template< typename ... Ts >
@@ -185,6 +277,51 @@ public:
         return const_reverse_iterator{ m_columns, static_cast<int>(size()) };
     }
 
+    template< size_t ... Inds >
+    typename add_opt<frame<Ts...>, 0, Inds...>::type 
+    allow_missing( terminal<expr_column<Inds>>... cols )
+    {
+        uframe u( *this );
+        allow_missing_impl< 0, Inds... >( u, cols... );
+        return u;
+    }
+
+    template< size_t Ind, size_t ... Inds >
+    void allow_missing_impl( uframe& uf,
+                             terminal<expr_column<Inds>>... cols )
+    {
+        if constexpr ( contains<Ind, Inds...>::value ) {
+            auto& s = column<Ind>();
+            auto ams = s.allow_missing();
+            uf.set_series( Ind, ams );
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            allow_missing_impl< Ind+1, Inds... >( uf, cols... );
+        }
+    }
+
+    typename add_all_opt<frame<Ts...>>::type allow_missing()
+    {
+        uframe u;
+        allow_missing_impl<0, Ts...>( u );
+        return u;
+    }
+
+    template<size_t Ind, typename U, typename ... Us> 
+    void allow_missing_impl( uframe& uf )
+    {
+        series<U>& s = std::get<Ind>( m_columns );
+        auto os = s.allow_missing();
+        uf.add_series( os );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            allow_missing_impl< Ind+1, Us... >( uf );
+        }
+    }
+
+    //remove_all_opt<frame<Ts...>> disallow_missing()
+    //{
+    //}
+
     void clear()
     {
         clear_impl< 0 >();
@@ -196,19 +333,17 @@ public:
     }
 
     template< size_t Ind >
-    useries column()
+    series<typename std::tuple_element<Ind, std::tuple<Ts...>>::type>& column()
     {
         auto& s = std::get<Ind>( m_columns );
-        useries us( s );
-        return us;
+        return s;
     }
 
     template< size_t Ind >
-    useries column( terminal<expr_column<Ind>> )
+    series<typename std::tuple_element<Ind, std::tuple<Ts...>>::type>& column( terminal<expr_column<Ind>> )
     {
         auto& s = std::get<Ind>( m_columns );
-        useries us( s );
-        return us;
+        return s;
     }
 
     template< size_t Ind >

@@ -163,6 +163,7 @@ template< size_t Ind >
 struct terminal< expr_column<Ind> >
 {
     using is_expr = void;
+    static const size_t index = Ind;
 
     template< template<typename> class Iter, typename ... Ts >
     typename std::tuple_element<Ind, std::tuple<Ts...>>::type 

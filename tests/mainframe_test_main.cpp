@@ -146,9 +146,6 @@ TEST_CASE( "ctor( && )" "[frame]" )
     REQUIRE( f2.size() == 4 );
 }
 
-template< typename T >
-class TD;
-
 TEST_CASE( "begin()/end()", "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
@@ -262,9 +259,6 @@ TEST_CASE( "size()/clear()", "[frame]" )
     f1.push_back( 2022_y/January/3, 11.0, true );
     REQUIRE( f1.size() == 2 );
 }
-
-template<typename T>
-class TD;
 
 TEST_CASE( "insert( pos first last )", "[frame]" )
 {
@@ -825,6 +819,54 @@ TEST_CASE( "operator<<()", "[frame]" )
     dout << f2;
     series<year_month_day> s = f1.column( _0 );
     dout << s;
+}
+
+TEST_CASE( "allow_missing()", "[frame]" )
+{
+    SECTION( "all" )
+    {
+        frame<year_month_day, double, bool> f1;
+        auto f2 = f1.allow_missing();
+        f2.set_column_names( "date", "temperature", "rain" );
+        f2.push_back( 2022_y/January/1, 8.9, false );
+        f2.push_back( nullopt, 10.0, false );
+        f2.push_back( 2022_y/January/3, nullopt, true );
+        f2.push_back( 2022_y/January/4, 12.2, nullopt );
+        f2.push_back( nullopt, nullopt, false );
+        f2.push_back( 2022_y/January/6, nullopt, nullopt );
+        f2.push_back( nullopt, 15.5, nullopt );
+        f2.push_back( nullopt, nullopt, nullopt );
+        f2.push_back( 2022_y/January/9, 9.3, false );
+        REQUIRE( f2.size() == 9 );
+    }
+
+    SECTION( "contains" )
+    {
+        REQUIRE( contains<0, 3, 0, 1, 2>::value == true );
+        REQUIRE( contains<4, 3, 0, 1, 2>::value == false );
+        REQUIRE( contains<4>::value == false );
+        REQUIRE( contains<1, 3, 0, 1, 2>::value == true );
+        REQUIRE( contains<2, 3, 0, 1, 2>::value == true );
+        REQUIRE( contains<3, 3, 0, 1, 2>::value == true );
+        REQUIRE( contains<4, 3, 0, 1, 2>::value == false );
+    }
+
+    SECTION( "some" )
+    {
+        frame<year_month_day, double, bool> f1;
+        auto f2 = f1.allow_missing( _0, _2 );
+        f2.set_column_names( "date", "temperature", "rain" );
+        f2.push_back( 2022_y/January/1, 8.9, false );
+        f2.push_back( nullopt, 10.0, false );
+        f2.push_back( 2022_y/January/3, 11.1, true );
+        f2.push_back( 2022_y/January/4, 12.2, nullopt );
+        f2.push_back( nullopt, 13.3, false );
+        f2.push_back( 2022_y/January/6, 14.4, nullopt );
+        f2.push_back( nullopt, 15.5, nullopt );
+        f2.push_back( nullopt, 9.1, nullopt );
+        f2.push_back( 2022_y/January/9, 9.3, false );
+        REQUIRE( f2.size() == 9 );
+    }
 }
 
 
