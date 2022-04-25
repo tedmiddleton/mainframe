@@ -200,6 +200,41 @@ struct add_opt<frame<T>, Curr, IndList...>
         std::conditional< inds_contains, frame<std::optional<T>>,  frame<T>>::type;
 };
 
+template<typename T, size_t Curr, size_t ... IndList>
+struct remove_opt;
+
+template<typename T, typename ... Ts, size_t Curr, size_t ... IndList>
+struct remove_opt<frame<std::optional<T>, Ts...>, Curr, IndList...>
+{
+    static const bool inds_contains = contains< Curr, IndList... >::value;
+    using frame_type = typename 
+        std::conditional<inds_contains, frame<T>, frame<std::optional<T>> >::type; 
+    using remove_opt_type = typename remove_opt<frame<Ts...>, Curr+1, IndList...>::type;
+    using type = typename join_frames< frame_type, remove_opt_type >::type;
+};
+
+template<typename T, typename ... Ts, size_t Curr, size_t ... IndList>
+struct remove_opt<frame<T, Ts...>, Curr, IndList...>
+{
+    using frame_type = frame<T>; 
+    using remove_opt_type = typename remove_opt<frame<Ts...>, Curr+1, IndList...>::type;
+    using type = typename join_frames< frame_type, remove_opt_type >::type;
+};
+
+template<typename T, size_t Curr, size_t ... IndList>
+struct remove_opt<frame<std::optional<T>>, Curr, IndList...>
+{
+    static const bool inds_contains = contains< Curr, IndList... >::value;
+    using type = typename 
+        std::conditional< inds_contains, frame<T>, frame<std::optional<T>> >::type;
+};
+
+template<typename T, size_t Curr, size_t ... IndList>
+struct remove_opt<frame<T>, Curr, IndList...>
+{
+    using type = T;
+};
+
 template<typename T>
 struct add_all_opt;
 
@@ -227,6 +262,35 @@ template<typename T>
 struct add_all_opt<frame<T>>
 {
     using type = frame<std::optional<T>>;
+};
+
+template<typename T>
+struct remove_all_opt;
+
+template<typename T, typename ... Ts>
+struct remove_all_opt<frame<T, Ts...>>
+{
+    using remaining_frame = typename remove_all_opt<frame<Ts...>>::type;
+    using type = typename prepend<T, remaining_frame>::type;
+};
+
+template<typename T, typename ... Ts>
+struct remove_all_opt<frame<std::optional<T>, Ts...>>
+{
+    using remaining_frame = typename remove_all_opt<frame<Ts...>>::type;
+    using type = typename prepend<T, remaining_frame>::type;
+};
+
+template<typename T>
+struct remove_all_opt<frame<std::optional<T>>>
+{
+    using type = frame<T>;
+};
+
+template<typename T>
+struct remove_all_opt<frame<T>>
+{
+    using type = frame<T>;
 };
 
 template< typename ... Ts >
@@ -324,6 +388,29 @@ public:
         }
     }
 
+    template< size_t ... Inds >
+    typename remove_opt<frame<Ts...>, 0, Inds...>::type 
+    disallow_missing( terminal<expr_column<Inds>>... cols )
+    {
+        uframe u( *this );
+        disallow_missing_impl< 0, Inds... >( u, cols... );
+        return u;
+    }
+
+    template< size_t Ind, size_t ... Inds >
+    void disallow_missing_impl( uframe& uf,
+                                terminal<expr_column<Inds>>... cols )
+    {
+        if constexpr ( contains<Ind, Inds...>::value ) {
+            auto& s = column<Ind>();
+            auto ams = s.disallow_missing();
+            uf.set_series( Ind, ams );
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            disallow_missing_impl< Ind+1, Inds... >( uf, cols... );
+        }
+    }
+
     typename add_all_opt<frame<Ts...>>::type allow_missing()
     {
         uframe u;
@@ -342,9 +429,23 @@ public:
         }
     }
 
-    //remove_all_opt<frame<Ts...>> disallow_missing()
-    //{
-    //}
+    typename remove_all_opt<frame<Ts...>>::type disallow_missing()
+    {
+        uframe u;
+        disallow_missing_impl<0, Ts...>( u );
+        return u;
+    }
+
+    template<size_t Ind, typename U, typename ... Us> 
+    void disallow_missing_impl( uframe& uf )
+    {
+        series<U>& s = std::get<Ind>( m_columns );
+        auto os = s.disallow_missing();
+        uf.add_series( os );
+        if constexpr ( sizeof...( Us ) > 0 ) {
+            disallow_missing_impl< Ind+1, Us... >( uf );
+        }
+    }
 
     void clear()
     {
