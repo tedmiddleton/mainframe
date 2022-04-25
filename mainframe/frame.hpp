@@ -99,6 +99,24 @@ struct prepend<T, frame<Ts...>>
     using type = frame<T, Ts...>;
 };
 
+template<size_t Ind, size_t Curr, typename ... Ts>
+struct pack_element_impl;
+
+template<size_t Matched, typename T, typename ... Ts>
+struct pack_element_impl<Matched, Matched, T, Ts...>
+{
+    using type = T;
+};
+
+template<size_t Ind, size_t Curr, typename T, typename ... Ts>
+struct pack_element_impl<Ind, Curr, T, Ts...>
+{
+    using type = typename pack_element_impl<Ind, Curr+1, Ts...>::type;
+};
+
+template<size_t Ind, typename ... Ts>
+struct pack_element : pack_element_impl<Ind, 0, Ts...> {};
+
 // This makes frame::columns(_0, ...) work
 template<typename tpl, size_t...Inds> 
 struct rearrange;
@@ -106,7 +124,7 @@ struct rearrange;
 template<size_t IndHead, size_t...IndRest, typename ... Ts>
 struct rearrange<frame<Ts...>, IndHead, IndRest...>
 {
-    using indexed_type = typename std::tuple_element<IndHead, std::tuple<Ts...>>::type;
+    using indexed_type = typename pack_element<IndHead, Ts...>::type;
     using remaining_frame = typename rearrange<frame<Ts...>, IndRest...>::type;
     using type = typename prepend<indexed_type, remaining_frame>::type;
 };
@@ -114,7 +132,7 @@ struct rearrange<frame<Ts...>, IndHead, IndRest...>
 template<size_t IndHead, typename ... Ts>
 struct rearrange<frame<Ts...>, IndHead>
 {
-    using indexed_type = typename std::tuple_element<IndHead, std::tuple<Ts...>>::type;
+    using indexed_type = typename pack_element<IndHead, Ts...>::type;
     using type = frame<indexed_type>;
 };
 
@@ -140,6 +158,12 @@ struct join_frames<frame< Ts... >, frame< Us... > >
 {
     using type = frame< Ts..., Us... >;
 };
+
+template<size_t Ind, typename Frame>
+struct frame_element;
+
+template<size_t Ind, typename ... Ts>
+struct frame_element<Ind, frame<Ts...>> : pack_element<Ind, Ts...> {};
 
 template<typename T, size_t Curr, size_t ... IndList>
 struct add_opt;
@@ -333,17 +357,15 @@ public:
     }
 
     template< size_t Ind >
-    series<typename std::tuple_element<Ind, std::tuple<Ts...>>::type>& column()
+    series<typename pack_element<Ind, Ts...>::type>& column()
     {
-        auto& s = std::get<Ind>( m_columns );
-        return s;
+        return std::get<Ind>( m_columns );
     }
 
     template< size_t Ind >
-    series<typename std::tuple_element<Ind, std::tuple<Ts...>>::type>& column( terminal<expr_column<Ind>> )
+    series<typename pack_element<Ind, Ts...>::type>& column( terminal<expr_column<Ind>> )
     {
-        auto& s = std::get<Ind>( m_columns );
-        return s;
+        return std::get<Ind>( m_columns );
     }
 
     template< size_t Ind >
