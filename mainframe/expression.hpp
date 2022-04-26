@@ -135,12 +135,39 @@ struct expr_column
 {
     static const size_t index = Ind;
 
-    template< template<typename> class Iter, typename ... Ts >
-    typename std::tuple_element<Ind, std::tuple<Ts...>>::type 
-    get_value( const base_frame_iterator< Iter, Ts... >& fi ) const
+    expr_column() = default;
+    expr_column( int o ) : offset( o ) {}
+    expr_column( const expr_column& ) = default;
+    expr_column( expr_column&& ) = default;
+    expr_column& operator=( const expr_column& ) = default;
+    expr_column& operator=( expr_column&& ) = default;
+
+    expr_column operator[]( int off ) const
     {
-        return fi->template at<Ind>();
+        return expr_column{ off };
     }
+
+    template< template<typename> class Iter, typename ... Ts >
+    typename pack_element<Ind, Ts...>::type 
+    get_value( 
+        const base_frame_iterator< Iter, Ts... >& ,
+        const base_frame_iterator< Iter, Ts... >& curr, 
+        const base_frame_iterator< Iter, Ts... >& 
+        ) const
+    {
+        return curr->template at<Ind>();
+        //auto adjusted = curr + offset;
+        //if ( begin <= adjusted && adjusted < end ) {
+        //    return adjusted->template at<Ind>();
+        //} 
+        //else {
+        //    using T = typename pack_element<Ind, Ts...>::type;
+        //    // default-construct. If std::optional, this will be nullopt
+        //    return T{};
+        //}
+    }
+
+    int offset{ 0 };
 };
 
 template< typename T >
@@ -151,7 +178,11 @@ struct terminal
     terminal( T _t ) : t( _t ) {}
 
     template< template<typename> class Iter, typename ... Ts >
-    T get_value( const base_frame_iterator< Iter, Ts... >& ) const
+    T get_value( 
+        const base_frame_iterator< Iter, Ts... >&,
+        const base_frame_iterator< Iter, Ts... >&,
+        const base_frame_iterator< Iter, Ts... >& 
+        ) const
     {
         return t;
     }
@@ -165,11 +196,23 @@ struct terminal< expr_column<Ind> >
     using is_expr = void;
     static const size_t index = Ind;
 
+    terminal() = default;
+    terminal( expr_column<Ind> _t ) : t( _t ) {}
+
     template< template<typename> class Iter, typename ... Ts >
     typename std::tuple_element<Ind, std::tuple<Ts...>>::type 
-    get_value( const base_frame_iterator< Iter, Ts... >& fi ) const
+    get_value( 
+        const base_frame_iterator< Iter, Ts... >& begin,
+        const base_frame_iterator< Iter, Ts... >& curr,
+        const base_frame_iterator< Iter, Ts... >& end 
+        ) const
     {
-        return t.get_value( fi );
+        return t.get_value( begin, curr, end );
+    }
+
+    terminal< expr_column<Ind> > operator[]( int off ) const
+    {
+        return terminal{ t[ off ] };
     }
 
     expr_column<Ind> t;
@@ -185,10 +228,18 @@ struct binary_expr
     binary_expr( L _l, R _r ) : l( _l ), r( _r ) {}
 
     template< template<typename> class Iter, typename ... Ts >
-    auto get_value( base_frame_iterator< Iter, Ts... >& fi ) const -> 
-    decltype( Op::exec( quickval<L>::value.get_value( fi ), quickval<R>::value.get_value( fi ) ) )
+    auto get_value( 
+        const base_frame_iterator< Iter, Ts... >& begin,
+        const base_frame_iterator< Iter, Ts... >& curr,
+        const base_frame_iterator< Iter, Ts... >& end 
+        ) const -> 
+    decltype( Op::exec( 
+            quickval<L>::value.get_value( begin, curr, end ), 
+            quickval<R>::value.get_value( begin, curr, end ) ) )
     {
-        return Op::exec( l.get_value( fi ), r.get_value( fi ) );
+        return Op::exec( 
+            l.get_value( begin, curr, end ), 
+            r.get_value( begin, curr, end ) );
     }
 
     L l;
@@ -207,10 +258,14 @@ struct unary_expr
     unary_expr( T _t ) : t( _t ) {}
 
     template< template<typename> class Iter, typename ... Ts >
-    auto get_value( base_frame_iterator< Iter, Ts... >& fi ) const -> 
-    decltype( Op::exec( quickval<T>::value.get_value( fi ) ) )
+    auto get_value( 
+        const base_frame_iterator< Iter, Ts... >& begin,
+        const base_frame_iterator< Iter, Ts... >& curr, 
+        const base_frame_iterator< Iter, Ts... >& end 
+        ) const -> 
+    decltype( Op::exec( quickval<T>::value.get_value( curr ) ) )
     {
-        return Op::exec( t.get_value( fi ) );
+        return Op::exec( t.get_value( begin, curr, end ) );
     }
 
     T t;

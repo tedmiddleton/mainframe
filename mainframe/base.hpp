@@ -59,6 +59,44 @@ auto stringify( std::ostream & o, const T & t, int ) -> std::ostream &
 
 } // namespace detail
 
+template<size_t Ind, size_t Curr, typename ... Ts>
+struct pack_element_impl;
+
+template<size_t Matched, typename T, typename ... Ts>
+struct pack_element_impl<Matched, Matched, T, Ts...>
+{
+    using type = T;
+};
+
+template<size_t Ind, size_t Curr, typename T, typename ... Ts>
+struct pack_element_impl<Ind, Curr, T, Ts...>
+{
+    using type = typename pack_element_impl<Ind, Curr+1, Ts...>::type;
+};
+
+template<size_t Ind, typename ... Ts>
+struct pack_element : pack_element_impl<Ind, 0, Ts...> {};
+
+template < size_t Ind, size_t ... List >
+struct contains : std::true_type {};
+
+template < size_t Ind, size_t IndHead, size_t... IndRest >
+struct contains<Ind, IndHead, IndRest...> : 
+    std::conditional< 
+        Ind == IndHead,
+        std::true_type,
+        contains<Ind, IndRest ... >
+    >::type {};
+
+template < size_t Ind >
+struct contains<Ind> : std::false_type {};
+
+template< typename T >
+struct is_optional : std::false_type {};
+
+template< typename T >
+struct is_optional<std::optional<T>> : std::true_type {};
+
 } // namespace mf
 
 

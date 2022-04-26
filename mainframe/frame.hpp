@@ -99,24 +99,6 @@ struct prepend<T, frame<Ts...>>
     using type = frame<T, Ts...>;
 };
 
-template<size_t Ind, size_t Curr, typename ... Ts>
-struct pack_element_impl;
-
-template<size_t Matched, typename T, typename ... Ts>
-struct pack_element_impl<Matched, Matched, T, Ts...>
-{
-    using type = T;
-};
-
-template<size_t Ind, size_t Curr, typename T, typename ... Ts>
-struct pack_element_impl<Ind, Curr, T, Ts...>
-{
-    using type = typename pack_element_impl<Ind, Curr+1, Ts...>::type;
-};
-
-template<size_t Ind, typename ... Ts>
-struct pack_element : pack_element_impl<Ind, 0, Ts...> {};
-
 // This makes frame::columns(_0, ...) work
 template<typename tpl, size_t...Inds> 
 struct rearrange;
@@ -135,20 +117,6 @@ struct rearrange<frame<Ts...>, IndHead>
     using indexed_type = typename pack_element<IndHead, Ts...>::type;
     using type = frame<indexed_type>;
 };
-
-template < size_t Ind, size_t ... List >
-struct contains : std::true_type {};
-
-template < size_t Ind, size_t IndHead, size_t... IndRest >
-struct contains<Ind, IndHead, IndRest...> : 
-    std::conditional< 
-        Ind == IndHead,
-        std::true_type,
-        contains<Ind, IndRest ... >
-    >::type {};
-
-template < size_t Ind >
-struct contains<Ind> : std::false_type {};
 
 template< typename T, typename U >
 struct join_frames;
@@ -549,8 +517,11 @@ public:
         useries us( ns );
         plust.add_series( us );
         frame< Ts..., T > out = plust;
-        for ( auto it = out.begin(); it != out.end(); ++it ) {
-            auto val = expr.get_value( it );
+        auto b = out.begin();
+        auto e = out.end();
+        auto it = b;
+        for ( ; it != e; ++it ) {
+            auto val = expr.get_value( b, it, e );
             it->template at<sizeof...(Ts)>() = val;
         }
         return out;
@@ -589,11 +560,13 @@ public:
         frame< Ts... > out;
         out.set_column_names( column_names() );
 
-        auto fi = cbegin();
-        for ( ; fi != cend(); ++fi ) {
-            auto e = ex.get_value( fi );
-            if ( e ) {
-                out.push_back( *fi );
+        auto b = cbegin();
+        auto curr = b;
+        auto e = cend();
+        for ( ; curr != e; ++curr ) {
+            auto exprval = ex.get_value( b, curr, e );
+            if ( exprval ) {
+                out.push_back( *curr );
             }
         }
 
