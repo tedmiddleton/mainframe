@@ -458,7 +458,7 @@ public:
         for ( const T& t : *m_sharedvec ) {
             std::stringstream ss;
             ss << std::boolalpha;
-            ss << t;
+            detail::stringify( ss, t, true );
             s.push_back( ss.str() );
         }
         return s;

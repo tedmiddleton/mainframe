@@ -31,10 +31,8 @@ auto stringify( std::ostream & o, const T & t, bool ) -> decltype( o << t, o )
     return o;
 }
 
-template<>
 std::ostream& stringify( std::ostream & o, const char & t, bool );
 
-template<>
 std::ostream& stringify( std::ostream & o, const unsigned char & t, bool );
 
 template<typename T>
@@ -49,9 +47,8 @@ std::ostream& stringify( std::ostream & o, const std::optional<T> & t, bool )
     }
 }
 
-
 template<typename T>
-auto stringify( std::ostream & o, const T & t, int ) -> std::ostream &
+std::ostream& stringify( std::ostream & o, const T &, int )
 {
     o << "opaque";
     return o;

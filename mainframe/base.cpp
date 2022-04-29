@@ -91,14 +91,12 @@ std::vector<size_t> get_max_string_lengths( const std::vector<std::vector<std::s
 
 namespace detail
 {
-template<>
 std::ostream& stringify( std::ostream & o, const char & t, bool )
 {
     o << static_cast<int>(t);
     return o;
 }
 
-template<>
 std::ostream& stringify( std::ostream & o, const unsigned char & t, bool )
 {
     o << static_cast<int>(t);

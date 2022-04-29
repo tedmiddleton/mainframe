@@ -48,10 +48,6 @@ public:
     using iterator_category = std::random_access_iterator_tag;
     using difference_type   = std::ptrdiff_t;
     using value_type        = T;
-    using pointer           = T*;  // or also value_type*
-    using reference         = T&;  // or also value_type&u
-    using const_pointer     = const T*;  // or also value_type*
-    using const_reference   = const T&;  // or also value_type&u
 
     base_sv_iterator() = default;
     base_sv_iterator( T* ptr ) : m_curr( ptr ) {}
@@ -201,6 +197,8 @@ class sv_iterator : public incrementing_sv_iterator<T>
 public:
     using difference_type = typename incrementing_sv_iterator<T>::difference_type;
     using incrementing_sv_iterator<T>::incrementing_sv_iterator;
+    using pointer           = T*;  // or also value_type*
+    using reference         = T&;  // or also value_type&u
 
     difference_type operator-( const sv_iterator<T>& other ) const
     {
@@ -222,8 +220,8 @@ public:
         return sv_iterator<T>{ this->m_curr - p };
     }
 
-    T& operator*() { return *this->m_curr; }
-    T* operator->() { return this->m_curr; }
+    T& operator*() const { return *this->m_curr; }
+    T* operator->() const { return this->m_curr; }
 };
 
 template< typename T >
@@ -232,6 +230,8 @@ class const_sv_iterator : public incrementing_sv_iterator<T>
 public:
     using difference_type = typename incrementing_sv_iterator<T>::difference_type;
     using incrementing_sv_iterator<T>::incrementing_sv_iterator;
+    using pointer           = const T*;  // or also value_type*
+    using reference         = const T&;  // or also value_type&u
 
     const_sv_iterator( sv_iterator<T> svi )
         : incrementing_sv_iterator<T>( &*svi )
@@ -257,8 +257,8 @@ public:
         return const_sv_iterator<T>{ this->m_curr - p };
     }
 
-    const T& operator*() { return *this->m_curr; }
-    const T* operator->() { return this->m_curr; }
+    const T& operator*() const { return *this->m_curr; }
+    const T* operator->() const { return this->m_curr; }
 };
 
 template< typename T >
@@ -270,6 +270,8 @@ class reverse_sv_iterator : public decrementing_sv_iterator<T>
 public:
     using difference_type = typename decrementing_sv_iterator<T>::difference_type;
     using decrementing_sv_iterator<T>::decrementing_sv_iterator;
+    using pointer           = T*;  // or also value_type*
+    using reference         = T&;  // or also value_type&u
 
     difference_type operator-( const reverse_sv_iterator<T>& other ) const
     {
@@ -291,8 +293,8 @@ public:
         return reverse_sv_iterator<T>{ this->m_curr + p };
     }
 
-    T& operator*() { return *this->m_curr; }
-    T* operator->() { return this->m_curr; }
+    T& operator*() const { return *this->m_curr; }
+    T* operator->() const { return this->m_curr; }
 };
 
 template< typename T >
@@ -301,6 +303,8 @@ class const_reverse_sv_iterator : public decrementing_sv_iterator<T>
 public:
     using difference_type = typename decrementing_sv_iterator<T>::difference_type;
     using decrementing_sv_iterator<T>::decrementing_sv_iterator;
+    using pointer           = const T*;  // or also value_type*
+    using reference         = const T&;  // or also value_type&u
 
     const_reverse_sv_iterator( reverse_sv_iterator<T> svi )
         : decrementing_sv_iterator<T>( &*svi )
@@ -326,8 +330,8 @@ public:
         return const_reverse_sv_iterator<T>{ this->m_curr + p };
     }
 
-    const T& operator*() { return *this->m_curr; }
-    const T* operator->() { return this->m_curr; }
+    const T& operator*() const { return *this->m_curr; }
+    const T* operator->() const { return this->m_curr; }
 };
 
 template< typename T >
@@ -904,49 +908,6 @@ bool operator!=( const series_vector<T>& left,
 {
     return !( left == right );
 }
-
-
-template<typename T>
-class series_base : public series_vector<T>
-{
-public:
-    using series_vector<T>::series_vector;
-
-    std::unique_ptr<iseries_vector> unique() const override
-    {
-        auto out = std::make_unique<series_vector<T>>();
-        std::unordered_set<T> bag;
-        for ( const auto &elem : *this ) {
-            if ( bag.find( elem ) == bag.end() ) {
-                out->push_back( elem );
-                bag.insert( elem );
-            }
-        }
-        return out;
-    }
-
-    std::unique_ptr<iseries_vector> to_string() const override
-    {
-        auto out = std::make_unique<series_vector<std::string>>();
-        out->reserve( this->size() );
-        for ( const auto &elem : *this ) {
-          std::stringstream ss;
-          detail::stringify(ss, elem, true);
-          out->push_back(ss.str());
-        }
-        return out;
-    }
-
-    std::unique_ptr<iseries_vector> clone() const override
-    {
-        return std::make_unique<series_vector<T>>( *this );
-    }
-
-    std::unique_ptr<iseries_vector> clone_empty() const override
-    {
-        return std::make_unique<series_vector<T>>();
-    }
-};
 
 } // namespace mf
 

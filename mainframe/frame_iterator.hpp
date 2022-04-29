@@ -30,51 +30,27 @@ public:
     {}
 
     template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
-    at()
-    {
-        auto ptr = std::get< Ind >( m_iters );
-        return *ptr;
-    }
-
-    template< size_t Ind >
-    const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    typename std::tuple_element< Ind, std::tuple< typename Iter<Ts>::reference ... > >::type
     at() const
     {
-        auto ptr = std::get< Ind >( m_iters );
-        return *ptr;
+        auto coliter = std::get< Ind >( m_iters );
+        return *coliter;
     }
 
     template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
-    at( terminal<expr_column<Ind>> )
-    {
-        auto ptr = std::get< Ind >( m_iters );
-        return *ptr;
-    }
-
-    template< size_t Ind >
-    const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    typename std::tuple_element< Ind, std::tuple< typename Iter<Ts>::reference ... > >::type
     at( terminal<expr_column<Ind>> ) const
     {
-        auto ptr = std::get< Ind >( m_iters );
-        return *ptr;
+        auto coliter = std::get< Ind >( m_iters );
+        return *coliter;
     }
 
     template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
-    operator[]( terminal<expr_column<Ind>> )
-    {
-        auto ptr = std::get< Ind >( m_iters );
-        return *ptr;
-    }
-
-    template< size_t Ind >
-    const typename std::tuple_element< Ind, std::tuple< Ts ... > >::type& 
+    typename std::tuple_element< Ind, std::tuple< typename Iter<Ts>::reference ... > >::type
     operator[]( terminal<expr_column<Ind>> ) const
     {
-        auto ptr = std::get< Ind >( m_iters );
-        return *ptr;
+        auto coliter = std::get< Ind >( m_iters );
+        return *coliter;
     }
 
 private:
@@ -121,7 +97,7 @@ private:
     }
 
     template< size_t Ind, typename U, typename ... Us >
-    void inc( size_t n )
+    void inc( ptrdiff_t n )
     {
         std::get< Ind >( m_iters ) += n;
         if constexpr ( sizeof...( Us ) > 0 ) {
@@ -130,7 +106,7 @@ private:
     }
 
     template< size_t Ind, typename U, typename ... Us >
-    void dec( size_t n )
+    void dec( ptrdiff_t n )
     {
         std::get< Ind >( m_iters ) -= n;
         if constexpr ( sizeof...( Us ) > 0 ) {
@@ -149,6 +125,30 @@ private:
         template<typename> typename ItRight, 
         typename ... Us >
     friend bool operator!=( const frame_row< ItLeft, Us... >& l, 
+                            const frame_row< ItRight, Us... >& r );
+    template< 
+        template<typename> typename ItLeft, 
+        template<typename> typename ItRight, 
+        typename ... Us >
+    friend bool operator<=( const frame_row< ItLeft, Us... >& l, 
+                            const frame_row< ItRight, Us... >& r );
+    template< 
+        template<typename> typename ItLeft, 
+        template<typename> typename ItRight, 
+        typename ... Us >
+    friend bool operator>=( const frame_row< ItLeft, Us... >& l, 
+                            const frame_row< ItRight, Us... >& r );
+    template< 
+        template<typename> typename ItLeft, 
+        template<typename> typename ItRight, 
+        typename ... Us >
+    friend bool operator<( const frame_row< ItLeft, Us... >& l, 
+                            const frame_row< ItRight, Us... >& r );
+    template< 
+        template<typename> typename ItLeft, 
+        template<typename> typename ItRight, 
+        typename ... Us >
+    friend bool operator>( const frame_row< ItLeft, Us... >& l, 
                             const frame_row< ItRight, Us... >& r );
 
     std::tuple< Iter<Ts>... > m_iters;
@@ -172,6 +172,46 @@ bool operator!=( const frame_row< ItLeft, Us... >& l,
                  const frame_row< ItRight, Us... >& r )
 {
     return l.m_iters != r.m_iters;
+}
+
+template< 
+    template<typename> typename ItLeft, 
+    template<typename> typename ItRight, 
+    typename ... Us >
+bool operator<=( const frame_row< ItLeft, Us... >& l, 
+                 const frame_row< ItRight, Us... >& r )
+{
+    return l.m_iters <= r.m_iters;
+}
+
+template< 
+    template<typename> typename ItLeft, 
+    template<typename> typename ItRight, 
+    typename ... Us >
+bool operator>=( const frame_row< ItLeft, Us... >& l, 
+                 const frame_row< ItRight, Us... >& r )
+{
+    return l.m_iters >= r.m_iters;
+}
+
+template< 
+    template<typename> typename ItLeft, 
+    template<typename> typename ItRight, 
+    typename ... Us >
+bool operator<( const frame_row< ItLeft, Us... >& l, 
+                 const frame_row< ItRight, Us... >& r )
+{
+    return l.m_iters < r.m_iters;
+}
+
+template< 
+    template<typename> typename ItLeft, 
+    template<typename> typename ItRight, 
+    typename ... Us >
+bool operator>( const frame_row< ItLeft, Us... >& l, 
+                 const frame_row< ItRight, Us... >& r )
+{
+    return l.m_iters > r.m_iters;
 }
 
 template< typename T >
@@ -212,11 +252,11 @@ public:
     void operator--() { operator-=( 1 ); }
     void operator--(int) { operator-=( 1 ); }
 
-    void operator+=( size_t n )
+    void operator+=( ptrdiff_t n )
     {
         m_row.template inc< 0, Ts... >( n );
     }
-    void operator-=( size_t n )
+    void operator-=( ptrdiff_t n )
     {
         m_row.template dec< 0, Ts... >( n );
     }
@@ -241,6 +281,18 @@ protected:
                             const base_frame_iterator< It, Us... >& r );
     template< template<typename> typename It, typename ... Us >
     friend bool operator!=( const base_frame_iterator< It, Us... >& l, 
+                            const base_frame_iterator< It, Us... >& r );
+    template< template<typename> typename It, typename ... Us >
+    friend bool operator<=( const base_frame_iterator< It, Us... >& l, 
+                            const base_frame_iterator< It, Us... >& r );
+    template< template<typename> typename It, typename ... Us >
+    friend bool operator>=( const base_frame_iterator< It, Us... >& l, 
+                            const base_frame_iterator< It, Us... >& r );
+    template< template<typename> typename It, typename ... Us >
+    friend bool operator<( const base_frame_iterator< It, Us... >& l, 
+                            const base_frame_iterator< It, Us... >& r );
+    template< template<typename> typename It, typename ... Us >
+    friend bool operator>( const base_frame_iterator< It, Us... >& l, 
                             const base_frame_iterator< It, Us... >& r );
     template< 
         template<typename> typename ItLeft, 
@@ -300,14 +352,14 @@ public:
         return out;
     }
 
-    frame_iterator<Ts...> operator+( size_t n )
+    frame_iterator<Ts...> operator+( ptrdiff_t n ) const
     {
         frame_iterator<Ts...> out{ *this };
         out += n;
         return out;
     }
 
-    frame_iterator<Ts...> operator-( size_t n )
+    frame_iterator<Ts...> operator-( ptrdiff_t n ) const
     {
         frame_iterator<Ts...> out{ *this };
         out -= n;
@@ -358,14 +410,14 @@ public:
         return out;
     }
 
-    const_frame_iterator<Ts...> operator+( size_t n )
+    const_frame_iterator<Ts...> operator+( ptrdiff_t n ) const
     {
         const_frame_iterator<Ts...> out{ *this };
         out += n;
         return out;
     }
 
-    const_frame_iterator<Ts...> operator-( size_t n )
+    const_frame_iterator<Ts...> operator-( ptrdiff_t n ) const
     {
         const_frame_iterator<Ts...> out{ *this };
         out -= n;
@@ -408,14 +460,14 @@ public:
         return out;
     }
 
-    reverse_frame_iterator<Ts...> operator+( size_t n )
+    reverse_frame_iterator<Ts...> operator+( ptrdiff_t n ) const
     {
         reverse_frame_iterator<Ts...> out{ *this };
         out += n;
         return out;
     }
 
-    reverse_frame_iterator<Ts...> operator-( size_t n )
+    reverse_frame_iterator<Ts...> operator-( ptrdiff_t n ) const
     {
         reverse_frame_iterator<Ts...> out{ *this };
         out -= n;
@@ -466,14 +518,14 @@ public:
         return out;
     }
 
-    const_reverse_frame_iterator<Ts...> operator+( size_t n )
+    const_reverse_frame_iterator<Ts...> operator+( ptrdiff_t n ) const
     {
         const_reverse_frame_iterator<Ts...> out{ *this };
         out += n;
         return out;
     }
 
-    const_reverse_frame_iterator<Ts...> operator-( size_t n )
+    const_reverse_frame_iterator<Ts...> operator-( ptrdiff_t n ) const
     {
         const_reverse_frame_iterator<Ts...> out{ *this };
         out -= n;
@@ -493,6 +545,34 @@ bool operator!=( const base_frame_iterator< It, Us... >& l,
                  const base_frame_iterator< It, Us... >& r )
 {
     return l.m_row != r.m_row;
+}
+
+template< template<typename> typename It, typename ... Us >
+bool operator<=( const base_frame_iterator< It, Us... >& l, 
+                 const base_frame_iterator< It, Us... >& r )
+{
+    return l.m_row <= r.m_row;
+}
+
+template< template<typename> typename It, typename ... Us >                                                          
+bool operator>=( const base_frame_iterator< It, Us... >& l, 
+                 const base_frame_iterator< It, Us... >& r )
+{
+    return l.m_row >= r.m_row;
+}
+
+template< template<typename> typename It, typename ... Us >
+bool operator<( const base_frame_iterator< It, Us... >& l, 
+                 const base_frame_iterator< It, Us... >& r )
+{
+    return l.m_row < r.m_row;
+}
+
+template< template<typename> typename It, typename ... Us >                                                          
+bool operator>( const base_frame_iterator< It, Us... >& l, 
+                 const base_frame_iterator< It, Us... >& r )
+{
+    return l.m_row > r.m_row;
 }
 
 } // namespace mf
