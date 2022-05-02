@@ -161,6 +161,13 @@ auto operator%( const T& t, const mi<U>& u ) -> mi<decltype(t % *u)>
     return mi<decltype(t % *u)>{ t % *u };
 }
 
+template< typename T >
+auto operator~( const mi<T>& t ) -> mi<decltype(~ *t)>
+{
+    if ( !t ) { return missing; }
+    return mi<decltype(~ *t)>{ ~ *t };
+}
+
 template <typename _Tp> mi(_Tp) -> mi<_Tp>;
 
 } // namespace mf
