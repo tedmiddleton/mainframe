@@ -26,42 +26,16 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
-set( version 0.1.0 )
-
-# mainframe_base =============================================================
-
-add_library( mainframe_base STATIC
-    mainframe/base.hpp 
-    mainframe/base.cpp 
-    )
-
-target_include_directories( mainframe_base
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-    )
-
-# mainframe_series ===========================================================
-
-add_library( mainframe_series STATIC
-    mainframe/series.hpp 
-    mainframe/series_vector.hpp 
-    )
-
-target_include_directories( mainframe_series
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-    )
-
-target_link_libraries( mainframe_series
-    PUBLIC
-        mainframe_base
-    )
+set( version 0.3.0 )
 
 # mainframe ==================================================================
 
 add_library( mainframe STATIC
+    mainframe/base.hpp 
+    mainframe/base.cpp 
+    mainframe/series.hpp 
+    mainframe/series_vector.hpp 
+    mainframe/missing.hpp 
     mainframe/frame.hpp 
     mainframe/expression.hpp 
     mainframe/csv.cpp 
@@ -77,16 +51,10 @@ target_include_directories( mainframe
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
-target_link_libraries( mainframe
-    PUBLIC
-        mainframe_base
-        mainframe_series
-    )
-
 # cmake bric-a-brac ==========================================================
 
 # install the target and create the export-set
-install( TARGETS mainframe mainframe_series mainframe_base
+install( TARGETS mainframe
          EXPORT mainframe-targets
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib
@@ -97,11 +65,12 @@ install( TARGETS mainframe mainframe_series mainframe_base
 # install header files
 install(
     FILES 
-        mainframe/frame.hpp 
-        mainframe/expression.hpp 
+        mainframe/base.hpp 
         mainframe/series.hpp 
         mainframe/series_vector.hpp 
-        mainframe/base.hpp 
+        mainframe/missing.hpp 
+        mainframe/frame.hpp 
+        mainframe/expression.hpp 
     DESTINATION include/mainframe 
     )
 
