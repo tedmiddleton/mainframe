@@ -18,6 +18,8 @@ class mi : public std::optional<T>
 public:
     using std::optional<T>::optional;
 
+    operator bool() const noexcept = delete;
+
 private:
     template< typename U >
     friend std::ostream& operator<<( std::ostream& o, const mi<U>& u );
@@ -26,7 +28,7 @@ private:
 template< typename U >
 std::ostream& operator<<( std::ostream& o, const mi<U>& u )
 {
-    if ( u ) {
+    if ( u.has_value() ) {
         o << "mi<" << typeid(U).name() << ">{" << *u << "}";
     } 
     else {
@@ -59,113 +61,120 @@ make_missing( std::initializer_list<U> il, Args&&... args )
 template< typename T, typename U >
 auto operator+( const mi<T>& t, const mi<U>& u ) -> mi<decltype(*t + *u)>
 {
-    if ( !t || !u ) { return missing; }
+    if ( !t.has_value() || !u.has_value() ) { return missing; }
     return mi<decltype(*t + *u)>( *t + *u );
 }
 
 template< typename T, typename U >
 auto operator+( const mi<T>& t, const U& u ) -> mi<decltype(*t + u)>
 {
-    if ( !t ) { return missing; }
+    if ( !t.has_value() ) { return missing; }
     return mi<decltype(*t + u)>{ *t + u };
 }
 
 template< typename T, typename U >
 auto operator+( const T& t, const mi<U>& u ) -> mi<decltype(t + *u)>
 {
-    if ( !u ) { return missing; }
+    if ( !u.has_value() ) { return missing; }
     return mi<decltype(t + *u)>{ t + *u };
 }
 
 template< typename T, typename U >
 auto operator-( const mi<T>& t, const mi<U>& u ) -> mi<decltype(*t - *u)>
 {
-    if ( !t || !u ) { return missing; }
+    if ( !t.has_value() || !u.has_value() ) { return missing; }
     return mi<decltype(*t - *u)>( *t - *u );
 }
 
 template< typename T, typename U >
 auto operator-( const mi<T>& t, const U& u ) -> mi<decltype(*t - u)>
 {
-    if ( !t ) { return missing; }
+    if ( !t.has_value() ) { return missing; }
     return mi<decltype(*t - u)>{ *t - u };
 }
 
 template< typename T, typename U >
 auto operator-( const T& t, const mi<U>& u ) -> mi<decltype(t - *u)>
 {
-    if ( !u ) { return missing; }
+    if ( !u.has_value() ) { return missing; }
     return mi<decltype(t - *u)>{ t - *u };
 }
 
 template< typename T, typename U >
 auto operator*( const mi<T>& t, const mi<U>& u ) -> mi<decltype(*t * *u)>
 {
-    if ( !t || !u ) { return missing; }
+    if ( !t.has_value() || !u.has_value() ) { return missing; }
     return mi<decltype(*t * *u)>( *t * *u );
 }
 
 template< typename T, typename U >
 auto operator*( const mi<T>& t, const U& u ) -> mi<decltype(*t * u)>
 {
-    if ( !t ) { return missing; }
+    if ( !t.has_value() ) { return missing; }
     return mi<decltype(*t * u)>{ *t * u };
 }
 
 template< typename T, typename U >
 auto operator*( const T& t, const mi<U>& u ) -> mi<decltype(t * *u)>
 {
-    if ( !u ) { return missing; }
+    if ( !u.has_value() ) { return missing; }
     return mi<decltype(t * *u)>{ t * *u };
 }
 
 template< typename T, typename U >
 auto operator/( const mi<T>& t, const mi<U>& u ) -> mi<decltype(*t / *u)>
 {
-    if ( !t || !u ) { return missing; }
+    if ( !t.has_value() || !u.has_value() ) { return missing; }
     return mi<decltype(*t / *u)>( *t / *u );
 }
 
 template< typename T, typename U >
 auto operator/( const mi<T>& t, const U& u ) -> mi<decltype(*t / u)>
 {
-    if ( !t ) { return missing; }
+    if ( !t.has_value() ) { return missing; }
     return mi<decltype(*t / u)>{ *t / u };
 }
 
 template< typename T, typename U >
 auto operator/( const T& t, const mi<U>& u ) -> mi<decltype(t / *u)>
 {
-    if ( !u ) { return missing; }
+    if ( !u.has_value() ) { return missing; }
     return mi<decltype(t / *u)>{ t / *u };
 }
 
 template< typename T, typename U >
 auto operator%( const mi<T>& t, const mi<U>& u ) -> mi<decltype(*t % *u)>
 {
-    if ( !t || !u ) { return missing; }
+    if ( !t.has_value() || !u.has_value() ) { return missing; }
     return mi<decltype(*t % *u)>( *t % *u );
 }
 
 template< typename T, typename U >
 auto operator%( const mi<T>& t, const U& u ) -> mi<decltype(*t % u)>
 {
-    if ( !t ) { return missing; }
+    if ( !t.has_value() ) { return missing; }
     return mi<decltype(*t % u)>{ *t % u };
 }
 
 template< typename T, typename U >
 auto operator%( const T& t, const mi<U>& u ) -> mi<decltype(t % *u)>
 {
-    if ( !u ) { return missing; }
+    if ( !u.has_value() ) { return missing; }
     return mi<decltype(t % *u)>{ t % *u };
 }
 
 template< typename T >
 auto operator~( const mi<T>& t ) -> mi<decltype(~ *t)>
 {
-    if ( !t ) { return missing; }
+    if ( !t.has_value() ) { return missing; }
     return mi<decltype(~ *t)>{ ~ *t };
+}
+
+template< typename T >
+auto operator!( const mi<T>& t ) -> mi<decltype(! *t)>
+{
+    if ( !t.has_value() ) { return missing; }
+    return mi<decltype(! *t)>{ ! *t };
 }
 
 template <typename _Tp> mi(_Tp) -> mi<_Tp>;

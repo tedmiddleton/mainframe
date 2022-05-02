@@ -13,9 +13,6 @@
 namespace mf
 {
 
-void set_use_termio( bool enable );
-bool use_termio();
-int get_termwidth();
 const char * get_horzrule( size_t num );
 const char * get_emptyspace( size_t num );
 size_t get_max_string_length( const std::vector<std::string>& );
@@ -37,8 +34,8 @@ std::ostream& stringify( std::ostream & o, const unsigned char & t, bool );
 template<typename T>
 std::ostream& stringify( std::ostream & o, const mi<T> & t, bool )
 {
-    if ( !t ) {
-        o << "nullopt";
+    if ( !t.has_value() ) {
+        o << "missing";
         return o;
     }
     else {
@@ -90,6 +87,19 @@ struct is_missing : std::false_type {};
 
 template< typename T >
 struct is_missing<mi<T>> : std::true_type {};
+
+template< typename T >
+struct ensure_missing
+{
+    using type = mi<T>;
+};
+
+template< typename T >
+struct ensure_missing< mi<T> >
+{
+    using type = mi<T>;
+};
+
 
 } // namespace mf
 

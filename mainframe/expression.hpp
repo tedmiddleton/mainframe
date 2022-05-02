@@ -131,24 +131,50 @@ struct is_expression<T &, void>
 {};
 
 template< size_t Ind >
+struct indexed_expr_column;
+
+template< size_t Ind >
 struct expr_column
 {
     static const size_t index = Ind;
 
     expr_column() = default;
-    expr_column( ptrdiff_t o ) : offset( o ) {}
     expr_column( const expr_column& ) = default;
     expr_column( expr_column&& ) = default;
     expr_column& operator=( const expr_column& ) = default;
     expr_column& operator=( expr_column&& ) = default;
 
-    expr_column operator[]( ptrdiff_t off ) const
+    indexed_expr_column<Ind> operator[]( ptrdiff_t off ) const
     {
-        return expr_column{ off };
+        return indexed_expr_column<Ind>{ off };
     }
 
     template< template <typename...> typename Iter, typename ... Ts >
     typename pack_element<Ind, Ts...>::type
+    get_value( 
+        const Iter< Ts... >&,
+        const Iter< Ts... >& curr, 
+        const Iter< Ts... >&
+        ) const
+    {
+        return curr->template at<Ind>();
+    }
+};
+
+template< size_t Ind >
+struct indexed_expr_column
+{
+    static const size_t index = Ind;
+
+    indexed_expr_column() = default;
+    indexed_expr_column( ptrdiff_t o ) : offset( o ) {}
+    indexed_expr_column( const indexed_expr_column& ) = default;
+    indexed_expr_column( indexed_expr_column&& ) = default;
+    indexed_expr_column& operator=( const indexed_expr_column& ) = default;
+    indexed_expr_column& operator=( indexed_expr_column&& ) = default;
+
+    template< template <typename...> typename Iter, typename ... Ts >
+    typename ensure_missing<typename pack_element<Ind, Ts...>::type>::type
     get_value( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
@@ -158,11 +184,15 @@ struct expr_column
         using T = typename pack_element<Ind, Ts...>::type;
         auto adjusted = curr + offset;
         if ( begin <= adjusted && adjusted < end ) {
-            return adjusted->template at<Ind>();
+            if constexpr ( is_missing<T>::value ) {
+                return adjusted->template at<Ind>();
+            }
+            else {
+                return mi<T>{ adjusted->template at<Ind>() };
+            }
         } 
         else {
-            // default construction
-            return T{};
+            return missing;
         }
     }
 
@@ -190,6 +220,29 @@ struct terminal
 };
 
 template< size_t Ind >
+struct terminal< indexed_expr_column<Ind> >
+{
+    using is_expr = void;
+    static const size_t index = Ind;
+
+    terminal() = default;
+    terminal( indexed_expr_column<Ind> _t ) : t( _t ) {}
+
+    template< template <typename...> typename Iter, typename ... Ts >
+    typename ensure_missing<typename pack_element<Ind, Ts...>::type>::type
+    get_value( 
+        const Iter< Ts... >& begin,
+        const Iter< Ts... >& curr, 
+        const Iter< Ts... >& end 
+        ) const
+    {
+        return t.get_value( begin, curr, end );
+    }
+
+    indexed_expr_column<Ind> t;
+};
+
+template< size_t Ind >
 struct terminal< expr_column<Ind> >
 {
     using is_expr = void;
@@ -209,9 +262,9 @@ struct terminal< expr_column<Ind> >
         return t.get_value( begin, curr, end );
     }
 
-    terminal< expr_column<Ind> > operator[]( ptrdiff_t off ) const
+    terminal< indexed_expr_column<Ind> > operator[]( ptrdiff_t off ) const
     {
-        return terminal{ t[ off ] };
+        return terminal< indexed_expr_column<Ind> >{ t[ off ] };
     }
 
     expr_column<Ind> t;

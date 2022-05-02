@@ -970,8 +970,12 @@ TEST_CASE( "expression offsets", "[frame]" )
     f1.push_back( 2022_y/January/9, 9.3, false );
     dout << f1;
 
-    auto f2 = f1.new_series<mi<year_month_day>>( "yesteryear", _0[-1] );
+    auto f2 = f1.new_series<mi<year_month_day>>( "yesterday", _0[-1] );
 
     dout << f2;
+
+    auto f3 = f1.new_series<mi<year_month_day>>( "same day", _0 );
+
+    dout << f3;
 }
 

@@ -163,7 +163,7 @@ public:
         using V = typename T::value_type;
         series<V> s;
         for ( auto& e : *m_sharedvec ) {
-            if ( e ) {
+            if ( e.has_value() ) {
                 s.push_back( *e );
             }
             else {
