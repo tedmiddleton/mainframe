@@ -15,7 +15,6 @@
 #include <string>
 #include <list>
 #include <iomanip>
-#include <optional>
 #include <variant>
 #include <unordered_map>
 #include <unordered_set>
@@ -24,6 +23,7 @@
 #include <variant>
 
 #include "mainframe/base.hpp"
+#include "mainframe/missing.hpp"
 #include "mainframe/frame_iterator.hpp"
 #include "mainframe/expression.hpp"
 #include "mainframe/series.hpp"
@@ -137,9 +137,9 @@ template<typename T, size_t Curr, size_t ... IndList>
 struct add_opt;
 
 template<typename T, typename ... Ts, size_t Curr, size_t ... IndList>
-struct add_opt<frame<std::optional<T>, Ts...>, Curr, IndList...>
+struct add_opt<frame<mi<T>, Ts...>, Curr, IndList...>
 {
-    using frame_type = frame<std::optional<T>>; 
+    using frame_type = frame<mi<T>>; 
     using add_opt_type = typename add_opt<frame<Ts...>, Curr+1, IndList...>::type;
     using type = typename join_frames< frame_type, add_opt_type >::type;
 };
@@ -149,15 +149,15 @@ struct add_opt<frame<T, Ts...>, Curr, IndList...>
 {
     static const bool inds_contains = contains< Curr, IndList... >::value;
     using frame_type = typename 
-        std::conditional<inds_contains, frame<std::optional<T>>, frame<T> >::type; 
+        std::conditional<inds_contains, frame<mi<T>>, frame<T> >::type; 
     using add_opt_type = typename add_opt<frame<Ts...>, Curr+1, IndList...>::type;
     using type = typename join_frames< frame_type, add_opt_type >::type;
 };
 
 template<typename T, size_t Curr, size_t ... IndList>
-struct add_opt<frame<std::optional<T>>, Curr, IndList...>
+struct add_opt<frame<mi<T>>, Curr, IndList...>
 {
-    using type = frame<std::optional<T>>;
+    using type = frame<mi<T>>;
 };
 
 template<typename T, size_t Curr, size_t ... IndList>
@@ -165,18 +165,18 @@ struct add_opt<frame<T>, Curr, IndList...>
 {
     static const bool inds_contains = contains< Curr, IndList... >::value;
     using type = typename 
-        std::conditional< inds_contains, frame<std::optional<T>>,  frame<T>>::type;
+        std::conditional< inds_contains, frame<mi<T>>,  frame<T>>::type;
 };
 
 template<typename T, size_t Curr, size_t ... IndList>
 struct remove_opt;
 
 template<typename T, typename ... Ts, size_t Curr, size_t ... IndList>
-struct remove_opt<frame<std::optional<T>, Ts...>, Curr, IndList...>
+struct remove_opt<frame<mi<T>, Ts...>, Curr, IndList...>
 {
     static const bool inds_contains = contains< Curr, IndList... >::value;
     using frame_type = typename 
-        std::conditional<inds_contains, frame<T>, frame<std::optional<T>> >::type; 
+        std::conditional<inds_contains, frame<T>, frame<mi<T>> >::type; 
     using remove_opt_type = typename remove_opt<frame<Ts...>, Curr+1, IndList...>::type;
     using type = typename join_frames< frame_type, remove_opt_type >::type;
 };
@@ -190,11 +190,11 @@ struct remove_opt<frame<T, Ts...>, Curr, IndList...>
 };
 
 template<typename T, size_t Curr, size_t ... IndList>
-struct remove_opt<frame<std::optional<T>>, Curr, IndList...>
+struct remove_opt<frame<mi<T>>, Curr, IndList...>
 {
     static const bool inds_contains = contains< Curr, IndList... >::value;
     using type = typename 
-        std::conditional< inds_contains, frame<T>, frame<std::optional<T>> >::type;
+        std::conditional< inds_contains, frame<T>, frame<mi<T>> >::type;
 };
 
 template<typename T, size_t Curr, size_t ... IndList>
@@ -207,29 +207,29 @@ template<typename T>
 struct add_all_opt;
 
 template<typename T, typename ... Ts>
-struct add_all_opt<frame<std::optional<T>, Ts...>>
+struct add_all_opt<frame<mi<T>, Ts...>>
 {
     using remaining_frame = typename add_all_opt<frame<Ts...>>::type;
-    using type = typename prepend<std::optional<T>, remaining_frame>::type;
+    using type = typename prepend<mi<T>, remaining_frame>::type;
 };
 
 template<typename T, typename ... Ts>
 struct add_all_opt<frame<T, Ts...>>
 {
     using remaining_frame = typename add_all_opt<frame<Ts...>>::type;
-    using type = typename prepend<std::optional<T>, remaining_frame>::type;
+    using type = typename prepend<mi<T>, remaining_frame>::type;
 };
 
 template<typename T>
-struct add_all_opt<frame<std::optional<T>>>
+struct add_all_opt<frame<mi<T>>>
 {
-    using type = frame<std::optional<T>>;
+    using type = frame<mi<T>>;
 };
 
 template<typename T>
 struct add_all_opt<frame<T>>
 {
-    using type = frame<std::optional<T>>;
+    using type = frame<mi<T>>;
 };
 
 template<typename T>
@@ -243,14 +243,14 @@ struct remove_all_opt<frame<T, Ts...>>
 };
 
 template<typename T, typename ... Ts>
-struct remove_all_opt<frame<std::optional<T>, Ts...>>
+struct remove_all_opt<frame<mi<T>, Ts...>>
 {
     using remaining_frame = typename remove_all_opt<frame<Ts...>>::type;
     using type = typename prepend<T, remaining_frame>::type;
 };
 
 template<typename T>
-struct remove_all_opt<frame<std::optional<T>>>
+struct remove_all_opt<frame<mi<T>>>
 {
     using type = frame<T>;
 };

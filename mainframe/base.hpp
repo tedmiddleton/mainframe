@@ -6,8 +6,8 @@
 
 #ifndef INCLUDED_mainframe_base_h
 #define INCLUDED_mainframe_base_h
+
 #include <ostream>
-#include <optional>
 #include <vector>
 
 namespace mf
@@ -21,8 +21,7 @@ const char * get_emptyspace( size_t num );
 size_t get_max_string_length( const std::vector<std::string>& );
 std::vector<size_t> get_max_string_lengths( const std::vector<std::vector<std::string>>& );
 
-namespace detail
-{
+template< typename T > class mi;
 
 template<typename T>
 auto stringify( std::ostream & o, const T & t, bool ) -> decltype( o << t, o )
@@ -36,7 +35,7 @@ std::ostream& stringify( std::ostream & o, const char & t, bool );
 std::ostream& stringify( std::ostream & o, const unsigned char & t, bool );
 
 template<typename T>
-std::ostream& stringify( std::ostream & o, const std::optional<T> & t, bool )
+std::ostream& stringify( std::ostream & o, const mi<T> & t, bool )
 {
     if ( !t ) {
         o << "nullopt";
@@ -53,8 +52,6 @@ std::ostream& stringify( std::ostream & o, const T &, int )
     o << "opaque";
     return o;
 }
-
-} // namespace detail
 
 template<size_t Ind, size_t Curr, typename ... Ts>
 struct pack_element_impl;
@@ -89,10 +86,10 @@ template < size_t Ind >
 struct contains<Ind> : std::false_type {};
 
 template< typename T >
-struct is_optional : std::false_type {};
+struct is_missing : std::false_type {};
 
 template< typename T >
-struct is_optional<std::optional<T>> : std::true_type {};
+struct is_missing<mi<T>> : std::true_type {};
 
 } // namespace mf
 

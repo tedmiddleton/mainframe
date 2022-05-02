@@ -170,12 +170,23 @@ TEST_CASE( "operator=( const& )", "[series]" )
     s2 = s1;
     REQUIRE(s1.size() == 66);
     REQUIRE(s2.size() == 66);
+    REQUIRE(s1.use_count() == 2);
+    REQUIRE(s2.use_count() == 2);
     REQUIRE(s1.at(0) == f1);
     REQUIRE(s1.at(65) == f1);
     REQUIRE(s2.at(0) == f1);
     REQUIRE(s2.at(65) == f1);
+    REQUIRE(s1.use_count() == 1);
+    REQUIRE(s2.use_count() == 1);
+    const auto s3 = s1;
+    REQUIRE(s1.size() == 66);
+    REQUIRE(s3.size() == 66);
     REQUIRE(s1.use_count() == 2);
-    REQUIRE(s2.use_count() == 2);
+    REQUIRE(s3.use_count() == 2);
+    REQUIRE(s3.at(0) == f1);
+    REQUIRE(s3.at(65) == f1);
+    REQUIRE(s1.use_count() == 2);
+    REQUIRE(s3.use_count() == 2);
 }
 
 TEST_CASE( "operator=( && )", "[series]" )
@@ -407,16 +418,13 @@ TEST_CASE( "insert( pos first last )", "[series]" )
         REQUIRE( sv2.at( 0 ) == f0 );
         REQUIRE( sv2.at( 1 ) == f1 );
         REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
+        REQUIRE( sv1 == sv2 );
         auto it = sv1.insert( sv1.begin(), v2.begin(), v2.end() );
         REQUIRE( it == sv1.begin() );
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
     }
     SECTION( "begin()+1, empty insert" )
     {
@@ -547,6 +555,8 @@ TEST_CASE( "insert( pos first last )", "[series]" )
         series<foo> sv2{ sv1 };
         REQUIRE( sv1.size() == 4 );
         REQUIRE( sv2.size() == 4 );
+        REQUIRE( sv1.use_count() == 2 );
+        REQUIRE( sv2.use_count() == 2 );
         REQUIRE( sv1.at( 0 ) == f0 );
         REQUIRE( sv1.at( 1 ) == f1 );
         REQUIRE( sv1.at( 2 ) == f2 );
@@ -555,8 +565,8 @@ TEST_CASE( "insert( pos first last )", "[series]" )
         REQUIRE( sv2.at( 1 ) == f1 );
         REQUIRE( sv2.at( 2 ) == f2 );
         REQUIRE( sv2.at( 3 ) == f3 );
-        REQUIRE( sv1.use_count() == 2 );
-        REQUIRE( sv2.use_count() == 2 );
+        REQUIRE( sv1.use_count() == 1 );
+        REQUIRE( sv2.use_count() == 1 );
         auto it = sv1.insert( sv1.begin()+1, v1.begin(), v1.end() );
         REQUIRE( it == sv1.begin()+1 );
         REQUIRE( sv1.size() == 6 );
@@ -860,17 +870,11 @@ TEST_CASE( "insert( pos count value )", "[series]" )
         REQUIRE( sv1.use_count() == 3 );
         REQUIRE( sv2.use_count() == 3 );
         REQUIRE( sv3.use_count() == 3 );
-        REQUIRE( sv1.at( 0 ) == f0 );
-        REQUIRE( sv1.at( 1 ) == f1 );
-        REQUIRE( sv1.at( 2 ) == f2 );
-        REQUIRE( sv2.at( 0 ) == f0 );
-        REQUIRE( sv2.at( 1 ) == f1 );
-        REQUIRE( sv2.at( 2 ) == f2 );
-        REQUIRE( sv3.at( 0 ) == f0 );
-        REQUIRE( sv3.at( 1 ) == f1 );
-        REQUIRE( sv3.at( 2 ) == f2 );
-        auto it = sv2.insert( sv2.end(), 2, f3 );
-        REQUIRE( it == sv2.begin()+3 );
+        REQUIRE( sv1 == sv2 );
+        REQUIRE( sv1 == sv3 );
+        REQUIRE( sv2 == sv3 );
+        auto it = sv2.insert( sv2.cend(), 2, f3 );
+        REQUIRE( it == sv2.cbegin()+3 );
         REQUIRE( sv1.size() == 3 );
         REQUIRE( sv2.size() == 5 );
         REQUIRE( sv3.size() == 3 );
@@ -1135,7 +1139,7 @@ TEST_CASE( "allow_missing()", "[series]" )
         foo f1{ "f1" };
         foo f2{ "f2" };
         foo f3{ "f3" };
-        series<std::optional<foo>> sv1{ f0, nullopt, f2 };
+        series<mi<foo>> sv1{ f0, missing, f2 };
         auto sv2 = sv1.allow_missing();
         REQUIRE( sv2.size() == 3 );
         REQUIRE( sv2[ 0 ] == f0 );
@@ -1158,8 +1162,8 @@ TEST_CASE( "disallow_missing()", "[series]" )
         foo_with_ctor f1{ "f1" };
         foo_with_ctor f2{ "f2" };
         foo_with_ctor fdefault;
-        series<std::optional<foo_with_ctor>> sv1{ f0, f1, f2 };
-        sv1.push_back( nullopt );
+        series<mi<foo_with_ctor>> sv1{ f0, f1, f2 };
+        sv1.push_back( missing );
         auto sv2 = sv1.disallow_missing();
         REQUIRE( sv2.size() == 4 );
         REQUIRE( sv2[ 0 ] == f0 );

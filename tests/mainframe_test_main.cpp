@@ -835,23 +835,23 @@ TEST_CASE( "allow_missing()", "[frame]" )
         auto f2 = f1.allow_missing();
         f2.set_column_names( "date", "temperature", "rain" );
         f2.push_back( 2022_y/January/1, 8.9, false );
-        f2.push_back( nullopt, 10.0, false );
-        f2.push_back( 2022_y/January/3, nullopt, true );
-        f2.push_back( 2022_y/January/4, 12.2, nullopt );
-        f2.push_back( nullopt, nullopt, false );
+        f2.push_back( missing, 10.0, false );
+        f2.push_back( 2022_y/January/3, missing, true );
+        f2.push_back( 2022_y/January/4, 12.2, missing );
+        f2.push_back( missing, missing, false );
         REQUIRE( f2.size() == 5 );
     }
 
     SECTION( "existing" )
     {
-        frame<year_month_day, optional<double>, bool> f1;
+        frame<year_month_day, mi<double>, bool> f1;
         auto f2 = f1.allow_missing();
         f2.set_column_names( "date", "temperature", "rain" );
         f2.push_back( 2022_y/January/1, 8.9, false );
-        f2.push_back( nullopt, 10.0, false );
-        f2.push_back( 2022_y/January/3, nullopt, true );
-        f2.push_back( 2022_y/January/4, 12.2, nullopt );
-        f2.push_back( nullopt, nullopt, false );
+        f2.push_back( missing, 10.0, false );
+        f2.push_back( 2022_y/January/3, missing, true );
+        f2.push_back( 2022_y/January/4, 12.2, missing );
+        f2.push_back( missing, missing, false );
         REQUIRE( f2.size() == 5 );
     }
 
@@ -873,23 +873,23 @@ TEST_CASE( "allow_missing()", "[frame]" )
         auto f2 = f1.allow_missing( _0, _2 );
         f2.set_column_names( "date", "temperature", "rain" );
         f2.push_back( 2022_y/January/1, 8.9, false );
-        f2.push_back( nullopt, 10.0, false );
+        f2.push_back( missing, 10.0, false );
         f2.push_back( 2022_y/January/3, 11.1, true );
-        f2.push_back( 2022_y/January/4, 12.2, nullopt );
-        f2.push_back( nullopt, 13.3, false );
+        f2.push_back( 2022_y/January/4, 12.2, missing );
+        f2.push_back( missing, 13.3, false );
         REQUIRE( f2.size() == 5 );
     }
 
     SECTION( "some existing" )
     {
-        frame<year_month_day, double, optional<bool>> f1;
+        frame<year_month_day, double, mi<bool>> f1;
         auto f2 = f1.allow_missing( _0, _2 );
         f2.set_column_names( "date", "temperature", "rain" );
         f2.push_back( 2022_y/January/1, 8.9, false );
-        f2.push_back( nullopt, 10.0, false );
+        f2.push_back( missing, 10.0, false );
         f2.push_back( 2022_y/January/3, 11.1, true );
-        f2.push_back( 2022_y/January/4, 12.2, nullopt );
-        f2.push_back( nullopt, 13.3, false );
+        f2.push_back( 2022_y/January/4, 12.2, missing );
+        f2.push_back( missing, 13.3, false );
         REQUIRE( f2.size() == 5 );
     }
 }
@@ -898,13 +898,13 @@ TEST_CASE( "disallow_missing()", "[frame]" )
 {
     SECTION( "all" )
     {
-        frame<optional<year_month_day>, optional<double>, optional<bool>> f1;
+        frame<mi<year_month_day>, mi<double>, mi<bool>> f1;
         f1.set_column_names( "date", "temperature", "rain" );
-        f1.push_back( 2022_y/January/1, nullopt, false );
-        f1.push_back( nullopt, 10.0, false );
-        f1.push_back( 2022_y/January/3, nullopt, true );
-        f1.push_back( 2022_y/January/4, 12.2, nullopt );
-        f1.push_back( nullopt, nullopt, false );
+        f1.push_back( 2022_y/January/1, missing, false );
+        f1.push_back( missing, 10.0, false );
+        f1.push_back( 2022_y/January/3, missing, true );
+        f1.push_back( 2022_y/January/4, 12.2, missing );
+        f1.push_back( missing, missing, false );
         auto f2 = f1.disallow_missing();
         REQUIRE( f2.size() == 5 );
         auto b = f2.begin();
@@ -925,16 +925,16 @@ TEST_CASE( "disallow_missing()", "[frame]" )
     SECTION( "some" )
     {
         auto f1 = frame<year_month_day, double, bool>{}.allow_missing();
-        f1.push_back( 2022_y/January/1, nullopt, false );
-        f1.push_back( nullopt, 10.0, false );
-        f1.push_back( 2022_y/January/3, nullopt, true );
-        f1.push_back( 2022_y/January/4, 12.2, nullopt );
-        f1.push_back( nullopt, nullopt, false );
+        f1.push_back( 2022_y/January/1, missing, false );
+        f1.push_back( missing, 10.0, false );
+        f1.push_back( 2022_y/January/3, missing, true );
+        f1.push_back( 2022_y/January/4, 12.2, missing );
+        f1.push_back( missing, missing, false );
         auto f2 = f1.disallow_missing( _0, _2 );
         REQUIRE( f2.size() == 5 );
         auto b = f2.begin();
         REQUIRE( b->at( _0 ) == 2022_y/January/1 ); // unchanged
-        REQUIRE( b->at( _1 ) == nullopt ); // unchanged
+        REQUIRE( b->at( _1 ) == missing ); // unchanged
         REQUIRE( b->at( _2 ) == false ); // unchanged
         b++;
         REQUIRE( b->at( _0 ) == year_month_day{} ); // default date
@@ -942,7 +942,7 @@ TEST_CASE( "disallow_missing()", "[frame]" )
         REQUIRE( b->at( _2 ) == false ); // unchanged
         b++;
         REQUIRE( b->at( _0 ) == 2022_y/January/3 ); // unchanged
-        REQUIRE( b->at( _1 ) == nullopt ); // unchanged
+        REQUIRE( b->at( _1 ) == missing ); // unchanged
         REQUIRE( b->at( _2 ) == true ); // unchanged
         b++;
         REQUIRE( b->at( _0 ) == 2022_y/January/4 ); // unchanged
@@ -950,7 +950,7 @@ TEST_CASE( "disallow_missing()", "[frame]" )
         REQUIRE( b->at( _2 ) == false ); // default bool
         b++;
         REQUIRE( b->at( _0 ) == year_month_day{} ); // default date
-        REQUIRE( b->at( _1 ) == nullopt ); // unchanged
+        REQUIRE( b->at( _1 ) == missing ); // unchanged
         REQUIRE( b->at( _2 ) == false ); // unchanged
     }
 }
@@ -969,8 +969,5 @@ TEST_CASE( "expression offsets", "[frame]" )
     f1.push_back( 2022_y/January/8, 9.1, true );
     f1.push_back( 2022_y/January/9, 9.3, false );
     dout << f1;
-
-    auto f2 = f1.new_series<year_month_day>( "prev", _0[-1] ).columns( _0, _3, _1, _2 );
-    dout << f2;
 }
 

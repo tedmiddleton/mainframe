@@ -8,7 +8,7 @@ add_executable( mainframe_series_vector_test
 
 target_link_libraries( mainframe_series_vector_test
     PRIVATE
-        mainframe_series
+        mainframe
     )
 
 add_test( mainframe_series_vector_test 
@@ -20,7 +20,7 @@ add_executable( mainframe_series_test
 
 target_link_libraries( mainframe_series_test
     PRIVATE
-        mainframe_series
+        mainframe
     )
 
 add_test( mainframe_series_test mainframe_series_test )

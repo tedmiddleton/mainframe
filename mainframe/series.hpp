@@ -16,7 +16,6 @@
 #include <memory>
 #include <string>
 #include <list>
-#include <optional>
 #include <variant>
 #include <unordered_map>
 #include <unordered_set>
@@ -26,6 +25,7 @@
 #include <variant>
 
 #include "mainframe/base.hpp"
+#include "mainframe/missing.hpp"
 #include "mainframe/series_vector.hpp"
 
 namespace mf
@@ -135,17 +135,17 @@ public:
     }
 
     template<typename U = T,
-        std::enable_if_t<is_optional<U>::value, bool> = true>
+        std::enable_if_t<is_missing<U>::value, bool> = true>
     series<T> allow_missing() const
     {
         return *this;
     }
 
     template<typename U = T,
-        std::enable_if_t<!is_optional<U>::value, bool> = true>
-    series<std::optional<T>> allow_missing() const
+        std::enable_if_t<!is_missing<U>::value, bool> = true>
+    series<mi<T>> allow_missing() const
     {
-        series<std::optional<T>> os;
+        series<mi<T>> os;
         for ( auto& e : *m_sharedvec ) {
             os.push_back( e );
         }
@@ -155,7 +155,7 @@ public:
 
     // This requires default-construction. Can we do better?
     template<typename U = T,
-        std::enable_if_t<is_optional<U>::value && 
+        std::enable_if_t<is_missing<U>::value && 
             std::is_default_constructible<typename U::value_type>::value, 
         bool> = true>
     series<typename U::value_type> disallow_missing() const
@@ -175,7 +175,7 @@ public:
     }
 
     template<typename U = T,
-        std::enable_if_t<!is_optional<U>::value, bool> = true>
+        std::enable_if_t<!is_missing<U>::value, bool> = true>
     series<T> disallow_missing() const
     {
         return *this;
@@ -201,6 +201,7 @@ public:
     // at
     reference at( size_type n )
     {
+        unref();
         return m_sharedvec->at( n );
     }
     const_reference at( size_type n ) const
@@ -209,8 +210,11 @@ public:
     }
 
     // operator[]
+    // It seems like this should really be an unref-ing operation, otherwise 
+    // there's the possibility that the user will damage multiple series.  
     reference operator[]( size_type n )
     {
+        unref();
         return (*m_sharedvec)[ n ];
     }
     const_reference operator[]( size_type n ) const
@@ -221,6 +225,7 @@ public:
     // front & back
     reference front()
     {
+        unref();
         return m_sharedvec->front();
     }
     const_reference front() const
@@ -230,6 +235,7 @@ public:
 
     reference back()
     {
+        unref();
         return m_sharedvec->back();
     }
     const_reference back() const
@@ -240,12 +246,14 @@ public:
     // data
     T* data()
     {
+        unref();
         return m_sharedvec->data();
     }
 
     // begin, cbegin, end, cend
     iterator begin()
     {
+        unref();
         return m_sharedvec->begin();
     }
     const_iterator begin() const
@@ -258,6 +266,7 @@ public:
     }
     iterator end()
     {
+        unref();
         return m_sharedvec->end();
     }
     const_iterator end() const
@@ -272,6 +281,7 @@ public:
     // rbegin, crbegin, rend, crend
     reverse_iterator rbegin()
     {
+        unref();
         return m_sharedvec->rbegin();
     }
     const_reverse_iterator rbegin() const
@@ -284,6 +294,7 @@ public:
     }
     reverse_iterator rend()
     {
+        unref();
         return m_sharedvec->rend();
     }
     const_reverse_iterator rend() const
@@ -322,6 +333,7 @@ public:
     }
     void clear()
     {
+        unref();
         m_sharedvec->clear();
     }
 
@@ -400,41 +412,35 @@ public:
     // push_back, emplace_back, pop_back
     void push_back( const T& value )
     {
-        std::shared_ptr<series_vector<T>> n = 
-            std::make_shared<series_vector<T>>( *m_sharedvec );
+        unref();
         m_sharedvec->push_back( value );
     }
     void push_back( T&& value )
     {
-        std::shared_ptr<series_vector<T>> n = 
-            std::make_shared<series_vector<T>>( *m_sharedvec );
+        unref();
         m_sharedvec->push_back( std::move( value ) );
     }
     template< typename... Args > 
     reference emplace_back( Args&&... args )
     {
-        std::shared_ptr<series_vector<T>> n = 
-            std::make_shared<series_vector<T>>( *m_sharedvec );
+        unref();
         return m_sharedvec->emplace_back( std::forward<T>( args... ) );
     }
     void pop_back()
     {
-        std::shared_ptr<series_vector<T>> n = 
-            std::make_shared<series_vector<T>>( *m_sharedvec );
+        unref();
         m_sharedvec->pop_back();
     }
 
     // resize
     void resize( size_type newsize ) 
     { 
-        std::shared_ptr<series_vector<T>> n = 
-            std::make_shared<series_vector<T>>( *m_sharedvec );
+        unref();
         return m_sharedvec->resize( newsize ); 
     }
     void resize( size_type newsize, const T& value ) 
     { 
-        std::shared_ptr<series_vector<T>> n = 
-            std::make_shared<series_vector<T>>( *m_sharedvec );
+        unref();
         return m_sharedvec->resize( newsize, value );
     }
 
@@ -458,7 +464,7 @@ public:
         for ( const T& t : *m_sharedvec ) {
             std::stringstream ss;
             ss << std::boolalpha;
-            detail::stringify( ss, t, true );
+            stringify( ss, t, true );
             s.push_back( ss.str() );
         }
         return s;
@@ -477,7 +483,22 @@ public:
         return m_sharedvec.use_count();
     }
 
+    bool operator==( const series<T>& other ) const
+    {
+        return m_name == other.m_name &&
+            *m_sharedvec == *(other.m_sharedvec);
+    }
+
 private:
+
+    void unref()
+    {
+        if ( m_sharedvec.use_count() > 1 ) {
+            std::shared_ptr<series_vector<T>> n = 
+                std::make_shared<series_vector<T>>( *m_sharedvec );
+            m_sharedvec = n;
+        }
+    }
 
     iterator unref( iterator it )
     {
