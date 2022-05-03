@@ -11,7 +11,6 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-//#include <mainframe/expression.hpp>
 #include <mainframe/frame.hpp>
 #include "date.h"
 #include "debug_cout.hpp"
@@ -770,6 +769,12 @@ TEST_CASE( "new_series()", "[frame]" )
         f1.push_back( 2022_y/January/7, 15.5, false );
         auto f2 = f1.new_series<year_month_day>(
             "index", _0 + years(1) );
+        auto f3 = f1.new_series<year_month_day>(
+            "index", []( auto&, auto&c, auto& ){
+            auto& col1val = c->at( _0 );
+            return col1val + years(1);
+        });
+        REQUIRE( f2 == f3 );
 
         REQUIRE( (f2.begin() + 0)->at( _0 ) == 2022_y/January/2 );
         REQUIRE( (f2.begin() + 0)->at( _1 ) == 10.0 );

@@ -489,6 +489,12 @@ public:
             *m_sharedvec == *(other.m_sharedvec);
     }
 
+    bool operator!=( const series<T>& other ) const
+    {
+        return m_name != other.m_name || 
+            *m_sharedvec != *(other.m_sharedvec);
+    }
+
 private:
 
     void unref()

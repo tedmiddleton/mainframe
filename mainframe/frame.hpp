@@ -572,13 +572,13 @@ public:
         auto it = b;
         if constexpr ( is_missing<T>::value ) {
             for ( ; it != e; ++it ) {
-                auto val = expr.get_value( b, it, e );
+                auto val = expr( b, it, e );
                 it->template at<sizeof...(Ts)>() = val;
             }
         } 
         else {
             for ( ; it != e; ++it ) {
-                auto val = expr.get_value( b, it, e );
+                auto val = expr( b, it, e );
                 auto uval = unwrap_missing<decltype(val)>::unwrap(val);
                 it->template at<sizeof...(Ts)>() = uval;
             }
@@ -590,6 +590,27 @@ public:
     num_columns() const
     {
         return sizeof...( Ts );
+    }
+
+    bool
+    operator==( const frame<Ts...>& other ) const
+    {
+        return eq_impl<0>( other );
+    }
+
+    template< size_t Ind >
+    bool
+    eq_impl( const frame<Ts...>& other ) const
+    {
+        auto& s = std::get<Ind>( m_columns );
+        auto& os = std::get<Ind>( other.m_columns );
+        if ( s != os ) {
+            return false;
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return eq_impl< Ind+1 >( other );
+        }
+        return true;
     }
 
     void 
@@ -629,7 +650,7 @@ public:
         auto curr = b;
         auto e = cend();
         for ( ; curr != e; ++curr ) {
-            auto exprval = ex.get_value( b, curr, e );
+            auto exprval = ex( b, curr, e );
             if ( exprval ) {
                 out.push_back( *curr );
             }

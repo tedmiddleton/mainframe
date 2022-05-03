@@ -151,7 +151,7 @@ struct expr_column
 
     template< template <typename...> typename Iter, typename ... Ts >
     typename pack_element<Ind, Ts...>::type
-    get_value( 
+    operator()( 
         const Iter< Ts... >&,
         const Iter< Ts... >& curr, 
         const Iter< Ts... >&
@@ -175,7 +175,7 @@ struct indexed_expr_column
 
     template< template <typename...> typename Iter, typename ... Ts >
     typename ensure_missing<typename pack_element<Ind, Ts...>::type>::type
-    get_value( 
+    operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
         const Iter< Ts... >& end
@@ -207,7 +207,7 @@ struct terminal
     terminal( T _t ) : t( _t ) {}
 
     template< template <typename...> typename Iter, typename ... Ts >
-    T get_value( 
+    T operator()( 
         const Iter< Ts... >&,
         const Iter< Ts... >&, 
         const Iter< Ts... >&
@@ -230,13 +230,13 @@ struct terminal< indexed_expr_column<Ind> >
 
     template< template <typename...> typename Iter, typename ... Ts >
     typename ensure_missing<typename pack_element<Ind, Ts...>::type>::type
-    get_value( 
+    operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
         const Iter< Ts... >& end 
         ) const
     {
-        return t.get_value( begin, curr, end );
+        return t.operator()( begin, curr, end );
     }
 
     indexed_expr_column<Ind> t;
@@ -253,13 +253,13 @@ struct terminal< expr_column<Ind> >
 
     template< template <typename...> typename Iter, typename ... Ts >
     typename pack_element<Ind, Ts...>::type
-    get_value( 
+    operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
         const Iter< Ts... >& end 
         ) const
     {
-        return t.get_value( begin, curr, end );
+        return t.operator()( begin, curr, end );
     }
 
     terminal< indexed_expr_column<Ind> > operator[]( ptrdiff_t off ) const
@@ -280,18 +280,18 @@ struct binary_expr
     binary_expr( L _l, R _r ) : l( _l ), r( _r ) {}
 
     template< template <typename...> typename Iter, typename ... Ts >
-    auto get_value( 
+    auto operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
         const Iter< Ts... >& end 
         ) const -> 
     decltype( Op::exec( 
-            quickval<L>::value.get_value( begin, curr, end ), 
-            quickval<R>::value.get_value( begin, curr, end ) ) )
+            quickval<L>::value.operator()( begin, curr, end ), 
+            quickval<R>::value.operator()( begin, curr, end ) ) )
     {
         return Op::exec( 
-            l.get_value( begin, curr, end ), 
-            r.get_value( begin, curr, end ) );
+            l.operator()( begin, curr, end ), 
+            r.operator()( begin, curr, end ) );
     }
 
     L l;
@@ -310,14 +310,14 @@ struct unary_expr
     unary_expr( T _t ) : t( _t ) {}
 
     template< template <typename...> typename Iter, typename ... Ts >
-    auto get_value( 
+    auto operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
         const Iter< Ts... >& end 
         ) const -> 
-    decltype( Op::exec( quickval<T>::value.get_value( curr ) ) )
+    decltype( Op::exec( quickval<T>::value.operator()( curr ) ) )
     {
-        return Op::exec( t.get_value( begin, curr, end ) );
+        return Op::exec( t.operator()( begin, curr, end ) );
     }
 
     T t;
