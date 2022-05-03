@@ -100,6 +100,31 @@ struct ensure_missing< mi<T> >
     using type = mi<T>;
 };
 
+template< typename T >
+struct unwrap_missing
+{
+    using type = T;
+    static T unwrap( const T& t ) 
+    {
+        return t;
+    }
+};
+
+template< typename T >
+struct unwrap_missing< mi<T> >
+{
+    using type = T;
+    static T unwrap( const mi<T>& t ) 
+    {
+        if ( t.has_value() ) {
+            return *t;
+        }
+        else {
+            // default construction - our last resort
+            return T{};
+        }
+    }
+};
 
 } // namespace mf
 

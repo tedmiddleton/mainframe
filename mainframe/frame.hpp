@@ -537,9 +537,18 @@ public:
         auto b = out.begin();
         auto e = out.end();
         auto it = b;
-        for ( ; it != e; ++it ) {
-            auto val = expr.get_value( b, it, e );
-            it->template at<sizeof...(Ts)>() = val;
+        if constexpr ( is_missing<T>::value ) {
+            for ( ; it != e; ++it ) {
+                auto val = expr.get_value( b, it, e );
+                it->template at<sizeof...(Ts)>() = val;
+            }
+        } 
+        else {
+            for ( ; it != e; ++it ) {
+                auto val = expr.get_value( b, it, e );
+                auto uval = unwrap_missing<decltype(val)>::unwrap(val);
+                it->template at<sizeof...(Ts)>() = uval;
+            }
         }
         return out;
     }

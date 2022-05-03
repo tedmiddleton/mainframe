@@ -1022,6 +1022,39 @@ TEST_CASE( "expression offsets", "[frame]" )
         REQUIRE( (b + 7)->at( _3 ) == 2021_y/January/9 );
         REQUIRE( (b + 8)->at( _3 ) == missing );
     }
+
+    SECTION( "initially disallow missing into disallow missing" )
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/1, 8.9, false );
+        f1.push_back( 2022_y/January/2, 10.0, false );
+        f1.push_back( 2022_y/January/3, 11.1, true );
+        f1.push_back( 2022_y/January/4, 12.2, false );
+        f1.push_back( 2022_y/January/5, 13.3, false );
+        f1.push_back( 2022_y/January/6, 14.4, true );
+        f1.push_back( 2022_y/January/7, 15.5, false );
+        f1.push_back( 2022_y/January/8, 9.1, true );
+        f1.push_back( 2022_y/January/9, 9.3, false );
+
+        auto f2 = f1.new_series<year_month_day>( "yesterday", _0[-1] );
+        dout << f2;
+        REQUIRE( f2.num_columns() == 4 );
+        auto b = f2.begin();
+        REQUIRE( (b + 0)->at( _3 ) == year_month_day{} );
+        REQUIRE( (b + 1)->at( _3 ) == 2022_y/January/1 );
+        REQUIRE( (b + 2)->at( _3 ) == 2022_y/January/2 );
+        REQUIRE( (b + 8)->at( _3 ) == 2022_y/January/8 );
+
+        auto f3 = f1.new_series<year_month_day>( "tomorrow last year", _0[+1] - years(1) );
+        dout << f3;
+        REQUIRE( f3.num_columns() == 4 );
+        b = f3.begin();
+        REQUIRE( (b + 0)->at( _3 ) == 2021_y/January/2 );
+        REQUIRE( (b + 1)->at( _3 ) == 2021_y/January/3 );
+        REQUIRE( (b + 7)->at( _3 ) == 2021_y/January/9 );
+        REQUIRE( (b + 8)->at( _3 ) == year_month_day{} );
+    }
 }
 
 TEST_CASE( "drop_missing()", "[frame]" )
