@@ -415,6 +415,23 @@ public:
         }
     }
 
+    frame<Ts...> drop_missing()
+    {
+        frame<Ts...> out;
+        out.set_column_names( column_names() );
+
+        auto b = cbegin();
+        auto curr = b;
+        auto e = cend();
+        for ( ; curr != e; ++curr ) {
+            auto& row = *curr;
+            if ( !row.any_missing() ) {
+                out.push_back( row );
+            }
+        }
+        return out;
+    }
+
     void clear()
     {
         clear_impl< 0 >();

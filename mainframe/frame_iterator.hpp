@@ -53,6 +53,26 @@ public:
         return *coliter;
     }
 
+    bool any_missing() const
+    {
+        return any_missing_impl<0, Ts...>();
+    }
+
+    template< size_t Ind, typename U, typename ... Us >
+    bool any_missing_impl() const
+    {
+        const U& elem = at< Ind >();
+        if constexpr ( is_missing<U>::value ) {
+            if ( !elem.has_value() ) {
+                return true;
+            }
+        }
+        if constexpr ( sizeof...(Us) > 0 ) {
+            return any_missing_impl<Ind+1, Us...>();
+        }
+        return false;
+    }
+
 private:
 
     template< template<typename> class It, typename ... Us >
