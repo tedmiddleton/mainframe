@@ -1077,3 +1077,60 @@ TEST_CASE( "drop_missing()", "[frame]" )
     REQUIRE( f2.size() == 4 );
 
 }
+
+TEST_CASE( "corr()", "[frame]" )
+{
+    SECTION( "mean()" )
+    {
+        frame<mi<year_month_day>, double, int> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/1, 8.9,  10 );
+        f1.push_back( 2022_y/January/2, 10.0, 10 );
+        f1.push_back( 2022_y/January/3, 11.1, 7 );
+        f1.push_back( 2022_y/January/4, 12.2, 10 );
+        f1.push_back( 2022_y/January/5, 13.3, 10 );
+        f1.push_back( 2022_y/January/6, 14.4, 7 );
+        f1.push_back( 2022_y/January/7, 15.5, 10 );
+        f1.push_back( 2022_y/January/8, 9.1,  7 );
+        f1.push_back( 2022_y/January/9, 9.3,  10 );
+
+        double mtemp = f1.mean( _1 );
+        double mrain = f1.mean( _2 );
+
+        dout << f1;
+        dout << mtemp << endl;
+        dout << mrain << endl;
+    }
+
+    SECTION( "corr()" )
+    {
+        frame<double, double> f1;
+        f1.set_column_names( "temperature", "rain" );
+        f1.push_back( 1.0, 9.0 );
+        f1.push_back( 2.0, 8.0 );
+        f1.push_back( 3.0, 7.0 );
+        f1.push_back( 4.0, 6.0 );
+        f1.push_back( 5.0, 5.0 );
+        f1.push_back( 6.0, 4.0 );
+        f1.push_back( 7.0, 3.0 );
+        f1.push_back( 8.0, 2.0 );
+        f1.push_back( 9.0, 1.0 );
+        double corr = f1.corr( _0, _1 );
+        dout << f1;
+        dout << corr << endl;
+        f1.clear();
+        f1.push_back( 1.0, 1.0 );
+        f1.push_back( 2.0, 2.0 );
+        f1.push_back( 3.0, 3.0 );
+        f1.push_back( 4.0, 4.0 );
+        f1.push_back( 5.0, 5.0 );
+        f1.push_back( 6.0, 6.0 );
+        f1.push_back( 7.0, 7.0 );
+        f1.push_back( 8.0, 8.0 );
+        f1.push_back( 9.0, 9.0 );
+        corr = f1.corr( _0, _1 );
+        dout << f1;
+        dout << corr << endl;
+    }
+}
+

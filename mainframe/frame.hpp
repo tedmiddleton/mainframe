@@ -397,6 +397,56 @@ public:
         }
     }
 
+    template< size_t Ind1, size_t Ind2 >
+    double corr( terminal<expr_column<Ind1>> col1, 
+                 terminal<expr_column<Ind2>> col2 ) const
+    {
+        using T1 = typename pack_element<Ind1, Ts...>::type;
+        using T2 = typename pack_element<Ind2, Ts...>::type;
+        const series<T1>& s1 = std::get<Ind1>( m_columns );
+        const series<T2>& s2 = std::get<Ind2>( m_columns );
+
+        auto b1 = s1.cbegin();
+        auto b2 = s2.cbegin();
+        auto e1 = s1.cend();
+        auto c1 = b1; 
+        auto c2 = b2; 
+        double corr = 0.0;
+        double m1 = mean( col1 );
+        double m2 = mean( col2 );
+        double var1 = 0.0;
+        double var2 = 0.0;
+        double cov = 0.0;
+        for ( ; c1 != e1; c1++, c2++ ) {
+            double x1 = *c1;
+            double x2 = *c2;
+            double diff1 = x1-m1;
+            double diff2 = x2-m2;
+            double diff1sq = diff1 * diff1;
+            double diff2sq = diff2 * diff2;
+            double diff12 = diff1 * diff2;
+            var1 += diff1sq;
+            var2 += diff2sq;
+            cov += diff12;
+        }
+        corr = cov / std::sqrt( var1 * var2 );
+        return corr;
+    }
+
+    template< size_t Ind >
+    double mean( terminal<expr_column<Ind>> ) const
+    {
+        using T = typename pack_element<Ind, Ts...>::type;
+        const series<T>& s = std::get<Ind>( m_columns );
+        auto b = s.cbegin();
+        auto e = s.cend();
+        double mean = 0.0;
+        for ( auto c = b ; c != e; c++ ) {
+            mean += *c;
+        }
+        return mean / s.size();
+    }
+
     typename remove_all_opt<frame<Ts...>>::type disallow_missing()
     {
         uframe u;
