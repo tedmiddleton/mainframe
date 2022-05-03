@@ -1132,5 +1132,26 @@ TEST_CASE( "corr()", "[frame]" )
         dout << f1;
         dout << corr << endl;
     }
+
+    SECTION( "corr() with int" )
+    {
+        frame<year_month_day, double, int> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y/January/1, 8.9,  10 );
+        f1.push_back( 2022_y/January/2, 10.0, 10 );
+        f1.push_back( 2022_y/January/3, 11.1, 7 );
+        f1.push_back( 2022_y/January/4, 12.2, 10 );
+        f1.push_back( 2022_y/January/5, 13.3, 10 );
+        f1.push_back( 2022_y/January/6, 14.4, 7 );
+        f1.push_back( 2022_y/January/7, 15.5, 10 );
+        f1.push_back( 2022_y/January/8, 9.1,  7 );
+        f1.push_back( 2022_y/January/9, 9.3,  10 );
+
+        double corr1 = f1.corr( _2, _1 );
+        double corr2 = f1.corr( _1, _2 );
+
+        dout << corr1 << ", " << corr2 << endl;
+        REQUIRE( corr1 == corr2 );
+    }
 }
 
