@@ -133,12 +133,14 @@ struct is_expression<T &, void>
 template< size_t Ind >
 struct indexed_expr_column;
 
+struct _empty_byte {};
+
 template< size_t Ind >
 struct expr_column
 {
     static const size_t index = Ind;
 
-    expr_column() = default;
+    constexpr expr_column() {};
     expr_column( const expr_column& ) = default;
     expr_column( expr_column&& ) = default;
     expr_column& operator=( const expr_column& ) = default;
@@ -159,7 +161,7 @@ struct expr_column
     {
         return curr->template at<Ind>();
     }
-    size_t _dummy{ 0U };
+    _empty_byte _eb;
 };
 
 template< size_t Ind >
