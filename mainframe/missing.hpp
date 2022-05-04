@@ -7,6 +7,8 @@
 #ifndef INCLUDED_mainframe_missing_hpp
 #define INCLUDED_mainframe_missing_hpp
 
+#include <optional>
+
 namespace mf
 {
 

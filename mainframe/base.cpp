@@ -6,8 +6,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <sys/ioctl.h>
-#include <unistd.h>
 #include <mainframe/base.hpp>
 
 using namespace std;
