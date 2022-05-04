@@ -13,10 +13,28 @@
 class DebugCout 
 {
 public:
+    bool do_printout() const
+    {
+        bool ret = false;
+#ifdef _WIN32
+        char* var = nullptr;
+        size_t num_elems = 0;
+        if ( 0 == _dupenv_s( &var, &num_elems, "DOUT" ) ) {
+            ret = true;
+            free( var );
+        }
+#else
+        if ( std::getenv( "DOUT" ) ) {
+            ret = true;
+        }
+#endif
+        return ret;
+    }
+
     template <class T>
     DebugCout &operator<<(const T &v)
     {
-        if (std::getenv( "DOUT" )) {
+        if ( do_printout() ) {
             std::cout << v;
         }
         return *this;
@@ -25,7 +43,7 @@ public:
     using endlfunc = std::ostream&(*)(std::ostream&);
     DebugCout &operator<<( endlfunc f ) 
     { 
-        if (std::getenv( "DOUT" )) {
+        if ( do_printout() ) {
             std::cout << *f; 
         }
         return *this; 

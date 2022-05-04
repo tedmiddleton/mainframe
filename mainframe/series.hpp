@@ -550,8 +550,8 @@ std::ostream & operator<<( std::ostream& o, const series< T >& s )
     auto width = std::max( name.size(), get_max_string_length( us ) );
     const size_t num_rows = s.size();
 
-    auto gutter_width = 
-        num_rows > 0 ? std::ceil( std::log10( num_rows ) ) + 1 : 1;
+    size_t gutter_width = 
+        num_rows > 0 ? static_cast<size_t>(std::ceil( std::log10( num_rows ) ) ) + 1 : 1;
 
     o << std::boolalpha;
     o << get_emptyspace( gutter_width ) << "| " << std::setw( width ) << name << "\n";

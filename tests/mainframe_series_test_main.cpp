@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <ostream>
-#include <x86intrin.h>
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"

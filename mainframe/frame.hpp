@@ -8,6 +8,7 @@
 #define INCLUDED_mainframe_frame_h
 
 #include <vector>
+#include <array>
 #include <stdexcept>
 #include <algorithm>
 #include <memory>
@@ -269,6 +270,7 @@ public:
     using const_iterator = const_frame_iterator< Ts... >;
     using reverse_iterator = reverse_frame_iterator< Ts... >;
     using const_reverse_iterator = const_reverse_frame_iterator< Ts... >;
+    using name_array = std::array< std::string, sizeof...(Ts) >;
 
     frame() = default;
     frame( const frame& ) = default;
@@ -468,7 +470,7 @@ public:
         return std::get< Ind >( m_columns ).name();
     }
 
-    std::array< std::string, sizeof...(Ts) > 
+    name_array 
     column_names() const
     {
         std::array< std::string, sizeof...(Ts) > out;
@@ -660,7 +662,7 @@ public:
     }
 
     void 
-    set_column_names( const std::array< std::string, sizeof...( Ts ) >& names )
+    set_column_names( const name_array& names )
     {
         set_column_names_impl< 0 >( names );
     }
@@ -994,7 +996,7 @@ std::ostream & operator<<( std::ostream& o, const frame< Ts... >& f )
     const size_t num_rows = f.size();
 
     auto gutter_width = 
-        num_rows > 0 ? std::ceil( std::log10( num_rows ) ) + 1 : 1;
+        num_rows > 0 ? static_cast<size_t>(std::ceil( std::log10( num_rows ) ) ) + 1 : 1;
 
     o << std::boolalpha;
     o << get_emptyspace( gutter_width );

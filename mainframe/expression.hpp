@@ -159,6 +159,7 @@ struct expr_column
     {
         return curr->template at<Ind>();
     }
+    size_t _dummy{ 0U };
 };
 
 template< size_t Ind >
