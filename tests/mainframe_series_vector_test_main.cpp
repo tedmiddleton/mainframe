@@ -20,19 +20,35 @@ using namespace date::literals;
 using namespace date;
 using namespace mf;
 
+static char* mystrdup(const char* s)
+{
+    if (nullptr == s) {
+        throw std::invalid_argument{ "mystrdup( nullptr )" };
+    }
+    auto len = strlen(s);
+    void* p = malloc(len + 1);
+    if (nullptr == p) {
+        throw std::runtime_error{ "malloc returned nullptr" };
+    }
+    memcpy(p, s, len);
+    char* m = reinterpret_cast<char*>(p);
+    m[len] = '\0';
+    return m;
+}
+
 class foo
 {
 public:
     foo( const char * str )
     {
-        m_str = strdup( str );
+        m_str = mystrdup( str );
     }
     foo( const foo& other )
     {
-        m_str = strdup( other.m_str );
+        m_str = mystrdup( other.m_str );
     }
     foo( foo&& other )
-        : m_str( strdup( "EMPTY" ) )
+        : m_str( mystrdup( "EMPTY" ) )
     {
         std::swap( m_str, other.m_str );
     }
@@ -69,7 +85,7 @@ class foo_with_ctor : public foo
 {
 public:
     using foo::foo;
-    foo_with_ctor() : foo( strdup( "default" ) ) {}
+    foo_with_ctor() : foo( "default" ) {}
 };
 
 std::ostream& operator<<( std::ostream& o, const foo& f )

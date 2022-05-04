@@ -21,7 +21,11 @@ if( NOT CMAKE_BUILD_TYPE )
 endif()
 
 if (MSVC)
-    add_compile_options(/W4 /WX)
+    # C4459: declaration of *** hides global declaration
+    #  C4459 isn't a useful check. Scoping is a *good* thing.
+    # C4702: unreachable code
+    #  C4702 is broken for "if constexpr ()" in msvc 17.1.2
+    add_compile_options(/W4 /WX /wd4459 /wd4702)
 else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
