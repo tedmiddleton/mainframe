@@ -57,9 +57,26 @@ public:
         return s;
     }
 
-    virtual const std::string& name() const { return m_name; }
-    virtual void set_name( const std::string& name ) { m_name = name; }
-    virtual size_t size() const { return m_data->size(); };
+    void clear()
+    {
+        m_data->clear();
+    }
+
+    const std::string& name() const 
+    { 
+        return m_name; 
+    }
+    
+    void set_name( const std::string& name ) 
+    { 
+        m_name = name; 
+    }
+
+    size_t size() const 
+    { 
+        return m_data->size(); 
+    };
+    
 
 private:
     std::string m_name;

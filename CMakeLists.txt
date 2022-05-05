@@ -37,6 +37,8 @@ set( version 0.4.0 )
 add_library( mainframe STATIC
     mainframe/base.hpp 
     mainframe/base.cpp 
+    mainframe/csv.hpp 
+    mainframe/csv.cpp 
     mainframe/series.hpp 
     mainframe/series_vector.hpp 
     mainframe/missing.hpp 

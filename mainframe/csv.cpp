@@ -5,7 +5,9 @@
 //          https://www.boost.org/LICENSE_1_0.txt)
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
+#include <mainframe/csv.hpp>
 #include <mainframe/frame.hpp>
 
 using namespace std;
@@ -14,10 +16,7 @@ using namespace std;
 namespace mf
 {
 
-#if 0
-
-static 
-bool parse_csv_line( string line, vector<string>& elems )
+static bool parse_csv_line( string line, vector<string>& elems )
 {
     enum class STATE
     {
@@ -66,29 +65,36 @@ bool parse_csv_line( string line, vector<string>& elems )
     return true;
 }
 
-
-//static 
-Frame Frame::from_csv( std::istream& csv, bool header_line )
+uframe load_csv( const std::filesystem::path & filename, bool header_line )
 {
-    Frame frame;
+    std::ifstream fs{ filename };
+    return load_csv( fs, header_line );
+}
+
+uframe
+load_csv( std::istream& csv, bool header_line )
+{
+    uframe out;
     int lineno = 0;
     for ( string line; std::getline( csv, line ); ++lineno ) {
         vector<string> elems;
-        auto ok = parse_csv_line( line, elems );
+        if ( !parse_csv_line( line, elems ) ) {
+            out.clear();
+            return out;
+        }
         if ( 0 == lineno ) {
             if ( header_line ) {
                 for ( auto eit = elems.begin(); eit != elems.end(); ++eit ) {
 
-                    frame.emplace_back( Series<string> 
-                    Series<string> s( 
                 }
             }
         }
+        else {
+        }
     }
-    return Frame{};
+    return out;
 }
 
-#endif
 
 } // namespace mf
 

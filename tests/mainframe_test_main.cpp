@@ -11,6 +11,7 @@
 #include "catch.hpp"
 
 #include <mainframe/frame.hpp>
+#include <mainframe/csv.hpp>
 #include "date.h"
 #include "debug_cout.hpp"
 
@@ -1158,4 +1159,5 @@ TEST_CASE( "corr()", "[frame]" )
         REQUIRE( corr1 == corr2 );
     }
 }
+
 

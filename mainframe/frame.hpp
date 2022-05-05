@@ -45,13 +45,13 @@ public:
     uframe& operator=( uframe&& ) = default;
 
     template< typename ... Ts >
-    uframe( frame< Ts... >& f )
+    uframe( const frame< Ts... >& f )
     {
         init_impl< 0 >( f );
     }
 
     template< typename ... Ts >
-    operator frame< Ts... >()
+    operator frame< Ts... >() const
     {
         frame< Ts... > out;
         out.populate( m_columns );
@@ -61,6 +61,13 @@ public:
     void add_series( const useries& s )
     {
         m_columns.push_back( s );
+    }
+
+    void clear()
+    {
+        for ( auto& s : m_columns ) {
+            s.clear();
+        }
     }
 
     void set_series( size_t idx, const useries& s )
@@ -76,7 +83,7 @@ public:
 private:
 
     template< size_t Ind, typename ... Ts >
-    void init_impl( frame< Ts... >& f )
+    void init_impl( const frame< Ts... >& f )
     {
         useries s = f.template column<Ind>();
         m_columns.push_back( s );
@@ -350,7 +357,7 @@ public:
 
     template< size_t ... Inds >
     typename add_opt<frame<Ts...>, 0, Inds...>::type 
-    allow_missing( terminal<expr_column<Inds>>... cols )
+    allow_missing( terminal<expr_column<Inds>>... cols ) const
     {
         uframe u( *this );
         allow_missing_impl< 0, Inds... >( u, cols... );
@@ -358,11 +365,84 @@ public:
     }
 
     typename add_all_opt<frame<Ts...>>::type 
-    allow_missing()
+    allow_missing() const
     {
         uframe u;
         allow_missing_impl<0, Ts...>( u );
         return u;
+    }
+
+    void 
+    clear()
+    {
+        clear_impl< 0 >();
+    }
+
+    useries 
+    column( const std::string& colname ) const
+    {
+        return column_impl< 0, Ts... >( colname );
+    }
+
+    template< size_t Ind >
+    series<typename pack_element<Ind, Ts...>::type>& 
+    column() 
+    {
+        return std::get<Ind>( m_columns );
+    }
+
+    template< size_t Ind >
+    const series<typename pack_element<Ind, Ts...>::type>& 
+    column() const
+    {
+        return std::get<Ind>( m_columns );
+    }
+
+    template< size_t Ind >
+    series<typename pack_element<Ind, Ts...>::type>& 
+    column( terminal<expr_column<Ind>> )
+    {
+        return std::get<Ind>( m_columns );
+    }
+
+    template< size_t Ind >
+    const series<typename pack_element<Ind, Ts...>::type>& 
+    column( terminal<expr_column<Ind>> ) const
+    {
+        return std::get<Ind>( m_columns );
+    }
+
+    template< size_t Ind >
+    std::string 
+    column_name() const
+    {
+        return std::get< Ind >( m_columns ).name();
+    }
+
+    name_array 
+    column_names() const
+    {
+        std::array< std::string, sizeof...(Ts) > out;
+        column_names_impl< 0 >( out );
+        return out;
+    }
+
+    template< size_t ... Inds >
+    typename rearrange<frame<Ts...>, Inds...>::type 
+    columns( terminal<expr_column<Inds>>... cols ) const
+    {
+        uframe f;
+        columns_impl( f, cols... );
+        return f;
+    }
+
+    template< typename ... Us >
+    uframe 
+    columns( const Us& ... us ) const
+    {
+        uframe f;
+        columns_impl( f, us... );
+        return f;
     }
 
     template< size_t Ind1, size_t Ind2 >
@@ -404,7 +484,7 @@ public:
 
     template< size_t ... Inds >
     typename remove_opt<frame<Ts...>, 0, Inds...>::type 
-    disallow_missing( terminal<expr_column<Inds>>... cols )
+    disallow_missing( terminal<expr_column<Inds>>... cols ) const
     {
         uframe u( *this );
         disallow_missing_impl< 0, Inds... >( u, cols... );
@@ -412,7 +492,7 @@ public:
     }
 
     typename remove_all_opt<frame<Ts...>>::type 
-    disallow_missing()
+    disallow_missing() const
     {
         uframe u;
         disallow_missing_impl<0, Ts...>( u );
@@ -420,7 +500,7 @@ public:
     }
 
     frame<Ts...> 
-    drop_missing()
+    drop_missing() const
     {
         frame<Ts...> out;
         out.set_column_names( column_names() );
@@ -435,65 +515,6 @@ public:
             }
         }
         return out;
-    }
-
-    void 
-    clear()
-    {
-        clear_impl< 0 >();
-    }
-
-    useries 
-    column( const std::string& colname )
-    {
-        return column_impl< 0, Ts... >( colname );
-    }
-
-    template< size_t Ind >
-    series<typename pack_element<Ind, Ts...>::type>& 
-    column()
-    {
-        return std::get<Ind>( m_columns );
-    }
-
-    template< size_t Ind >
-    series<typename pack_element<Ind, Ts...>::type>& 
-    column( terminal<expr_column<Ind>> )
-    {
-        return std::get<Ind>( m_columns );
-    }
-
-    template< size_t Ind >
-    std::string 
-    column_name() const
-    {
-        return std::get< Ind >( m_columns ).name();
-    }
-
-    name_array 
-    column_names() const
-    {
-        std::array< std::string, sizeof...(Ts) > out;
-        column_names_impl< 0 >( out );
-        return out;
-    }
-
-    template< size_t ... Inds >
-    typename rearrange<frame<Ts...>, Inds...>::type 
-    columns( terminal<expr_column<Inds>>... cols )
-    {
-        uframe f;
-        columns_impl( f, cols... );
-        return f;
-    }
-
-    template< typename ... Us >
-    uframe 
-    columns( const Us& ... us )
-    {
-        uframe f;
-        columns_impl( f, us... );
-        return f;
     }
 
     bool 
@@ -549,7 +570,7 @@ public:
 
     template< typename T >
     frame< Ts..., T > 
-    new_series( const std::string& series_name )
+    new_series( const std::string& series_name ) const
     {
         uframe plust( *this );
         series<T> ns( size() );
@@ -561,7 +582,7 @@ public:
 
     template< typename T, typename Ex >
     frame< Ts..., T > 
-    new_series( const std::string& series_name, Ex expr )
+    new_series( const std::string& series_name, Ex expr ) const
     {
         uframe plust( *this );
         series<T> ns( size() );
@@ -598,21 +619,6 @@ public:
     operator==( const frame<Ts...>& other ) const
     {
         return eq_impl<0>( other );
-    }
-
-    template< size_t Ind >
-    bool
-    eq_impl( const frame<Ts...>& other ) const
-    {
-        auto& s = std::get<Ind>( m_columns );
-        auto& os = std::get<Ind>( other.m_columns );
-        if ( s != os ) {
-            return false;
-        }
-        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            return eq_impl< Ind+1 >( other );
-        }
-        return true;
     }
 
     void 
@@ -692,7 +698,7 @@ private:
 
     template< size_t Ind, size_t ... Inds >
     void 
-    allow_missing_impl( uframe& uf, terminal<expr_column<Inds>>... cols )
+    allow_missing_impl( uframe& uf, terminal<expr_column<Inds>>... cols ) const
     {
         if constexpr ( contains<Ind, Inds...>::value ) {
             auto& s = column<Ind>();
@@ -706,9 +712,9 @@ private:
 
     template<size_t Ind, typename U, typename ... Us> 
     void 
-    allow_missing_impl( uframe& uf )
+    allow_missing_impl( uframe& uf ) const
     {
-        series<U>& s = std::get<Ind>( m_columns );
+        const series<U>& s = std::get<Ind>( m_columns );
         auto os = s.allow_missing();
         uf.add_series( os );
         if constexpr ( sizeof...( Us ) > 0 ) {
@@ -728,9 +734,9 @@ private:
 
     template< size_t Ind, typename U, typename ... Us >
     useries 
-    column_impl( const std::string& colname )
+    column_impl( const std::string& colname ) const
     {
-        series<U>& s = std::get<Ind>( m_columns );
+        const series<U>& s = std::get<Ind>( m_columns );
         if ( s.name() == colname ) {
             return s;
         }
@@ -755,7 +761,7 @@ private:
 
     template< typename U, typename ... Us >
     void 
-    columns_impl( uframe& f, const U& u, const Us& ... us )
+    columns_impl( uframe& f, const U& u, const Us& ... us ) const
     {
         useries s = column( u );
         f.add_series( s );
@@ -766,7 +772,7 @@ private:
 
     template< size_t Ind, size_t ... Inds >
     void 
-    disallow_missing_impl( uframe& uf, terminal<expr_column<Inds>>... cols )
+    disallow_missing_impl( uframe& uf, terminal<expr_column<Inds>>... cols ) const
     {
         if constexpr ( contains<Ind, Inds...>::value ) {
             auto& s = column<Ind>();
@@ -780,9 +786,9 @@ private:
 
     template<size_t Ind, typename U, typename ... Us> 
     void 
-    disallow_missing_impl( uframe& uf )
+    disallow_missing_impl( uframe& uf ) const
     {
-        series<U>& s = std::get<Ind>( m_columns );
+        const series<U>& s = std::get<Ind>( m_columns );
         auto os = s.disallow_missing();
         uf.add_series( os );
         if constexpr ( sizeof...( Us ) > 0 ) {
@@ -824,6 +830,21 @@ private:
         else {
             return out;
         }
+    }
+
+    template< size_t Ind >
+    bool
+    eq_impl( const frame<Ts...>& other ) const
+    {
+        auto& s = std::get<Ind>( m_columns );
+        auto& os = std::get<Ind>( other.m_columns );
+        if ( s != os ) {
+            return false;
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return eq_impl< Ind+1 >( other );
+        }
+        return true;
     }
 
     template< size_t Ind, typename U, typename ... Us >
@@ -879,16 +900,16 @@ private:
     }
 
     void 
-    populate( std::vector<useries>& columns )
+    populate( const std::vector<useries>& columns )
     {
         populate_impl< 0, Ts... >( columns );
     }
 
     template< size_t Ind, typename U, typename ... Us >
     void 
-    populate_impl( std::vector<useries>& columns )
+    populate_impl( const std::vector<useries>& columns )
     {
-        useries& su = columns.at( Ind );
+        const useries& su = columns.at( Ind );
         series<U>& s = std::get< Ind >(m_columns);
         s = series<U>( su );
         if constexpr ( sizeof...( Us ) > 0 ) {

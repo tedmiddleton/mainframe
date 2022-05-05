@@ -36,3 +36,14 @@ target_link_libraries( mainframe_test
 
 add_test( mainframe_test mainframe_test )
 
+add_executable( loaders_test
+    loaders_test_main.cpp
+    )
+
+target_link_libraries( loaders_test
+    PRIVATE
+        mainframe
+    )
+
+add_test( loaders_test loaders_test )
+
