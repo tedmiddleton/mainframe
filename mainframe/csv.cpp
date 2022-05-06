@@ -16,7 +16,7 @@ using namespace std;
 namespace mf
 {
 
-static bool parse_csv_line( string line, vector<string>& elems )
+static bool parse_csv_line( string line, vector<mi<string>>& elems )
 {
     enum class STATE
     {
@@ -26,15 +26,15 @@ static bool parse_csv_line( string line, vector<string>& elems )
     } state = STATE::START;
 
     auto it = line.begin();
-    auto last_comma = it;
-    for ( auto it = line.begin(); it != line.end(); it++ )
+    auto first_char = it;
+    for ( ;it != line.end(); it++ )
     {
         auto c = *it;
         switch ( state ) {
         case STATE::START:
             if ( c == ',' ) {
-                elems.emplace_back( "" );
-                last_comma = it;
+                elems.emplace_back( missing );
+                first_char = it+1;
                 state = STATE::COMMA;
             }
             else {
@@ -44,16 +44,16 @@ static bool parse_csv_line( string line, vector<string>& elems )
 
         case STATE::ELEMCHAR:
             if ( c == ',' ) {
-                elems.emplace_back( last_comma+1, it );
-                last_comma = it;
+                elems.push_back(mi<string>{ string{ first_char, it } } );
+                first_char = it+1;
                 state = STATE::COMMA;
             }
             break;
 
         case STATE::COMMA:
             if ( c == ',' ) {
-                elems.emplace_back( "" );
-                last_comma = it;
+                elems.emplace_back( missing );
+                first_char = it+1;
             }
             else {
                 state = STATE::ELEMCHAR;
@@ -61,7 +61,7 @@ static bool parse_csv_line( string line, vector<string>& elems )
             break;
         }
     }
-    elems.emplace_back( last_comma, it );
+    elems.push_back(mi<string>{ string{ first_char, it } } );
     return true;
 }
 
@@ -77,7 +77,7 @@ load_csv( std::istream& csv, bool header_line )
     uframe out;
     int lineno = 0;
     for ( string line; std::getline( csv, line ); ++lineno ) {
-        vector<string> elems;
+        vector<mi<string>> elems;
         if ( !parse_csv_line( line, elems ) ) {
             out.clear();
             return out;
