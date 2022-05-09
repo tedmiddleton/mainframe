@@ -38,7 +38,6 @@ class series;
 class useries
 { 
 public:
-    useries() = default;
     useries( const useries& ) = default;
     useries& operator=( const useries& ) = default;
 
