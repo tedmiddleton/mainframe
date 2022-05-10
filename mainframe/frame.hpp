@@ -50,17 +50,18 @@ public:
         init_impl< 0 >( f );
     }
 
-    template< typename ... Ts >
-    operator frame< Ts... >() const
-    {
-        frame< Ts... > out;
-        out.populate( m_columns );
-        return out;
-    }
-
     void add_series( const useries& s )
     {
         m_columns.push_back( s );
+    }
+
+    template< typename T >
+    void add_series(const std::string& colname)
+    {
+        series<T> s;
+        s.set_name(colname);
+        s.resize(size());
+        m_columns.push_back(s);
     }
 
     void clear()
@@ -70,14 +71,46 @@ public:
         }
     }
 
-    void set_series( size_t idx, const useries& s )
+    useries& column( size_t i )
     {
-        m_columns.at( idx ) = s;
+        return m_columns.at(i);
+    }
+
+    const useries& column( size_t i ) const
+    {
+        return m_columns.at(i);
     }
 
     size_t num_columns() const
     {
         return m_columns.size();
+    }
+
+    template< typename ... Ts >
+    operator frame< Ts... >() const
+    {
+        frame< Ts... > out;
+        out.populate( m_columns );
+        return out;
+    }
+
+    void set_series( size_t idx, const useries& s )
+    {
+        m_columns.at( idx ) = s;
+    }
+
+    size_t size() const
+    {
+        if (m_columns.size() == 0) {
+            return 0;
+        }
+        size_t sz = m_columns[0].size();
+        for (auto& s : m_columns) {
+            if ( sz != s.size() ) {
+                throw std::logic_error{ "Inconsistent sizes!" };
+            }
+        }
+        return sz;
     }
 
 private:
@@ -656,6 +689,33 @@ public:
     push_back( U first_arg, V second_arg, Us... args )
     {
         push_back_impl<0, U, V, Us...>( first_arg, second_arg, args... );
+    }
+
+    template<typename ... Vs>
+    void
+    push_back( std::vector<std::variant<Vs...>>& row )
+    {
+        push_back_impl<0>(row);
+    }
+
+    template<size_t Ind, typename ... Vs >
+    void
+    push_back_impl( std::vector<std::variant<Vs...>>& row ) 
+    {
+        if ( Ind < row.size() ) {
+            std::variant<Vs...>& v = row[Ind];
+            using U = typename pack_element<Ind, Ts...>::type;
+            series<U>& s = std::get<Ind>( m_columns );
+            if ( std::holds_alternative<U>( v ) ) {
+                s.push_back( std::get<U>( v ) );
+            }
+            else {
+                s.push_back( U{} );
+            }
+        }
+        if constexpr ( Ind+1 < sizeof...(Ts) ) {
+            push_back_impl< Ind + 1 >( row );
+        }
     }
 
     void 

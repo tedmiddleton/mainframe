@@ -23,6 +23,7 @@ using namespace date;
 using namespace mf;
 using namespace mf::placeholders;
 
+
 namespace std
 {
     template<>
@@ -537,6 +538,34 @@ TEST_CASE( "push_back() pop_back()", "[frame]" )
     REQUIRE( f1.begin()->at<0>() == 2022_y/January/2 );
     REQUIRE( f1.begin()->at<1>() == 10.0 );
     REQUIRE( f1.begin()->at<2>() == false );
+}
+
+TEST_CASE( "push_back( variant )", "[frame]" )
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names( "date", "temperature", "rain" );
+
+    using elemtype = variant<year_month_day, double, bool, int, string>;
+    vector<elemtype> row;
+    row.push_back( 2022_y/January/2 ); row.push_back( 10.0 ); row.push_back( false );
+    f1.push_back( row );
+    row.clear();
+    row.push_back( 2022_y/January/3 ); row.push_back( 11.1 ); row.push_back( false );
+    f1.push_back( row );
+    row.clear();
+    row.push_back( 2022_y/January/4 ); row.push_back( 12.2 ); row.push_back( false );
+    f1.push_back( row );
+    row.clear();
+    REQUIRE( f1.size() == 3 );
+    REQUIRE( f1.begin()->at<0>() == 2022_y/January/2 );
+    REQUIRE( f1.begin()->at<1>() == 10.0 );
+    REQUIRE( f1.begin()->at<2>() == false );
+    REQUIRE( (f1.begin() + 1)->at<0>() == 2022_y/January/3 );
+    REQUIRE( (f1.begin() + 1)->at<1>() == 11.1 );
+    REQUIRE( (f1.begin() + 1)->at<2>() == false );
+    REQUIRE( (f1.begin() + 2)->at<0>() == 2022_y/January/4 );
+    REQUIRE( (f1.begin() + 2)->at<1>() == 12.2 );
+    REQUIRE( (f1.begin() + 2)->at<2>() == false );
 }
 
 TEST_CASE( "resize()", "[frame]" )
