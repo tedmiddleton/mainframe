@@ -20,8 +20,10 @@ public:
         char* var = nullptr;
         size_t num_elems = 0;
         if ( 0 == _dupenv_s( &var, &num_elems, "DOUT" ) ) {
-            ret = true;
-            free( var );
+            if ( var != nullptr ) {
+                ret = true;
+                free( var );
+            }
         }
 #else
         if ( std::getenv( "DOUT" ) ) {
