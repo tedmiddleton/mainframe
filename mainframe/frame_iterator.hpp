@@ -20,12 +20,12 @@ template< typename T >
 struct terminal;
 
 template< template<typename> class Iter, typename ... Ts >
-class frame_row
+class frame_iterator_row
 {
 public:
-    frame_row() = default;
+    frame_iterator_row() = default;
 
-    frame_row( std::tuple< Iter<Ts>... > iter ) 
+    frame_iterator_row( std::tuple< Iter<Ts>... > iter ) 
         : m_iters( iter ) 
     {}
 
@@ -138,38 +138,38 @@ private:
         template<typename> typename ItLeft, 
         template<typename> typename ItRight, 
         typename ... Us >
-    friend bool operator==( const frame_row< ItLeft, Us... >& l, 
-                            const frame_row< ItRight, Us... >& r );
+    friend bool operator==( const frame_iterator_row< ItLeft, Us... >& l, 
+                            const frame_iterator_row< ItRight, Us... >& r );
     template< 
         template<typename> typename ItLeft, 
         template<typename> typename ItRight, 
         typename ... Us >
-    friend bool operator!=( const frame_row< ItLeft, Us... >& l, 
-                            const frame_row< ItRight, Us... >& r );
+    friend bool operator!=( const frame_iterator_row< ItLeft, Us... >& l, 
+                            const frame_iterator_row< ItRight, Us... >& r );
     template< 
         template<typename> typename ItLeft, 
         template<typename> typename ItRight, 
         typename ... Us >
-    friend bool operator<=( const frame_row< ItLeft, Us... >& l, 
-                            const frame_row< ItRight, Us... >& r );
+    friend bool operator<=( const frame_iterator_row< ItLeft, Us... >& l, 
+                            const frame_iterator_row< ItRight, Us... >& r );
     template< 
         template<typename> typename ItLeft, 
         template<typename> typename ItRight, 
         typename ... Us >
-    friend bool operator>=( const frame_row< ItLeft, Us... >& l, 
-                            const frame_row< ItRight, Us... >& r );
+    friend bool operator>=( const frame_iterator_row< ItLeft, Us... >& l, 
+                            const frame_iterator_row< ItRight, Us... >& r );
     template< 
         template<typename> typename ItLeft, 
         template<typename> typename ItRight, 
         typename ... Us >
-    friend bool operator<( const frame_row< ItLeft, Us... >& l, 
-                            const frame_row< ItRight, Us... >& r );
+    friend bool operator<( const frame_iterator_row< ItLeft, Us... >& l, 
+                            const frame_iterator_row< ItRight, Us... >& r );
     template< 
         template<typename> typename ItLeft, 
         template<typename> typename ItRight, 
         typename ... Us >
-    friend bool operator>( const frame_row< ItLeft, Us... >& l, 
-                            const frame_row< ItRight, Us... >& r );
+    friend bool operator>( const frame_iterator_row< ItLeft, Us... >& l, 
+                            const frame_iterator_row< ItRight, Us... >& r );
 
     std::tuple< Iter<Ts>... > m_iters;
 };
@@ -178,8 +178,8 @@ template<
     template<typename> typename ItLeft, 
     template<typename> typename ItRight, 
     typename ... Us >
-bool operator==( const frame_row< ItLeft, Us... >& l, 
-                 const frame_row< ItRight, Us... >& r )
+bool operator==( const frame_iterator_row< ItLeft, Us... >& l, 
+                 const frame_iterator_row< ItRight, Us... >& r )
 {
     return l.m_iters == r.m_iters;
 }
@@ -188,8 +188,8 @@ template<
     template<typename> typename ItLeft, 
     template<typename> typename ItRight, 
     typename ... Us >
-bool operator!=( const frame_row< ItLeft, Us... >& l, 
-                 const frame_row< ItRight, Us... >& r )
+bool operator!=( const frame_iterator_row< ItLeft, Us... >& l, 
+                 const frame_iterator_row< ItRight, Us... >& r )
 {
     return l.m_iters != r.m_iters;
 }
@@ -198,8 +198,8 @@ template<
     template<typename> typename ItLeft, 
     template<typename> typename ItRight, 
     typename ... Us >
-bool operator<=( const frame_row< ItLeft, Us... >& l, 
-                 const frame_row< ItRight, Us... >& r )
+bool operator<=( const frame_iterator_row< ItLeft, Us... >& l, 
+                 const frame_iterator_row< ItRight, Us... >& r )
 {
     return l.m_iters <= r.m_iters;
 }
@@ -208,8 +208,8 @@ template<
     template<typename> typename ItLeft, 
     template<typename> typename ItRight, 
     typename ... Us >
-bool operator>=( const frame_row< ItLeft, Us... >& l, 
-                 const frame_row< ItRight, Us... >& r )
+bool operator>=( const frame_iterator_row< ItLeft, Us... >& l, 
+                 const frame_iterator_row< ItRight, Us... >& r )
 {
     return l.m_iters >= r.m_iters;
 }
@@ -218,8 +218,8 @@ template<
     template<typename> typename ItLeft, 
     template<typename> typename ItRight, 
     typename ... Us >
-bool operator<( const frame_row< ItLeft, Us... >& l, 
-                 const frame_row< ItRight, Us... >& r )
+bool operator<( const frame_iterator_row< ItLeft, Us... >& l, 
+                 const frame_iterator_row< ItRight, Us... >& r )
 {
     return l.m_iters < r.m_iters;
 }
@@ -228,8 +228,8 @@ template<
     template<typename> typename ItLeft, 
     template<typename> typename ItRight, 
     typename ... Us >
-bool operator>( const frame_row< ItLeft, Us... >& l, 
-                 const frame_row< ItRight, Us... >& r )
+bool operator>( const frame_iterator_row< ItLeft, Us... >& l, 
+                 const frame_iterator_row< ItRight, Us... >& r )
 {
     return l.m_iters > r.m_iters;
 }
@@ -281,10 +281,10 @@ public:
         m_row.template dec< 0, Ts... >( n );
     }
 
-    frame_row< Iter, Ts... >& operator*() { return this->m_row; }
-    const frame_row< Iter, Ts... >& operator*() const { return this->m_row; }
-    frame_row< Iter, Ts... >* operator->() { return &this->m_row; }
-    const frame_row< Iter, Ts... >* operator->() const { return &this->m_row; }
+    frame_iterator_row< Iter, Ts... >& operator*() { return this->m_row; }
+    const frame_iterator_row< Iter, Ts... >& operator*() const { return this->m_row; }
+    frame_iterator_row< Iter, Ts... >* operator->() { return &this->m_row; }
+    const frame_iterator_row< Iter, Ts... >* operator->() const { return &this->m_row; }
 
 protected:
 
@@ -322,7 +322,7 @@ protected:
         const base_frame_iterator<ItLeft, Us...>& left,
         const base_frame_iterator<ItRight, Us...>& right );
 
-    frame_row< Iter, Ts... > m_row;
+    frame_iterator_row< Iter, Ts... > m_row;
 };
 
 template< 

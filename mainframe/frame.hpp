@@ -328,6 +328,8 @@ public:
     using reverse_iterator = reverse_frame_iterator< Ts... >;
     using const_reverse_iterator = const_reverse_frame_iterator< Ts... >;
     using name_array = std::array< std::string, sizeof...(Ts) >;
+    using variant_type = typename variant_unique<Ts...>::type;
+    using row_type = std::vector<variant_type>;
 
     frame() = default;
     frame( const frame& ) = default;
@@ -679,7 +681,7 @@ public:
 
     template< template<typename> typename Iter >
     void 
-    push_back( const frame_row< Iter, Ts... >& fr )
+    push_back( const frame_iterator_row< Iter, Ts... >& fr )
     {
         push_back_impl<0>( fr );
     }
@@ -691,19 +693,18 @@ public:
         push_back_impl<0, U, V, Us...>( first_arg, second_arg, args... );
     }
 
-    template<typename ... Vs>
     void
-    push_back( std::vector<std::variant<Vs...>>& row )
+    push_back( row_type& row )
     {
         push_back_impl<0>(row);
     }
 
-    template<size_t Ind, typename ... Vs >
+    template<size_t Ind >
     void
-    push_back_impl( std::vector<std::variant<Vs...>>& row ) 
+    push_back_impl( row_type& row ) 
     {
         if ( Ind < row.size() ) {
-            std::variant<Vs...>& v = row[Ind];
+            variant_type& v = row[Ind];
             using U = typename pack_element<Ind, Ts...>::type;
             series<U>& s = std::get<Ind>( m_columns );
             if ( std::holds_alternative<U>( v ) ) {
@@ -996,7 +997,7 @@ private:
 
     template< size_t Ind, template<typename> typename Iter >
     void 
-    push_back_impl( const frame_row< Iter, Ts... >& fr )
+    push_back_impl( const frame_iterator_row< Iter, Ts... >& fr )
     {
         auto elem = fr.template at< Ind >();
         std::get< Ind >( m_columns ).push_back( elem );

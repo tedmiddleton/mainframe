@@ -542,30 +542,80 @@ TEST_CASE( "push_back() pop_back()", "[frame]" )
 
 TEST_CASE( "push_back( variant )", "[frame]" )
 {
-    frame<year_month_day, double, bool> f1;
-    f1.set_column_names( "date", "temperature", "rain" );
+    SECTION( "no missing" )
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
 
-    using elemtype = variant<year_month_day, double, bool, int, string>;
-    vector<elemtype> row;
-    row.push_back( 2022_y/January/2 ); row.push_back( 10.0 ); row.push_back( false );
-    f1.push_back( row );
-    row.clear();
-    row.push_back( 2022_y/January/3 ); row.push_back( 11.1 ); row.push_back( false );
-    f1.push_back( row );
-    row.clear();
-    row.push_back( 2022_y/January/4 ); row.push_back( 12.2 ); row.push_back( false );
-    f1.push_back( row );
-    row.clear();
-    REQUIRE( f1.size() == 3 );
-    REQUIRE( f1.begin()->at<0>() == 2022_y/January/2 );
-    REQUIRE( f1.begin()->at<1>() == 10.0 );
-    REQUIRE( f1.begin()->at<2>() == false );
-    REQUIRE( (f1.begin() + 1)->at<0>() == 2022_y/January/3 );
-    REQUIRE( (f1.begin() + 1)->at<1>() == 11.1 );
-    REQUIRE( (f1.begin() + 1)->at<2>() == false );
-    REQUIRE( (f1.begin() + 2)->at<0>() == 2022_y/January/4 );
-    REQUIRE( (f1.begin() + 2)->at<1>() == 12.2 );
-    REQUIRE( (f1.begin() + 2)->at<2>() == false );
+        using row_type = decltype(f1)::row_type;
+        row_type row;
+        row.push_back( 2022_y/January/2 ); row.push_back( 10.0 ); row.push_back( false );
+        f1.push_back( row );
+        REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
+        REQUIRE( std::holds_alternative<double>( row[1] ) );
+        REQUIRE( std::holds_alternative<bool>( row[2] ) );
+        row.clear();
+        row.push_back( 2022_y/January/3 ); row.push_back( 11.1 ); row.push_back( true );
+        f1.push_back( row );
+        REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
+        REQUIRE( std::holds_alternative<double>( row[1] ) );
+        REQUIRE( std::holds_alternative<bool>( row[2] ) );
+        row.clear();
+        row.push_back( 2022_y/January/4 ); row.push_back( 12.2 ); row.push_back( false );
+        f1.push_back( row );
+        REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
+        REQUIRE( std::holds_alternative<double>( row[1] ) );
+        REQUIRE( std::holds_alternative<bool>( row[2] ) );
+        row.clear();
+        REQUIRE( f1.size() == 3 );
+        REQUIRE( f1.begin()->at<0>() == 2022_y/January/2 );
+        REQUIRE( f1.begin()->at<1>() == 10.0 );
+        REQUIRE( f1.begin()->at<2>() == false );
+        REQUIRE( (f1.begin() + 1)->at<0>() == 2022_y/January/3 );
+        REQUIRE( (f1.begin() + 1)->at<1>() == 11.1 );
+        REQUIRE( (f1.begin() + 1)->at<2>() == true );
+        REQUIRE( (f1.begin() + 2)->at<0>() == 2022_y/January/4 );
+        REQUIRE( (f1.begin() + 2)->at<1>() == 12.2 );
+        REQUIRE( (f1.begin() + 2)->at<2>() == false );
+    }
+
+    SECTION( "missing" )
+    {
+        frame<year_month_day, double, bool> f0;
+        f0.set_column_names( "date", "temperature", "rain" );
+        auto f1 = f0.allow_missing( _1, _2 );
+
+        using row_type = decltype(f1)::row_type;
+        row_type row;
+        row.push_back( 2022_y/January/2 ); row.push_back( mi(10.0) ); row.push_back( mi(false) );
+        f1.push_back( row );
+        REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
+        REQUIRE( std::holds_alternative<mi<double>>( row[1] ) );
+        REQUIRE( std::holds_alternative<mi<bool>>( row[2] ) );
+        row.clear();
+        row.push_back( 2022_y/January/3 ); row.push_back( mi<double>(missing) ); row.push_back( mi<bool>(missing) );
+        f1.push_back( row );
+        REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
+        REQUIRE( std::holds_alternative<mi<double>>( row[1] ) );
+        REQUIRE( std::holds_alternative<mi<bool>>( row[2] ) );
+        row.clear();
+        row.push_back( 2022_y/January/4 ); row.push_back( mi(12.2) ); row.push_back( mi(true) );
+        f1.push_back( row );
+        REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
+        REQUIRE( std::holds_alternative<mi<double>>( row[1] ) );
+        REQUIRE( std::holds_alternative<mi<bool>>( row[2] ) );
+        row.clear();
+        REQUIRE( f1.size() == 3 );
+        REQUIRE( f1.begin()->at<0>() == 2022_y/January/2 );
+        REQUIRE( f1.begin()->at<1>() == 10.0 );
+        REQUIRE( f1.begin()->at<2>() == false );
+        REQUIRE( (f1.begin() + 1)->at<0>() == 2022_y/January/3 );
+        REQUIRE( (f1.begin() + 1)->at<1>() == missing );
+        REQUIRE( (f1.begin() + 1)->at<2>() == missing );
+        REQUIRE( (f1.begin() + 2)->at<0>() == 2022_y/January/4 );
+        REQUIRE( (f1.begin() + 2)->at<1>() == 12.2 );
+        REQUIRE( (f1.begin() + 2)->at<2>() == true );
+    }
 }
 
 TEST_CASE( "resize()", "[frame]" )

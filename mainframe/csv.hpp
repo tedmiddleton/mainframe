@@ -13,35 +13,44 @@
 namespace mf
 {
 
-namespace CSV_OPTIONS
+namespace detail
 {
-    enum
+    template< size_t NumCols >
+    struct msf_impl
     {
-        HEADER_ROW = (1 << 0),
-        FAIL_ON_EXTRA_COLUMNS = (1 << 1),
-        FAIL_ON_CONVERSION = (1 << 2),
+        using framecdr = typename msf_impl<NumCols-1>::type;
+        using type = typename detail::prepend<mi<std::string>, framecdr>::type;
     };
+
+    template<>
+    struct msf_impl< 0 >
+    {
+        using type = frame<mi<std::string>>;
+    };
+
+    template< size_t NumCols >
+    using make_string_frame = msf_impl<NumCols-1>;
 }
 
-
-
-
-template< typename ... Ts >
+#define load_csv( NUMCOLUMNS, STREAM, HEADERROW ) csv::load<NUMCOLUMNS>( STREAM, HEADERROW ) 
 class csv
 {
 public:
-    static frame< Ts... >
-    load( const std::filesystem::path & path, unsigned options )
-    {
-        std::ifstream fs{ filename };
-        return load( fs, options );
-    }
+    //static frame< Ts... >
+    //load( const std::filesystem::path & path, unsigned options )
+    //{
+    //    std::ifstream fs{ path };
+    //    return load( fs, options );
+    //}
 
-    static frame< Ts... >
-    load( std::istream& stream, unsigned options )
+    template< size_t NumColumns >
+    static typename detail::make_string_frame< NumColumns >::type
+    load( std::istream& stream, bool header_row )
     {
-        frame< Ts... > out;
-        if (options & CSV_OPTIONS::HEADER_ROW) {
+        using frame_type = typename detail::make_string_frame< NumColumns >::type;
+        frame_type out;
+        using row_type = typename frame_type::row_type;
+        if ( header_row ) {
 
             std::string line; 
             std::getline(stream, line);
@@ -50,8 +59,8 @@ public:
                 out.clear();
                 return out;
             }
-            std::array<std::string, sizeof...(Ts)> column_names;
-            for (auto i = 0; i < elems.size(); ++i ) {
+            std::array<std::string, NumColumns> column_names;
+            for (size_t i = 0; i < elems.size(); ++i ) {
                 auto& elem = elems[i];
                 if (elem.has_value()) {
                     column_names[i] = *elem;
@@ -60,19 +69,20 @@ public:
             out.set_column_names(column_names);
         }
         for ( std::string line; std::getline( stream, line );  ) {
-            std::vector<mi<std::string>> elems;
+            row_type elems;
             if ( !parse_line( line, elems ) ) {
                 out.clear();
                 return out;
             }
-            //out.push_back(elems);
+            out.push_back(elems);
         }
         return out;
     }
 
 private:
+    template< typename T >
     static bool 
-    parse_line( std::string line, std::vector<mi<std::string>>& elems )
+    parse_line( std::string line, std::vector<T>& elems )
     {
         enum class STATE
         {

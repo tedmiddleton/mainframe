@@ -9,6 +9,7 @@
 
 #include <ostream>
 #include <vector>
+#include <variant>
 
 namespace mf
 {
@@ -49,6 +50,53 @@ std::ostream& stringify( std::ostream & o, const T &, int )
     o << "opaque";
     return o;
 }
+
+template< typename T, typename Vt >
+struct prepend_variant;
+
+template< typename T, typename ... Ts >
+struct prepend_variant<T, std::variant<Ts...>>
+{
+    using type = std::variant<T, Ts...>;
+};
+
+template< typename T, typename Vt >
+struct variant_contains;
+
+template< typename T, typename V, typename ... Vs >
+struct variant_contains<T, std::variant<V, Vs...>>
+{
+    static const bool value = 
+        std::is_same<T, V>::value ||
+        variant_contains<T, std::variant<Vs...>>::value;
+};
+
+template< typename T, typename V >
+struct variant_contains<T, std::variant<V>>
+{
+    static const bool value = std::is_same<T, V>::value;
+};
+
+
+template< typename ... Ts >
+struct variant_unique;
+
+template< typename T, typename ... Ts >
+struct variant_unique<T, Ts...>
+{
+    using uniquecdr = typename variant_unique<Ts...>::type;
+    using type = typename std::conditional<
+        variant_contains<T, uniquecdr>::value,
+        uniquecdr,
+        typename prepend_variant<T, uniquecdr>::type
+        >::type;
+};
+
+template< typename T >
+struct variant_unique<T>
+{
+    using type = std::variant<T>;
+};
 
 template<size_t Ind, size_t Curr, typename ... Ts>
 struct pack_element_impl;
