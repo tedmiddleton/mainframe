@@ -94,7 +94,8 @@ private:
         } state = STATE::START;
 
         auto it = line.begin();
-        auto first_char = it;
+        std::string current;
+        current.reserve( line.size() );
         for ( ;it != line.end(); it++ )
         {
             auto c = *it;
@@ -102,19 +103,22 @@ private:
             case STATE::START:
                 if ( c == ',' ) {
                     elems.emplace_back( missing );
-                    first_char = it+1;
                     state = STATE::COMMA;
                 }
                 else {
+                    current.push_back( c );
                     state = STATE::ELEMCHAR;
                 }
                 break;
 
             case STATE::ELEMCHAR:
                 if ( c == ',' ) {
-                    elems.push_back( mi( std::string{ first_char, it } ) );
-                    first_char = it+1;
+                    elems.push_back( mi( current ) );
+                    current.clear();
                     state = STATE::COMMA;
+                }
+                else {
+                    current.push_back( c );
                 }
                 break;
 
@@ -122,15 +126,18 @@ private:
                 if ( c == '"' ) {
                     state = STATE::ENDEDQUOTE;
                 }
+                else {
+                    current.push_back( c );
+                }
                 break;
 
             case STATE::ENDEDQUOTE:
                 if ( c == '"' ) {
-                    elems.push_back( mi( "\"" ) );
+                    current.push_back( '"' );
                     state = STATE::QUOTEDELEMCHAR;
                 }
                 else if ( c == ',' ) {
-                    elems.push_back( mi( std::string{ first_char, it-1 } ) );
+                    elems.push_back( mi( std::string{ current } ) );
                     state = STATE::COMMA;
                 }
                 break;
@@ -138,13 +145,12 @@ private:
             case STATE::COMMA:
                 if ( c == ',' ) {
                     elems.emplace_back( missing );
-                    first_char = it+1;
                 }
                 else if ( c == '"' ) {
-                    first_char = it+1;
                     state = STATE::QUOTEDELEMCHAR;
                 }
                 else {
+                    current.push_back( c );
                     state = STATE::ELEMCHAR;
                 }
                 break;
@@ -156,7 +162,7 @@ private:
             break;
 
         case STATE::ELEMCHAR:
-            elems.push_back( mi( std::string{ first_char, it } ) );
+            elems.push_back( mi( current ) );
             break;
 
         case STATE::QUOTEDELEMCHAR:
@@ -165,7 +171,7 @@ private:
             break;
 
         case STATE::ENDEDQUOTE:
-            elems.push_back( mi( std::string{ first_char, it-1 } ) );
+            elems.push_back( mi( current ) );
             break;
 
         case STATE::COMMA:
