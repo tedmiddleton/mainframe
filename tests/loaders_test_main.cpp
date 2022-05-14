@@ -39,19 +39,6 @@ TEST_CASE( "load_csv( istream )", "[frame]" )
     ss << "2022/January/13,9.3,10,\"really, not so windy\"\n";
     ss << "2022/January/14,9.2,7,\"my friend said, \"\"crazy, crazy windy!\"\"\"\n";
 
-#define PRINT(x) cout << #x << " = " << x << "\n"
-    cout << std::boolalpha;
-    PRINT((variant_contains<int, variant<double, int>>::value));
-    PRINT((variant_contains<int, variant<int>>::value));
-    PRINT((variant_contains<int, variant<double>>::value));
-    PRINT((variant_contains<int, variant<double, string, float>>::value));
-    PRINT((variant_contains<int, variant<double, float, int>>::value));
-    PRINT((variant_contains<int, variant<int, double, float>>::value));
-    PRINT((variant_contains<int, variant<float, int, double>>::value));
-
-    using F = variant_unique<date::year_month_day, double, double, int, bool>::type;
-    F fff;
-
     auto f1 = load_csv( 4, ss, true );
     (void)f1;
     cout << f1;

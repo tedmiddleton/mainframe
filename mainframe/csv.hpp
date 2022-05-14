@@ -88,6 +88,8 @@ private:
         {
             START,
             ELEMCHAR,
+            QUOTEDELEMCHAR,
+            ENDEDQUOTE,
             COMMA,
         } state = STATE::START;
 
@@ -110,8 +112,25 @@ private:
 
             case STATE::ELEMCHAR:
                 if ( c == ',' ) {
-                    elems.push_back(mi<std::string>{ std::string{ first_char, it } } );
+                    elems.push_back( mi( std::string{ first_char, it } ) );
                     first_char = it+1;
+                    state = STATE::COMMA;
+                }
+                break;
+
+            case STATE::QUOTEDELEMCHAR:
+                if ( c == '"' ) {
+                    state = STATE::ENDEDQUOTE;
+                }
+                break;
+
+            case STATE::ENDEDQUOTE:
+                if ( c == '"' ) {
+                    elems.push_back( mi( "\"" ) );
+                    state = STATE::QUOTEDELEMCHAR;
+                }
+                else if ( c == ',' ) {
+                    elems.push_back( mi( std::string{ first_char, it-1 } ) );
                     state = STATE::COMMA;
                 }
                 break;
@@ -121,13 +140,39 @@ private:
                     elems.emplace_back( missing );
                     first_char = it+1;
                 }
+                else if ( c == '"' ) {
+                    first_char = it+1;
+                    state = STATE::QUOTEDELEMCHAR;
+                }
                 else {
                     state = STATE::ELEMCHAR;
                 }
                 break;
             }
         }
-        elems.push_back(mi<std::string>{ std::string{ first_char, it } } );
+
+        switch ( state ) {
+        case STATE::START:
+            break;
+
+        case STATE::ELEMCHAR:
+            elems.push_back( mi( std::string{ first_char, it } ) );
+            break;
+
+        case STATE::QUOTEDELEMCHAR:
+            // broken - no end quote
+            elems.emplace_back( missing );
+            break;
+
+        case STATE::ENDEDQUOTE:
+            elems.push_back( mi( std::string{ first_char, it-1 } ) );
+            break;
+
+        case STATE::COMMA:
+            elems.emplace_back( missing );
+            break;
+        }
+
         return true;
     }
 
