@@ -16,6 +16,7 @@
 
 using namespace std;
 using namespace mf;
+using namespace mf::placeholders;
 
 template<typename T>
 class TD;
@@ -40,8 +41,12 @@ TEST_CASE( "load_csv( istream )", "[frame]" )
     ss << "2022/January/14,9.2,7,\"my friend said, \"\"crazy, crazy windy!\"\"\"\n";
 
     auto f1 = load_csv( 4, ss, true );
-    (void)f1;
     cout << f1;
-    //REQUIRE( f1.size() == 9 );
+    REQUIRE( f1.size() == 14 );
+    REQUIRE( (f1.begin() + 9)->at( _1 ) == missing );
+    REQUIRE( (f1.begin() + 10)->at( _3 ) == missing );
+    REQUIRE( (f1.begin() + 11)->at( _0 ) == missing );
+    REQUIRE( (f1.begin() + 12)->at( _3 ) == "really, not so windy" );
+    REQUIRE( (f1.begin() + 13)->at( _3 ) == "my friend said, \"crazy, crazy windy!\"" );
 }
 
