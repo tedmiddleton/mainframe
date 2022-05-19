@@ -40,298 +40,192 @@ public:
     virtual void clear() = 0;
 };
 
-template< typename T >
+template< typename T, bool IsConst = false, bool IsReverse = false >
 class base_sv_iterator
 {
 public:
     using iterator_category = std::random_access_iterator_tag;
     using difference_type   = std::ptrdiff_t;
     using value_type        = T;
+    using pointer           = typename std::conditional<IsConst, const T*, T*>::type;
+    using reference         = typename std::conditional<IsConst, const T&, T&>::type;
+    static constexpr bool is_const      = IsConst;
+    static constexpr bool is_reverse    = IsReverse;
 
     base_sv_iterator() = default;
     base_sv_iterator( T* ptr ) : m_curr( ptr ) {}
 
-    template< typename U >
-    friend bool operator==( const base_sv_iterator<U>&, 
-                            const base_sv_iterator<U>& );
-    template< typename U >
-    friend bool operator!=( const base_sv_iterator<U>&, 
-                            const base_sv_iterator<U>& );
+    template< bool _IsConst = IsConst, bool OIsConst, 
+        typename = std::enable_if_t< _IsConst > >
+    base_sv_iterator( const base_sv_iterator< T, OIsConst, IsReverse >& other )
+        : m_curr( other.m_curr )
+    {
+    }
+
+    template< bool OIsConst, bool OIsReverse >
+    bool operator==( const base_sv_iterator< T, OIsConst, OIsReverse >& other ) const
+    {
+        return m_curr == other.m_curr;
+    }
+
+    template< bool OIsConst, bool OIsReverse >
+    bool operator!=( const base_sv_iterator< T, OIsConst, OIsReverse >& other ) const
+    {
+        return m_curr != other.m_curr;
+    }
+
+    template< bool OIsConst >
+    bool operator<( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
+    {
+        if constexpr ( is_reverse ) {
+            return this->m_curr > other.m_curr;
+        }
+        else {
+            return this->m_curr < other.m_curr;
+        }
+    }
+
+    template< bool OIsConst >
+    bool operator>( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
+    {
+        if constexpr ( is_reverse ) {
+            return this->m_curr < other.m_curr;
+        }
+        else {
+            return this->m_curr > other.m_curr;
+        }
+    }
+
+    template< bool OIsConst >
+    bool operator<=( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
+    {
+        if constexpr ( is_reverse ) {
+            return this->m_curr >= other.m_curr;
+        }
+        else {
+            return this->m_curr <= other.m_curr;
+        }
+    }
+
+    template< bool OIsConst >
+    bool operator>=( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
+    {
+        if constexpr ( is_reverse ) {
+            return this->m_curr <= other.m_curr;
+        }
+        else {
+            return this->m_curr >= other.m_curr;
+        }
+    }
+
+    template< bool OIsConst >
+    difference_type operator-( const base_sv_iterator<T, OIsConst, IsReverse>& other ) const
+    {
+        if constexpr ( is_reverse ) {
+            return other.m_curr - this->m_curr;
+        }
+        else {
+            return this->m_curr - other.m_curr;
+        }
+    }
+
+    base_sv_iterator<T, IsConst, IsReverse> operator+( difference_type p ) const
+    {
+        if constexpr ( is_reverse ) {
+            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr - p };
+        }
+        else {
+            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr + p };
+        }
+    }
+
+    base_sv_iterator<T, IsConst, IsReverse> operator-( difference_type p ) const
+    {
+        if constexpr ( is_reverse ) {
+            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr + p };
+        }
+        else {
+            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr - p };
+        }
+    }
+
+    void operator++() 
+    { 
+        if constexpr ( is_reverse ) {
+            this->m_curr--; 
+        }
+        else {
+            this->m_curr++; 
+        }
+    }
+    
+    void operator--() 
+    { 
+        if constexpr ( is_reverse ) {
+            this->m_curr++; 
+        }
+        else {
+            this->m_curr--; 
+        }
+    }
+    
+    void operator++(int) 
+    { 
+        if constexpr ( is_reverse ) {
+            --this->m_curr; 
+        }
+        else {
+            ++this->m_curr; 
+        }
+    }
+
+    void operator--(int) 
+    { 
+        if constexpr ( is_reverse ) {
+            ++this->m_curr; 
+        }
+        else {
+            --this->m_curr; 
+        }
+    }
+
+    void operator+=( difference_type p ) 
+    { 
+        if constexpr ( is_reverse ) {
+            this->m_curr -= p; 
+        }
+        else {
+            this->m_curr += p; 
+        }
+    }
+
+    void operator-=( difference_type p ) 
+    { 
+        if constexpr ( is_reverse ) {
+            this->m_curr += p; 
+        }
+        else {
+            this->m_curr -= p; 
+        }
+    }
+
+    T& operator*() const { return *this->m_curr; }
+    T* operator->() const { return this->m_curr; }
 
     T* m_curr;
 };
 
 template< typename T >
-bool operator==( const base_sv_iterator<T>& l, 
-                 const base_sv_iterator<T>& r )
-{
-    return l.m_curr == r.m_curr;
-}
+using sv_iterator = base_sv_iterator< T, false, false >;
 
 template< typename T >
-bool operator!=( const base_sv_iterator<T>& l, 
-                 const base_sv_iterator<T>& r )
-{
-    return l.m_curr != r.m_curr;
-}
+using const_sv_iterator = base_sv_iterator< T, true, false >;
 
 template< typename T >
-class incrementing_sv_iterator : public base_sv_iterator<T>
-{
-public:
-    using difference_type = typename base_sv_iterator<T>::difference_type;
-    using base_sv_iterator<T>::base_sv_iterator;
-
-    void operator++() { this->m_curr++; }
-    void operator--() { this->m_curr--; }
-    void operator++(int) { ++this->m_curr; }
-    void operator--(int) { --this->m_curr; }
-    void operator+=( difference_type p ) { this->m_curr += p; }
-    void operator-=( difference_type p ) { this->m_curr -= p; }
-
-    template< typename U >
-    friend bool operator<( const incrementing_sv_iterator<U>&, 
-                            const incrementing_sv_iterator<U>& );
-    template< typename U >
-    friend bool operator>( const incrementing_sv_iterator<U>&, 
-                            const incrementing_sv_iterator<U>& );
-    template< typename U >
-    friend bool operator<=( const incrementing_sv_iterator<U>&, 
-                            const incrementing_sv_iterator<U>& );
-    template< typename U >
-    friend bool operator>=( const incrementing_sv_iterator<U>&, 
-                            const incrementing_sv_iterator<U>& );
-};
+using reverse_sv_iterator = base_sv_iterator< T, false, true >;
 
 template< typename T >
-bool operator<=( const incrementing_sv_iterator<T>& l, 
-                 const incrementing_sv_iterator<T>& r )
-{
-    return l.m_curr <= r.m_curr;
-}
-
-template< typename T >
-bool operator>=( const incrementing_sv_iterator<T>& l, 
-                 const incrementing_sv_iterator<T>& r )
-{
-    return l.m_curr >= r.m_curr;
-}
-
-template< typename T >
-bool operator<( const incrementing_sv_iterator<T>& l, 
-                const incrementing_sv_iterator<T>& r )
-{
-    return l.m_curr < r.m_curr;
-}
-
-template< typename T >
-bool operator>( const incrementing_sv_iterator<T>& l, 
-                const incrementing_sv_iterator<T>& r )
-{
-    return l.m_curr > r.m_curr;
-}
-
-template< typename T >
-class decrementing_sv_iterator : public base_sv_iterator<T>
-{
-public:
-    using difference_type = typename base_sv_iterator<T>::difference_type;
-    using base_sv_iterator<T>::base_sv_iterator;
-
-    void operator++() { this->m_curr--; }
-    void operator--() { this->m_curr++; }
-    void operator++(int) { --this->m_curr; }
-    void operator--(int) { ++this->m_curr; }
-    void operator+=( difference_type p ) { this->m_curr -= p; }
-    void operator-=( difference_type p ) { this->m_curr += p; }
-
-    template< typename U >
-    friend bool operator<( const decrementing_sv_iterator<U>&, 
-                            const decrementing_sv_iterator<U>& );
-    template< typename U >
-    friend bool operator>( const decrementing_sv_iterator<U>&, 
-                            const decrementing_sv_iterator<U>& );
-    template< typename U >
-    friend bool operator<=( const decrementing_sv_iterator<U>&, 
-                            const decrementing_sv_iterator<U>& );
-    template< typename U >
-    friend bool operator>=( const decrementing_sv_iterator<U>&, 
-                            const decrementing_sv_iterator<U>& );
-};
-
-template< typename T >
-bool operator<=( const decrementing_sv_iterator<T>& l, 
-                 const decrementing_sv_iterator<T>& r )
-{
-    return l.m_curr >= r.m_curr;
-}
-
-template< typename T >
-bool operator>=( const decrementing_sv_iterator<T>& l, 
-                 const decrementing_sv_iterator<T>& r )
-{
-    return l.m_curr <= r.m_curr;
-}
-
-template< typename T >
-bool operator<( const decrementing_sv_iterator<T>& l, 
-                const decrementing_sv_iterator<T>& r )
-{
-    return l.m_curr > r.m_curr;
-}
-
-template< typename T >
-bool operator>( const decrementing_sv_iterator<T>& l, 
-                const decrementing_sv_iterator<T>& r )
-{
-    return l.m_curr < r.m_curr;
-}
-
-template< typename T >
-class const_sv_iterator;
-
-template< typename T >
-class sv_iterator : public incrementing_sv_iterator<T>
-{
-public:
-    using difference_type = typename incrementing_sv_iterator<T>::difference_type;
-    using incrementing_sv_iterator<T>::incrementing_sv_iterator;
-    using pointer           = T*;  // or also value_type*
-    using reference         = T&;  // or also value_type&u
-
-    difference_type operator-( const sv_iterator<T>& other ) const
-    {
-        return this->m_curr - other.m_curr;
-    }
-
-    difference_type operator-( const const_sv_iterator<T>& other ) const
-    {
-        return this->m_curr - other.m_curr;
-    }
-
-    sv_iterator<T> operator+( difference_type p ) const
-    {
-        return sv_iterator<T>{ this->m_curr + p };
-    }
-
-    sv_iterator<T> operator-( difference_type p ) const
-    {
-        return sv_iterator<T>{ this->m_curr - p };
-    }
-
-    T& operator*() const { return *this->m_curr; }
-    T* operator->() const { return this->m_curr; }
-};
-
-template< typename T >
-class const_sv_iterator : public incrementing_sv_iterator<T>
-{
-public:
-    using difference_type = typename incrementing_sv_iterator<T>::difference_type;
-    using incrementing_sv_iterator<T>::incrementing_sv_iterator;
-    using pointer           = const T*;  // or also value_type*
-    using reference         = const T&;  // or also value_type&u
-
-    const_sv_iterator( sv_iterator<T> svi )
-        : incrementing_sv_iterator<T>( &*svi )
-    {}
-
-    difference_type operator-( const sv_iterator<T>& other ) const
-    {
-        return this->m_curr - other.m_curr;
-    }
-
-    difference_type operator-( const const_sv_iterator<T>& other ) const
-    {
-        return this->m_curr - other.m_curr;
-    }
-
-    const_sv_iterator<T> operator+( difference_type p ) const
-    {
-        return const_sv_iterator<T>{ this->m_curr + p };
-    }
-
-    const_sv_iterator<T> operator-( difference_type p ) const
-    {
-        return const_sv_iterator<T>{ this->m_curr - p };
-    }
-
-    const T& operator*() const { return *this->m_curr; }
-    const T* operator->() const { return this->m_curr; }
-};
-
-template< typename T >
-class const_reverse_sv_iterator;
-
-template< typename T >
-class reverse_sv_iterator : public decrementing_sv_iterator<T>
-{
-public:
-    using difference_type = typename decrementing_sv_iterator<T>::difference_type;
-    using decrementing_sv_iterator<T>::decrementing_sv_iterator;
-    using pointer           = T*;  // or also value_type*
-    using reference         = T&;  // or also value_type&u
-
-    difference_type operator-( const reverse_sv_iterator<T>& other ) const
-    {
-        return other.m_curr - this->m_curr;
-    }
-
-    difference_type operator-( const const_reverse_sv_iterator<T>& other ) const
-    {
-        return other.m_curr - this->m_curr;
-    }
-
-    reverse_sv_iterator<T> operator+( difference_type p ) const
-    {
-        return reverse_sv_iterator<T>{ this->m_curr - p };
-    }
-
-    reverse_sv_iterator<T> operator-( difference_type p ) const
-    {
-        return reverse_sv_iterator<T>{ this->m_curr + p };
-    }
-
-    T& operator*() const { return *this->m_curr; }
-    T* operator->() const { return this->m_curr; }
-};
-
-template< typename T >
-class const_reverse_sv_iterator : public decrementing_sv_iterator<T>
-{
-public:
-    using difference_type = typename decrementing_sv_iterator<T>::difference_type;
-    using decrementing_sv_iterator<T>::decrementing_sv_iterator;
-    using pointer           = const T*;  // or also value_type*
-    using reference         = const T&;  // or also value_type&u
-
-    const_reverse_sv_iterator( reverse_sv_iterator<T> svi )
-        : decrementing_sv_iterator<T>( &*svi )
-    {}
-
-    difference_type operator-( const reverse_sv_iterator<T>& other ) const
-    {
-        return other.m_curr - this->m_curr;
-    }
-
-    difference_type operator-( const const_reverse_sv_iterator<T>& other ) const
-    {
-        return other.m_curr - this->m_curr;
-    }
-
-    const_reverse_sv_iterator<T> operator+( difference_type p ) const
-    {
-        return const_reverse_sv_iterator<T>{ this->m_curr - p };
-    }
-
-    const_reverse_sv_iterator<T> operator-( difference_type p ) const
-    {
-        return const_reverse_sv_iterator<T>{ this->m_curr + p };
-    }
-
-    const T& operator*() const { return *this->m_curr; }
-    const T* operator->() const { return this->m_curr; }
-};
+using const_reverse_sv_iterator = base_sv_iterator< T, true, true >;
 
 template< typename T >
 class series_vector : public iseries_vector
