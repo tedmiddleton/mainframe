@@ -36,12 +36,13 @@ namespace detail
 class csv
 {
 public:
-    //static frame< Ts... >
-    //load( const std::filesystem::path & path, unsigned options )
-    //{
-    //    std::ifstream fs{ path };
-    //    return load( fs, options );
-    //}
+    template< size_t NumColumns >
+    static typename detail::make_string_frame< NumColumns >::type
+    load( const std::filesystem::path & path, bool header_row )
+    {
+        std::ifstream fs{ path };
+        return load<NumColumns>( fs, header_row );
+    }
 
     template< size_t NumColumns >
     static typename detail::make_string_frame< NumColumns >::type
