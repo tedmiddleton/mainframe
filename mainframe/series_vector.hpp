@@ -49,11 +49,9 @@ public:
     using value_type        = T;
     using pointer           = typename std::conditional<IsConst, const T*, T*>::type;
     using reference         = typename std::conditional<IsConst, const T&, T&>::type;
-    static constexpr bool is_const      = IsConst;
-    static constexpr bool is_reverse    = IsReverse;
 
     base_sv_iterator() = default;
-    base_sv_iterator( T* ptr ) : m_curr( ptr ) {}
+    base_sv_iterator( pointer ptr ) : m_curr( ptr ) {}
 
     template< bool _IsConst = IsConst, bool OIsConst, 
         typename = std::enable_if_t< _IsConst > >
@@ -77,7 +75,7 @@ public:
     template< bool OIsConst >
     bool operator<( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
     {
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             return this->m_curr > other.m_curr;
         }
         else {
@@ -88,7 +86,7 @@ public:
     template< bool OIsConst >
     bool operator>( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
     {
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             return this->m_curr < other.m_curr;
         }
         else {
@@ -99,7 +97,7 @@ public:
     template< bool OIsConst >
     bool operator<=( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
     {
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             return this->m_curr >= other.m_curr;
         }
         else {
@@ -110,7 +108,7 @@ public:
     template< bool OIsConst >
     bool operator>=( const base_sv_iterator< T, OIsConst, IsReverse >& other ) const
     {
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             return this->m_curr <= other.m_curr;
         }
         else {
@@ -121,7 +119,7 @@ public:
     template< bool OIsConst >
     difference_type operator-( const base_sv_iterator<T, OIsConst, IsReverse>& other ) const
     {
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             return other.m_curr - this->m_curr;
         }
         else {
@@ -131,27 +129,27 @@ public:
 
     base_sv_iterator<T, IsConst, IsReverse> operator+( difference_type p ) const
     {
-        if constexpr ( is_reverse ) {
-            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr - p };
+        if constexpr ( IsReverse ) {
+            return base_sv_iterator<T, IsConst, IsReverse>( this->m_curr - p );
         }
         else {
-            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr + p };
+            return base_sv_iterator<T, IsConst, IsReverse>( this->m_curr + p );
         }
     }
 
     base_sv_iterator<T, IsConst, IsReverse> operator-( difference_type p ) const
     {
-        if constexpr ( is_reverse ) {
-            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr + p };
+        if constexpr ( IsReverse ) {
+            return base_sv_iterator<T, IsConst, IsReverse>( this->m_curr + p );
         }
         else {
-            return base_sv_iterator<T, IsConst, IsReverse>{ this->m_curr - p };
+            return base_sv_iterator<T, IsConst, IsReverse>( this->m_curr - p );
         }
     }
 
     void operator++() 
     { 
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             this->m_curr--; 
         }
         else {
@@ -161,7 +159,7 @@ public:
     
     void operator--() 
     { 
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             this->m_curr++; 
         }
         else {
@@ -171,7 +169,7 @@ public:
     
     void operator++(int) 
     { 
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             --this->m_curr; 
         }
         else {
@@ -181,7 +179,7 @@ public:
 
     void operator--(int) 
     { 
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             ++this->m_curr; 
         }
         else {
@@ -191,7 +189,7 @@ public:
 
     void operator+=( difference_type p ) 
     { 
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             this->m_curr -= p; 
         }
         else {
@@ -201,7 +199,7 @@ public:
 
     void operator-=( difference_type p ) 
     { 
-        if constexpr ( is_reverse ) {
+        if constexpr ( IsReverse ) {
             this->m_curr += p; 
         }
         else {
@@ -209,10 +207,10 @@ public:
         }
     }
 
-    T& operator*() const { return *this->m_curr; }
-    T* operator->() const { return this->m_curr; }
+    reference operator*() const { return *this->m_curr; }
+    pointer operator->() const { return this->m_curr; }
 
-    T* m_curr;
+    pointer m_curr;
 };
 
 template< typename T >
