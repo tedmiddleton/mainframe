@@ -13,13 +13,15 @@
 
 namespace mf
 {
+template< typename T > class mi;
+
+namespace detail
+{
 
 const char * get_horzrule( size_t num );
 const char * get_emptyspace( size_t num );
 size_t get_max_string_length( const std::vector<std::string>& );
 std::vector<size_t> get_max_string_lengths( const std::vector<std::vector<std::string>>& );
-
-template< typename T > class mi;
 
 template<typename T>
 auto stringify( std::ostream & o, const T & t, bool ) -> decltype( o << t, o )
@@ -173,6 +175,8 @@ struct unwrap_missing< mi<T> >
         }
     }
 };
+
+} // namespace detail
 
 } // namespace mf
 

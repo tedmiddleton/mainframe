@@ -62,7 +62,7 @@ public:
     bool any_missing_impl() const
     {
         const U& elem = at< Ind >();
-        if constexpr ( is_missing<U>::value ) {
+        if constexpr ( detail::is_missing<U>::value ) {
             if ( !elem.has_value() ) {
                 return true;
             }

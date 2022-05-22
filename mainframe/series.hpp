@@ -151,14 +151,14 @@ public:
     }
 
     template<typename U = T,
-        std::enable_if_t<is_missing<U>::value, bool> = true>
+        std::enable_if_t<detail::is_missing<U>::value, bool> = true>
     series<T> allow_missing() const
     {
         return *this;
     }
 
     template<typename U = T,
-        std::enable_if_t<!is_missing<U>::value, bool> = true>
+        std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
     series<mi<T>> allow_missing() const
     {
         series<mi<T>> os;
@@ -171,7 +171,7 @@ public:
 
     // This requires default-construction. Can we do better?
     template<typename U = T,
-        std::enable_if_t<is_missing<U>::value && 
+        std::enable_if_t<detail::is_missing<U>::value && 
             std::is_default_constructible<typename U::value_type>::value, 
         bool> = true>
     series<typename U::value_type> disallow_missing() const
@@ -191,7 +191,7 @@ public:
     }
 
     template<typename U = T,
-        std::enable_if_t<!is_missing<U>::value, bool> = true>
+        std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
     series<T> disallow_missing() const
     {
         return *this;
@@ -480,7 +480,7 @@ public:
         for ( const T& t : *m_sharedvec ) {
             std::stringstream ss;
             ss << std::boolalpha;
-            stringify( ss, t, true );
+            detail::stringify( ss, t, true );
             s.push_back( ss.str() );
         }
         return s;
@@ -563,15 +563,15 @@ std::ostream & operator<<( std::ostream& o, const series< T >& s )
 
     std::vector<std::string> us = s.to_string();
     auto name = s.name();
-    auto width = std::max( name.size(), get_max_string_length( us ) );
+    auto width = std::max( name.size(), detail::get_max_string_length( us ) );
     const size_t num_rows = s.size();
 
     size_t gutter_width = 
         num_rows > 0 ? static_cast<size_t>(std::ceil( std::log10( num_rows ) ) ) + 1 : 1;
 
     o << std::boolalpha;
-    o << get_emptyspace( gutter_width ) << "| " << std::setw( width ) << name << "\n";
-    o << get_horzrule( gutter_width ) << "|" << get_horzrule( width + 2 ) << "\n";
+    o << detail::get_emptyspace( gutter_width ) << "| " << std::setw( width ) << name << "\n";
+    o << detail::get_horzrule( gutter_width ) << "|" << detail::get_horzrule( width + 2 ) << "\n";
 
     for ( size_t rowind = 0; rowind < num_rows; ++rowind ) {
         std::string& datum = us[ rowind ];

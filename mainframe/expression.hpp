@@ -152,7 +152,7 @@ struct expr_column
     }
 
     template< template <typename...> typename Iter, typename ... Ts >
-    typename pack_element<Ind, Ts...>::type
+    typename detail::pack_element<Ind, Ts...>::type
     operator()( 
         const Iter< Ts... >&,
         const Iter< Ts... >& curr, 
@@ -177,17 +177,17 @@ struct indexed_expr_column
     indexed_expr_column& operator=( indexed_expr_column&& ) = default;
 
     template< template <typename...> typename Iter, typename ... Ts >
-    typename ensure_missing<typename pack_element<Ind, Ts...>::type>::type
+    typename detail::ensure_missing<typename detail::pack_element<Ind, Ts...>::type>::type
     operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
         const Iter< Ts... >& end
         ) const
     {
-        using T = typename pack_element<Ind, Ts...>::type;
+        using T = typename detail::pack_element<Ind, Ts...>::type;
         auto adjusted = curr + offset;
         if ( begin <= adjusted && adjusted < end ) {
-            if constexpr ( is_missing<T>::value ) {
+            if constexpr ( detail::is_missing<T>::value ) {
                 return adjusted->template at<Ind>();
             }
             else {
@@ -232,7 +232,7 @@ struct terminal< indexed_expr_column<Ind> >
     terminal( indexed_expr_column<Ind> _t ) : t( _t ) {}
 
     template< template <typename...> typename Iter, typename ... Ts >
-    typename ensure_missing<typename pack_element<Ind, Ts...>::type>::type
+    typename detail::ensure_missing<typename detail::pack_element<Ind, Ts...>::type>::type
     operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 
@@ -255,7 +255,7 @@ struct terminal< expr_column<Ind> >
     terminal( expr_column<Ind> _t ) : t( _t ) {}
 
     template< template <typename...> typename Iter, typename ... Ts >
-    typename pack_element<Ind, Ts...>::type
+    typename detail::pack_element<Ind, Ts...>::type
     operator()( 
         const Iter< Ts... >& begin,
         const Iter< Ts... >& curr, 

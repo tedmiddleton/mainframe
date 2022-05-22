@@ -328,7 +328,7 @@ public:
     using reverse_iterator = reverse_frame_iterator< Ts... >;
     using const_reverse_iterator = const_reverse_frame_iterator< Ts... >;
     using name_array = std::array< std::string, sizeof...(Ts) >;
-    using variant_type = typename variant_unique<Ts...>::type;
+    using variant_type = typename detail::variant_unique<Ts...>::type;
     using row_type = std::vector<variant_type>;
 
     frame() = default;
@@ -437,28 +437,28 @@ public:
     }
 
     template< size_t Ind >
-    series<typename pack_element<Ind, Ts...>::type>& 
+    series<typename detail::pack_element<Ind, Ts...>::type>& 
     column() 
     {
         return std::get<Ind>( m_columns );
     }
 
     template< size_t Ind >
-    const series<typename pack_element<Ind, Ts...>::type>& 
+    const series<typename detail::pack_element<Ind, Ts...>::type>& 
     column() const
     {
         return std::get<Ind>( m_columns );
     }
 
     template< size_t Ind >
-    series<typename pack_element<Ind, Ts...>::type>& 
+    series<typename detail::pack_element<Ind, Ts...>::type>& 
     column( terminal<expr_column<Ind>> )
     {
         return std::get<Ind>( m_columns );
     }
 
     template< size_t Ind >
-    const series<typename pack_element<Ind, Ts...>::type>& 
+    const series<typename detail::pack_element<Ind, Ts...>::type>& 
     column( terminal<expr_column<Ind>> ) const
     {
         return std::get<Ind>( m_columns );
@@ -502,8 +502,8 @@ public:
     corr( terminal<expr_column<Ind1>> col1, 
           terminal<expr_column<Ind2>> col2 ) const
     {
-        using T1 = typename pack_element<Ind1, Ts...>::type;
-        using T2 = typename pack_element<Ind2, Ts...>::type;
+        using T1 = typename detail::pack_element<Ind1, Ts...>::type;
+        using T2 = typename detail::pack_element<Ind2, Ts...>::type;
         const series<T1>& s1 = std::get<Ind1>( m_columns );
         const series<T2>& s2 = std::get<Ind2>( m_columns );
 
@@ -609,7 +609,7 @@ public:
     double 
     mean( terminal<expr_column<Ind>> ) const
     {
-        using T = typename pack_element<Ind, Ts...>::type;
+        using T = typename detail::pack_element<Ind, Ts...>::type;
         const series<T>& s = std::get<Ind>( m_columns );
         auto b = s.cbegin();
         auto e = s.cend();
@@ -645,7 +645,7 @@ public:
         auto b = out.begin();
         auto e = out.end();
         auto it = b;
-        if constexpr ( is_missing<T>::value ) {
+        if constexpr ( detail::is_missing<T>::value ) {
             for ( ; it != e; ++it ) {
                 auto val = expr( b, it, e );
                 it->template at<sizeof...(Ts)>() = val;
@@ -654,7 +654,7 @@ public:
         else {
             for ( ; it != e; ++it ) {
                 auto val = expr( b, it, e );
-                auto uval = unwrap_missing<decltype(val)>::unwrap(val);
+                auto uval = detail::unwrap_missing<decltype(val)>::unwrap(val);
                 it->template at<sizeof...(Ts)>() = uval;
             }
         }
@@ -705,7 +705,7 @@ public:
     {
         if ( Ind < row.size() ) {
             variant_type& v = row[Ind];
-            using U = typename pack_element<Ind, Ts...>::type;
+            using U = typename detail::pack_element<Ind, Ts...>::type;
             series<U>& s = std::get<Ind>( m_columns );
             if ( std::holds_alternative<U>( v ) ) {
                 s.push_back( std::get<U>( v ) );
@@ -778,7 +778,7 @@ private:
     void 
     allow_missing_impl( uframe& uf, terminal<expr_column<Inds>>... cols ) const
     {
-        if constexpr ( contains<Ind, Inds...>::value ) {
+        if constexpr ( detail::contains<Ind, Inds...>::value ) {
             auto& s = column<Ind>();
             auto ams = s.allow_missing();
             uf.set_series( Ind, ams );
@@ -852,7 +852,7 @@ private:
     void 
     disallow_missing_impl( uframe& uf, terminal<expr_column<Inds>>... cols ) const
     {
-        if constexpr ( contains<Ind, Inds...>::value ) {
+        if constexpr ( detail::contains<Ind, Inds...>::value ) {
             auto& s = column<Ind>();
             auto ams = s.disallow_missing();
             uf.set_series( Ind, ams );
@@ -1090,7 +1090,7 @@ std::ostream & operator<<( std::ostream& o, const frame< Ts... >& f )
 
     std::vector<std::vector<std::string>> uf = f.to_string();
     auto names = f.column_names();
-    auto widths = get_max_string_lengths( uf );
+    auto widths = detail::get_max_string_lengths( uf );
     constexpr size_t num_columns = sizeof...(Ts);
     const size_t num_rows = f.size();
 
@@ -1098,7 +1098,7 @@ std::ostream & operator<<( std::ostream& o, const frame< Ts... >& f )
         num_rows > 0 ? static_cast<size_t>(std::ceil( std::log10( num_rows ) ) ) + 1 : 1;
 
     o << std::boolalpha;
-    o << get_emptyspace( gutter_width );
+    o << detail::get_emptyspace( gutter_width );
     for ( size_t i = 0; i < num_columns; ++i ) {
         auto& name = names[ i ];
         auto& width = widths[ i ];
@@ -1107,10 +1107,10 @@ std::ostream & operator<<( std::ostream& o, const frame< Ts... >& f )
     }
     o << "\n";
 
-    o << get_horzrule( gutter_width );
+    o << detail::get_horzrule( gutter_width );
     for ( size_t i = 0; i < num_columns; ++i ) {
         auto& width = widths[ i ];
-        o << "|" << get_horzrule( width + 2 );
+        o << "|" << detail::get_horzrule( width + 2 );
     }
     o << "\n";
 

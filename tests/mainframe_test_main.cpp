@@ -941,14 +941,14 @@ TEST_CASE( "allow_missing()", "[frame]" )
 
     SECTION( "contains" )
     {
-        REQUIRE( contains<0, 3, 0, 1, 2>::value == true );
-        REQUIRE( contains<4, 3, 0, 1, 2>::value == false );
-        REQUIRE( contains<4>::value == false );
-        REQUIRE( contains<1, 3, 0, 1, 2>::value == true );
-        REQUIRE( contains<2, 3, 0, 1, 2>::value == true );
-        REQUIRE( contains<3, 3, 0, 1, 2>::value == true );
-        REQUIRE( contains<4, 0, 1, 3, 2>::value == false );
-        REQUIRE( contains<4, 0, 0, 0, 0>::value == false );
+        REQUIRE( mf::detail::contains<0, 3, 0, 1, 2>::value == true );
+        REQUIRE( mf::detail::contains<4, 3, 0, 1, 2>::value == false );
+        REQUIRE( mf::detail::contains<4>::value == false );
+        REQUIRE( mf::detail::contains<1, 3, 0, 1, 2>::value == true );
+        REQUIRE( mf::detail::contains<2, 3, 0, 1, 2>::value == true );
+        REQUIRE( mf::detail::contains<3, 3, 0, 1, 2>::value == true );
+        REQUIRE( mf::detail::contains<4, 0, 1, 3, 2>::value == false );
+        REQUIRE( mf::detail::contains<4, 0, 0, 0, 0>::value == false );
     }
 
     SECTION( "some" )

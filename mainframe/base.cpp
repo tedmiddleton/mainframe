@@ -14,6 +14,9 @@ using namespace std;
 namespace mf
 {
 
+namespace detail
+{
+
 const char * get_horzrule( size_t num )
 {
     static const char horzrule[] = 
@@ -76,5 +79,7 @@ std::ostream& stringify( std::ostream & o, const unsigned char & t, bool )
     return o;
 }
 
+} // namespace detail
+ 
 } // namespace mf
 
