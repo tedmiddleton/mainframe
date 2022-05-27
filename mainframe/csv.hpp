@@ -8,11 +8,13 @@
 #define INCLUDED_mainframe_csv_hpp
 
 #include <filesystem>
+#include <mainframe/base.hpp>
 #include <mainframe/frame.hpp>
 
 namespace mf
 {
 
+#if 0
 namespace detail
 {
     template< size_t NumCols >
@@ -184,6 +186,7 @@ private:
     }
 
 };
+#endif
 
 } // namespace mf
  

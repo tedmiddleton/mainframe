@@ -10,6 +10,8 @@
 #include <iterator>
 #include "mainframe/series.hpp"
 
+#define TRAP() asm ( "int $3\n" )
+
 namespace mf
 {
 
@@ -19,38 +21,684 @@ struct expr_column;
 template< typename T >
 struct terminal;
 
-template< template<typename> class Iter, typename ... Ts >
-class frame_iterator_row
+template< size_t Ind >
+struct columnindex { static constexpr size_t index = Ind; };
+
+inline constexpr columnindex<0> _c0;
+inline constexpr columnindex<1> _c1;
+inline constexpr columnindex<2> _c2;
+inline constexpr columnindex<3> _c3;
+inline constexpr columnindex<4> _c4;
+inline constexpr columnindex<5> _c5;
+
+template< typename ... Ts >
+class _row_proxy;
+
+template< typename ... Ts >
+class frame_row
 {
 public:
-    frame_iterator_row() = default;
+    frame_row( std::tuple<Ts...> args ) : data( args ) {}
 
-    frame_iterator_row( std::tuple< Iter<Ts>... > iter ) 
-        : m_iters( iter ) 
+    frame_row( const frame_row& other )
+    {
+        init_from_ptrs<0>( other );
+    }
+
+    frame_row& operator=( const frame_row& other )
+    {
+        init_from_ptrs<0>( other );
+        return *this;
+    }
+
+    frame_row( const _row_proxy< Ts... >& refs )
+    {
+        init_from_ptrs<0>( refs );
+    }
+
+    frame_row& operator=( const _row_proxy< Ts... >& refs )
+    {
+        init_from_ptrs<0>( refs );
+    }
+
+    template< size_t Ind >
+    typename detail::pack_element<Ind, Ts...>::type&
+    at( const columnindex<Ind>& )
+    {
+        return std::get<Ind>( data );
+    }
+
+    template< size_t Ind >
+    const typename detail::pack_element<Ind, Ts...>::type&
+    at( const columnindex<Ind>& ) const
+    {
+        return std::get<Ind>( data );
+    }
+
+    template< size_t Ind=0 >
+    void debug( std::ostream& o ) const
+    {
+        if constexpr ( Ind == 0 ) {
+            o << "frame_row[ ";
+        }
+        columnindex<Ind> ci;
+        detail::stringify( o, at( ci ), true );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            o << ", ";
+            debug<Ind+1>( o );
+        }
+        else {
+            o << " ]";
+        }
+    }
+
+private:
+
+    template< size_t Ind, template < typename... > typename Row >
+    void init_from_ptrs( const Row< Ts... >& refs )
+    {
+        if constexpr ( Ind == 0 ) {
+            std::cout << "frame_row::init_from_ptrs( const Row< Ts... >& refs )\n";
+            debug( std::cout );
+            std::cout << " := ";
+            refs.debug( std::cout );
+            std::cout << "\n";
+        }
+        columnindex<Ind> ci;
+        at( ci ) = refs.at( ci );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            init_from_ptrs<Ind+1>( refs );
+        }
+    }
+
+    std::tuple<Ts...> data;
+};
+
+template< typename ... Ts >
+class _row_proxy
+{
+    template< typename ... Us >
+    friend class base_frit;
+
+    _row_proxy( std::tuple<Ts*...> p ) : ptrs( p ) {}
+
+    _row_proxy( const _row_proxy& other )
+        : ptrs( other.ptrs )
+    {
+        std::cout << "_row_proxy::_row_proxy( const _row_proxy& other )\n";
+    }
+
+public:
+    _row_proxy& operator=( const _row_proxy& row )
+    {
+        assign_from_vals_impl<0>( row );
+        return *this;
+    }
+
+    _row_proxy& operator=( const frame_row<Ts...>& vals )
+    {
+        assign_from_vals_impl<0>( vals );
+        return *this;
+    }
+
+    template< size_t Ind >
+    typename detail::pack_element<Ind, Ts...>::type&
+    at( const columnindex<Ind>& )
+    {
+        return *(std::get<Ind>( ptrs ));
+    }
+
+    template< size_t Ind >
+    const typename detail::pack_element<Ind, Ts...>::type&
+    at( const columnindex<Ind>& ) const
+    {
+        return *(std::get<Ind>( ptrs ));
+    }
+
+    template< size_t Ind=0 >
+    bool operator==( const _row_proxy& other ) const
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        const T* ptr = std::get<Ind>( ptrs );
+        const T* otherptr = std::get<Ind>( other.ptrs );
+        if ( *ptr == *otherptr ) {
+            if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+                return operator==<Ind+1>( other );
+            }
+            else {
+                return true;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    bool operator!=( const _row_proxy& other ) const
+    {
+        return !(*this == other);
+    }
+
+    // Wrong, kind of, but we'll go with it for now
+    template< size_t Ind=0 >
+    bool operator<( const _row_proxy& other ) const
+    {
+        if constexpr ( Ind == 0 ) {
+            std::cout << "_row_proxy::operator<( const _row_proxy<Ts...>& other ):\n";
+            debug( std::cout );
+            std::cout << " < ";
+            other.debug( std::cout );
+            std::cout << "\n";
+        }
+        columnindex<Ind> ci;
+        const auto& thisval = at( ci );
+        const auto& otherval = other.at( ci );
+        if ( thisval < otherval ) {
+            return true;
+        }
+        else if ( thisval == otherval ) {
+            if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+                return operator< <Ind+1>( other );
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    ptrdiff_t operator-( const _row_proxy& other ) const
+    {
+        using T = typename detail::pack_element<0, Ts...>::type;
+        const T* ptr = std::get<0>( ptrs );
+        const T* otherptr = std::get<0>( other.ptrs );
+        return ptr - otherptr;
+    }
+
+    template< size_t Ind=0 >
+    void operator+=( ptrdiff_t off )
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        T* ptr = std::get<Ind>( ptrs );
+        std::get<Ind>( ptrs ) = ptr + off;
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            operator+= <Ind+1>( off );
+        }
+    }
+
+    _row_proxy operator+( ptrdiff_t off ) const
+    {
+        _row_proxy out( ptrs );
+        out += off;
+        return out;
+    }
+
+    template< size_t Ind=0 >
+    void debug( std::ostream& o ) const
+    {
+        if constexpr ( Ind == 0 ) {
+            o << "_row_proxy[ ";
+        }
+        columnindex<Ind> ci;
+        detail::stringify( o, at( ci ), true );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            o << ", ";
+            debug<Ind+1>( o );
+        }
+        else {
+            o << " ]";
+        }
+    }
+
+private:
+    template< size_t Ind, template <typename...> typename Row >
+    void assign_from_vals_impl( const Row<Ts...>& vals )
+    {
+        if constexpr ( Ind == 0 ) {
+            std::cout << "_row_proxy::assign_from_vals_impl( const Row<Ts...>& vals )\n";
+            debug( std::cout );
+            std::cout << " := ";
+            vals.debug( std::cout );
+            std::cout << "\n";
+        }
+        columnindex<Ind> ci;
+        at( ci ) = vals.at( ci );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            assign_from_vals_impl<Ind+1>( vals );
+        }
+    }
+
+    std::tuple<Ts*...> ptrs;
+};
+
+// This is wrong - but go with it for now anyways
+template< size_t Ind=0, typename ... Ts >
+bool operator<( const frame_row<Ts...>& row, const _row_proxy<Ts...>& proxy )
+{
+    if constexpr ( Ind == 0 ) {
+        std::cout << 
+            "operator<( const frame_row<Ts...>& row, const _row_proxy<Ts...>& proxy ):\n";
+        row.debug( std::cout );
+        std::cout << " < ";
+        proxy.debug( std::cout );
+        std::cout << "\n";
+    }
+    columnindex<Ind> ci;
+    const auto& rowval = row.at( ci );
+    const auto& proxyval = proxy.at( ci );
+    if ( rowval < proxyval ) {
+        return true;
+    }
+    else if ( rowval == proxyval ) {
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator< <Ind+1>( row, proxy );
+        }
+        else {
+            // eq
+            return false;
+        }
+    }
+    else {
+        // gt
+        return false;
+    }
+}
+
+// This is wrong - but go with it for now anyways
+template< size_t Ind=0, typename ... Ts >
+bool operator<( const _row_proxy<Ts...>& proxy, const frame_row<Ts...>& row )
+{
+    if constexpr ( Ind == 0 ) {
+        std::cout << 
+            "operator<( const _row_proxy<Ts...>& proxy, const frame_row<Ts...>& row ):\n";
+        proxy.debug( std::cout );
+        std::cout << " < ";
+        row.debug( std::cout );
+        std::cout << "\n";
+    }
+    columnindex<Ind> ci;
+    const auto& proxyval = proxy.at( ci );
+    const auto& rowval = row.at( ci );
+    if ( proxyval < rowval ) {
+        return true;
+    }
+    else if ( proxyval == rowval ) {
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator< <Ind+1>( proxy, row );
+        }
+        else {
+            // eq
+            return false;
+        }
+    }
+    else {
+        // gt
+        return false;
+    }
+}
+
+template< typename ... Ts >
+class base_frit
+{
+public:
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type   = ptrdiff_t;
+    using value_type = frame_row<Ts...>;
+    using reference = _row_proxy<Ts...>&;
+    using pointer = _row_proxy<Ts...>*;
+
+    base_frit( std::tuple<Ts*...> t )
+        : row( t )
+    {
+        std::cout << "base_frit::base_frit( std::tuple<Ts*...> t )\n";
+    }
+
+    //base_frit( _row_proxy<Ts...> r )
+    //    : row( r )
+    //{
+    //    std::cout << "base_frit::base_frit( std::tuple<Ts*...> t )\n";
+    //}
+
+    base_frit( const base_frit& ) = default;
+    base_frit& operator=( const base_frit& ) = default;
+
+    reference operator*()
+    {
+        return row;
+    }
+
+    pointer operator->()
+    {
+        return &row;
+    }
+
+    base_frit& operator++() 
+    {
+        row += 1;
+        return *this;
+    }
+
+    base_frit& operator++(int) 
+    {
+        row += 1;
+        return *this;
+    }
+
+    base_frit& operator--() 
+    {
+        row += -1;
+        return *this;
+    }
+
+    base_frit& operator--(int) 
+    {
+        row += -1;
+        return *this;
+    }
+
+    bool operator==( const base_frit& other ) const
+    {
+        return row == other.row;
+    }
+
+    bool operator!=( const base_frit& other ) const
+    {
+        return row != other.row;
+    }
+
+    bool operator<( const base_frit& other ) const
+    {
+        std::cout << "base_frit::operator<( const base_frit& ) const\n";
+        return row < other.row;
+    }
+
+    difference_type operator-( const base_frit& other ) const
+    {
+        return this->row - other.row;
+    }
+
+    base_frit operator+( ptrdiff_t off ) const
+    {
+        return base_frit( row + off );
+    }
+
+    base_frit operator-( ptrdiff_t off ) const
+    {
+        return base_frit( row + (-off) );
+    }
+
+    _row_proxy<Ts...> row;
+};
+
+template< typename ... Ts >
+using frit = base_frit<Ts...>;
+
+template< typename ... Ts >
+struct pointerize;
+
+template< typename ... Ts >
+struct pointerize<std::tuple< std::vector<Ts>...>>
+{
+    using argument_type = std::tuple< std::vector<Ts>... >;
+    using type = std::tuple< Ts*... >;
+    using const_type = std::tuple< Ts*... >;
+
+    static type op( argument_type& arg, ptrdiff_t offset = 0 )
+    {
+        type out;
+        assign_impl<0>( arg, offset, out );
+        return out;
+    }
+
+    static type const_op( const argument_type& arg, ptrdiff_t offset = 0 )
+    {
+        const_type out;
+        assign_const_impl<0>( arg, offset, out );
+        return out;
+    }
+
+    template< size_t Ind >
+    static void assign_impl( argument_type& arg, 
+                             ptrdiff_t offset, 
+                             type& out )
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        std::vector<T>& argelem = std::get<Ind>( arg );
+        std::get<Ind>( out ) = argelem.data() + offset;
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            assign_impl< Ind+1 >( arg, offset, out );
+        }
+    }
+
+    template< size_t Ind >
+    static void assign_const_impl( const argument_type& arg, 
+                                   ptrdiff_t offset, 
+                                   const_type& out )
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        const std::vector<T>& argelem = std::get<Ind>( arg );
+        std::get<Ind>( out ) = argelem.data() + offset;
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            assign_const_impl< Ind+1 >( arg, offset, out );
+        }
+    }
+};
+
+template< typename ... Ts >
+class fr
+{
+public:
+    fr() = default;
+
+    frit<Ts...> begin()
+    {
+        auto ptrtuple = pointerize<decltype(columns)>::op( columns );
+        frit<Ts...> out{ ptrtuple };
+        return out;
+    }
+
+    frit<Ts...> end()
+    {
+        ptrdiff_t offset = std::get<0>(columns).size();
+        frit<Ts...> out{ pointerize<decltype(columns)>::op( columns, offset ) };
+        return out;
+    }
+
+    template< size_t Ind=0 >
+    void push_back( frame_row<Ts...>& row )
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        std::vector<T>& vec = std::get<Ind>( columns );
+        columnindex<Ind> colind;
+        vec.push_back( row.at( colind ) );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            push_back<Ind+1>( row );
+        }
+    }
+
+    void debug() const
+    {
+        std::cout << "fr object with " << sizeof...(Ts) << 
+            " columns @" << (void*)this << ":\n";
+        debug_impl<0>();
+    }
+
+    template< size_t Ind=0 >
+    void debug_impl() const
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        const std::vector<T>& vec = std::get<Ind>(columns);
+        const T* start = vec.data();
+        const T* end = start + vec.size();
+        std::cout << " col " << Ind << " startptr=@" << (void*)start <<
+            " endptr=@" << (void*)end << "\n";
+        if constexpr ( Ind+1 < sizeof...(Ts) ) {
+            debug_impl<Ind+1>();
+        }
+    }
+
+    std::vector< std::vector< std::string > > 
+    to_string() const
+    {
+        std::vector< std::vector< std::string > > out;
+        to_string<0>( out );
+        return out;
+    }
+
+    template< size_t Ind=0 >
+    void 
+    to_string( std::vector< std::vector< std::string > >& strs ) const
+    {
+        using U = typename detail::pack_element<Ind, Ts...>::type;
+        const std::vector<U>& s = std::get< Ind >( columns );
+        std::vector< std::string > colstrs;
+        for ( const auto& elem : s ) {
+            std::stringstream ss;
+            detail::stringify( ss, elem, true );
+            colstrs.push_back( ss.str() );
+        }
+        strs.push_back( colstrs );
+        if constexpr ( Ind+1 < sizeof...( Ts )  ) {
+            to_string< Ind+1 >( strs );
+        }
+    }
+
+    size_t
+    size() const
+    {
+        return std::get< 0 >( columns ).size();
+    }
+
+    std::tuple< std::vector< Ts >... > columns;
+};
+
+template< typename ... Ts >
+std::ostream & operator<<( std::ostream& o, const fr< Ts... >& f )
+{
+    std::ios_base::fmtflags fl( o.flags() );
+
+    std::vector<std::vector<std::string>> uf = f.to_string();
+    std::vector<std::string> names;
+    for ( unsigned i = 0; i < uf.size(); ++i ) {
+        std::stringstream ss; ss << "col" << i;
+        names.push_back( ss.str() );
+    }
+    auto widths = detail::get_max_string_lengths( uf );
+    constexpr size_t num_columns = sizeof...(Ts);
+    const size_t num_rows = f.size();
+
+    auto gutter_width = 
+        num_rows > 0 ? static_cast<size_t>(std::ceil( std::log10( num_rows ) ) ) + 1 : 1;
+
+    o << std::boolalpha;
+    o << detail::get_emptyspace( gutter_width );
+    for ( size_t i = 0; i < num_columns; ++i ) {
+        auto& name = names[ i ];
+        auto& width = widths[ i ];
+        width = std::max( width, name.size() );
+        o << "| " << std::setw( width ) << name << " ";
+    }
+    o << "\n";
+
+    o << detail::get_horzrule( gutter_width );
+    for ( size_t i = 0; i < num_columns; ++i ) {
+        auto& width = widths[ i ];
+        o << "|" << detail::get_horzrule( width + 2 );
+    }
+    o << "\n";
+
+    for ( size_t rowind = 0; rowind < num_rows; ++rowind ) {
+        o << std::setw( gutter_width ) << rowind;
+        for ( size_t colind = 0; colind < num_columns; ++colind ) {
+
+            std::string& datum = uf[ colind ][ rowind ];
+            auto width = widths[ colind ];
+
+            o << "| " << std::setw( width ) << datum << " ";
+        }
+        o << "\n";
+    }
+
+    o.flags( fl );
+    return o;
+}
+
+#if 0
+template< typename ... Ts >
+class frame_row
+{
+public:
+    frame_row()
+        : m_pushnext( 0 )
     {}
 
+    frame_row( const std::tuple<Ts...>& ptrs )
+        : m_ptrs( ptrs ) 
+        , m_holdsdata( false )
+        , m_pushnext( 0 )
+    {}
+
+    frame_row( Ts ... args )
+        : m_data( args... )
+        , m_pushnext( 0 )
+    {}
+
+    frame_row( const frame_row& other )
+    {
+    }
+
     template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< typename Iter<Ts>::reference ... > >::type
+    typename detail::pack_element< Ind, Ts&... >::type
+    at()
+    {
+        if ( m_holdsdata ) {
+        }
+        else {
+            auto colptr = std::get< Ind >( m_ptrs );
+            return *colptr;
+        }
+    }
+
+    template< size_t Ind >
+    typename detail::pack_element< Ind, const Ts& ... >::type
     at() const
     {
-        auto coliter = std::get< Ind >( m_iters );
-        return *coliter;
+        auto colptr = std::get< Ind >( m_ptrs );
+        return *colptr;
     }
 
     template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< typename Iter<Ts>::reference ... > >::type
+    typename detail::pack_element< Ind, Ts& ... >::type
+    at( terminal<expr_column<Ind>> )
+    {
+        auto colptr = std::get< Ind >( m_ptrs );
+        return *colptr;
+    }
+
+    template< size_t Ind >
+    typename detail::pack_element< Ind, const Ts& ... >::type
     at( terminal<expr_column<Ind>> ) const
     {
-        auto coliter = std::get< Ind >( m_iters );
-        return *coliter;
+        auto colptr = std::get< Ind >( m_ptrs );
+        return *colptr;
     }
 
     template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< typename Iter<Ts>::reference ... > >::type
+    typename detail::pack_element< Ind, Ts& ... >::type
+    operator[]( terminal<expr_column<Ind>> )
+    {
+        auto colptr = std::get< Ind >( m_ptrs );
+        return *colptr;
+    }
+
+    template< size_t Ind >
+    typename detail::pack_element< Ind, const Ts& ... >::type
     operator[]( terminal<expr_column<Ind>> ) const
     {
-        auto coliter = std::get< Ind >( m_iters );
-        return *coliter;
+        auto colptr = std::get< Ind >( m_ptrs );
+        return *colptr;
     }
 
     bool any_missing() const
@@ -73,180 +721,101 @@ public:
         return false;
     }
 
+    template< size_t Ind=0 >
+    bool operator==( const frame_row< Ts... >& other ) const
+    {
+        auto* t = std::get< Ind >( m_ptrs );
+        auto* other_t = std::get< Ind >( other.m_ptrs );
+        if ( *t != *other_t ) {
+            return false;
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator==<Ind+1>( other );
+        }
+        return true;
+    }
+
+    bool operator!=( const frame_row< Ts... >& other ) const
+    {
+        return !(operator==( other ));
+    }
+
+    template< size_t Ind=0 >
+    bool operator<=( const frame_row< Ts... >& other ) const
+    {
+        auto* t = std::get< Ind >( m_ptrs );
+        auto* other_t = std::get< Ind >( other.m_ptrs );
+        if ( *t > *other_t ) {
+            return false;
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator<=<Ind+1>( other );
+        }
+        return true;
+    }
+
+    template< size_t Ind=0 >
+    bool operator>=( const frame_row< Ts... >& other ) const
+    {
+        auto* t = std::get< Ind >( m_ptrs );
+        auto* other_t = std::get< Ind >( other.m_ptrs );
+        if ( *t < *other_t ) {
+            return false;
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator>=<Ind+1>( other );
+        }
+        return true;
+    }
+
+    template< size_t Ind=0 >
+    bool operator<( const frame_row< Ts... >& other ) const
+    {
+        auto* t = std::get< Ind >( m_ptrs );
+        auto* other_t = std::get< Ind >( other.m_ptrs );
+        if ( *t >= *other_t ) {
+            return false;
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator< <Ind+1>( other );
+        }
+        return true;
+    }
+
+    template< size_t Ind=0 >
+    bool operator>( const frame_row< Ts... >& other ) const
+    {
+        auto* t = std::get< Ind >( m_ptrs );
+        auto* other_t = std::get< Ind >( other.m_ptrs );
+        if ( *t <= *other_t ) {
+            return false;
+        }
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator><Ind+1>( other );
+        }
+        return true;
+    }
 private:
 
-    template< template<typename> class It, typename ... Us >
-    friend class base_frame_iterator;
-    template< typename ... Us >
-    friend class frame_iterator;
-    template< typename ... Us >
-    friend class const_frame_iterator;
-    template< typename ... Us >
-    friend class reverse_frame_iterator;
-    template< typename ... Us >
-    friend class const_reverse_frame_iterator;
-
-    template< 
-        size_t Ind, 
-        template<typename> class OtherIter, 
-        typename U, 
-        typename ... Us >
-    void init_from_other_iter( std::tuple< OtherIter<Ts>...>& otheriters )
-    {
-        OtherIter<U>& oiter = std::get< Ind >( otheriters );
-        Iter<U>& iter = std::get< Ind >( m_iters );
-        iter = Iter<U>( oiter );
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            init_from_other_iter< Ind+1, OtherIter, Us... >( otheriters );
-        }
-    }
-
-    template< size_t Ind >
-    typename std::tuple_element< Ind, std::tuple< Iter<Ts> ... > >::type
-    get_iterator() const
-    {
-        auto& iter = std::get< Ind >( m_iters );
-        return iter;
-    }
-
-    template< size_t Ind >
-    void set_iterator(
-        typename std::tuple_element< Ind, std::tuple< Iter<Ts> ... > >::type it ) 
-    {
-        std::get< Ind >( m_iters ) = it;
-    }
-
-    template< size_t Ind, typename U, typename ... Us >
-    void inc( ptrdiff_t n )
-    {
-        std::get< Ind >( m_iters ) += n;
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            inc< Ind+1, Us... >( n );
-        }
-    }
-
-    template< size_t Ind, typename U, typename ... Us >
-    void dec( ptrdiff_t n )
-    {
-        std::get< Ind >( m_iters ) -= n;
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            dec< Ind+1, Us... >( n );
-        }
-    }
-
-    template< 
-        template<typename> typename ItLeft, 
-        template<typename> typename ItRight, 
-        typename ... Us >
-    friend bool operator==( const frame_iterator_row< ItLeft, Us... >& l, 
-                            const frame_iterator_row< ItRight, Us... >& r );
-    template< 
-        template<typename> typename ItLeft, 
-        template<typename> typename ItRight, 
-        typename ... Us >
-    friend bool operator!=( const frame_iterator_row< ItLeft, Us... >& l, 
-                            const frame_iterator_row< ItRight, Us... >& r );
-    template< 
-        template<typename> typename ItLeft, 
-        template<typename> typename ItRight, 
-        typename ... Us >
-    friend bool operator<=( const frame_iterator_row< ItLeft, Us... >& l, 
-                            const frame_iterator_row< ItRight, Us... >& r );
-    template< 
-        template<typename> typename ItLeft, 
-        template<typename> typename ItRight, 
-        typename ... Us >
-    friend bool operator>=( const frame_iterator_row< ItLeft, Us... >& l, 
-                            const frame_iterator_row< ItRight, Us... >& r );
-    template< 
-        template<typename> typename ItLeft, 
-        template<typename> typename ItRight, 
-        typename ... Us >
-    friend bool operator<( const frame_iterator_row< ItLeft, Us... >& l, 
-                            const frame_iterator_row< ItRight, Us... >& r );
-    template< 
-        template<typename> typename ItLeft, 
-        template<typename> typename ItRight, 
-        typename ... Us >
-    friend bool operator>( const frame_iterator_row< ItLeft, Us... >& l, 
-                            const frame_iterator_row< ItRight, Us... >& r );
-
-    std::tuple< Iter<Ts>... > m_iters;
+    std::tuple< std::optional< Ts >... > m_data;
+    size_t m_pushnext;
 };
 
-template< 
-    template<typename> typename ItLeft, 
-    template<typename> typename ItRight, 
-    typename ... Us >
-bool operator==( const frame_iterator_row< ItLeft, Us... >& l, 
-                 const frame_iterator_row< ItRight, Us... >& r )
+template< typename ... Ts >
+class _row_proxy
 {
-    return l.m_iters == r.m_iters;
-}
+    _row_proxy( const std::tuple<Ts*...>& ptrs )
+        : m_ptrs( ptrs ) 
+    {}
 
-template< 
-    template<typename> typename ItLeft, 
-    template<typename> typename ItRight, 
-    typename ... Us >
-bool operator!=( const frame_iterator_row< ItLeft, Us... >& l, 
-                 const frame_iterator_row< ItRight, Us... >& r )
-{
-    return l.m_iters != r.m_iters;
-}
+    _row_proxy( Ts* ... args )
+        : m_ptrs( args... )
+    {}
 
-template< 
-    template<typename> typename ItLeft, 
-    template<typename> typename ItRight, 
-    typename ... Us >
-bool operator<=( const frame_iterator_row< ItLeft, Us... >& l, 
-                 const frame_iterator_row< ItRight, Us... >& r )
-{
-    return l.m_iters <= r.m_iters;
-}
+    std::tuple< Ts*... > m_ptrs;
+};
 
-template< 
-    template<typename> typename ItLeft, 
-    template<typename> typename ItRight, 
-    typename ... Us >
-bool operator>=( const frame_iterator_row< ItLeft, Us... >& l, 
-                 const frame_iterator_row< ItRight, Us... >& r )
-{
-    return l.m_iters >= r.m_iters;
-}
-
-template< 
-    template<typename> typename ItLeft, 
-    template<typename> typename ItRight, 
-    typename ... Us >
-bool operator<( const frame_iterator_row< ItLeft, Us... >& l, 
-                 const frame_iterator_row< ItRight, Us... >& r )
-{
-    return l.m_iters < r.m_iters;
-}
-
-template< 
-    template<typename> typename ItLeft, 
-    template<typename> typename ItRight, 
-    typename ... Us >
-bool operator>( const frame_iterator_row< ItLeft, Us... >& l, 
-                 const frame_iterator_row< ItRight, Us... >& r )
-{
-    return l.m_iters > r.m_iters;
-}
-
-template< typename T >
-using series_iterator = typename series<T>::iterator;
-
-template< typename T >
-using const_series_iterator = typename series<T>::const_iterator;
-
-template< typename T >
-using reverse_series_iterator = typename series<T>::reverse_iterator;
-
-template< typename T >
-using const_reverse_series_iterator = typename series<T>::const_reverse_iterator;
-
-template< template<typename> class Iter, typename ... Ts >
+template< bool IsConst, bool IsReverse, typename ... Ts >
 class base_frame_iterator
 {
 public:
@@ -255,8 +824,8 @@ public:
 
     base_frame_iterator() = default;
 
-    base_frame_iterator( const std::tuple<Iter<Ts> ...>& its )
-        : m_row( its )
+    base_frame_iterator( const std::tuple<Ts*...>& ptrs )
+        : m_row( ptrs )
     {
     }
 
@@ -281,10 +850,10 @@ public:
         m_row.template dec< 0, Ts... >( n );
     }
 
-    frame_iterator_row< Iter, Ts... >& operator*() { return this->m_row; }
-    const frame_iterator_row< Iter, Ts... >& operator*() const { return this->m_row; }
-    frame_iterator_row< Iter, Ts... >* operator->() { return &this->m_row; }
-    const frame_iterator_row< Iter, Ts... >* operator->() const { return &this->m_row; }
+    frame_row< Ts... >& operator*() { return this->m_row; }
+    const frame_row< Ts... >& operator*() const { return this->m_row; }
+    frame_row< Ts... >* operator->() { return &this->m_row; }
+    const frame_row< Ts... >* operator->() const { return &this->m_row; }
 
 protected:
 
@@ -296,24 +865,15 @@ protected:
         return iter;
     }
 
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator==( const base_frame_iterator< It, Us... >& l, 
-                            const base_frame_iterator< It, Us... >& r );
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator!=( const base_frame_iterator< It, Us... >& l, 
-                            const base_frame_iterator< It, Us... >& r );
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator<=( const base_frame_iterator< It, Us... >& l, 
-                            const base_frame_iterator< It, Us... >& r );
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator>=( const base_frame_iterator< It, Us... >& l, 
-                            const base_frame_iterator< It, Us... >& r );
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator<( const base_frame_iterator< It, Us... >& l, 
-                            const base_frame_iterator< It, Us... >& r );
-    template< template<typename> typename It, typename ... Us >
-    friend bool operator>( const base_frame_iterator< It, Us... >& l, 
-                            const base_frame_iterator< It, Us... >& r );
+    bool operator==( const base_frame_iterator& other ) const
+    {
+    }
+
+    bool operator!=( const base_frame_iterator& other ) const
+    bool operator<=( const base_frame_iterator& other ) const
+    bool operator>=( const base_frame_iterator& other ) const
+    bool operator< ( const base_frame_iterator& other ) const
+    bool operator> ( const base_frame_iterator& other ) const
     template< 
         template<typename> typename ItLeft, 
         template<typename> typename ItRight, 
@@ -322,7 +882,7 @@ protected:
         const base_frame_iterator<ItLeft, Us...>& left,
         const base_frame_iterator<ItRight, Us...>& right );
 
-    frame_iterator_row< Iter, Ts... > m_row;
+    frame_row< Ts... > m_row;
 };
 
 template< 
@@ -348,15 +908,17 @@ public:
 
     frame_iterator( std::tuple<series<Ts>...>& cols, int offset )
     {
-        init_impl<0, Ts...>( cols, offset );
+        std::tuple<Ts*...> ptrs;
+        init_impl<0, Ts...>( cols, ptrs, offset );
+        this->m_row.set_
     }
 
     template< size_t Ind, typename U, typename ... Us >
     void init_impl( std::tuple<series<Ts>...>& cols, int offset )
     {
         series<U>& s = std::get< Ind >( cols );
-        auto begin = s.begin();
-        this->m_row.template set_iterator< Ind >( begin + offset );
+        auto* ptr = s.data();
+        this->m_row.template set_pointer< Ind >( begin + offset );
         if constexpr ( sizeof...( Us ) > 0 ) {
             init_impl< Ind+1, Us... >( cols, offset );
         }
@@ -594,6 +1156,7 @@ bool operator>( const base_frame_iterator< It, Us... >& l,
 {
     return l.m_row > r.m_row;
 }
+#endif
 
 } // namespace mf
 

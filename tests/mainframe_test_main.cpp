@@ -118,6 +118,7 @@ ostream& operator<<( ostream& o, const TestTypeX<X>& tt )
     return o;
 }
 
+#if 0
 TEST_CASE( "ctor" "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
@@ -1237,6 +1238,94 @@ TEST_CASE( "corr()", "[frame]" )
         dout << corr1 << ", " << corr2 << endl;
         REQUIRE( corr1 == corr2 );
     }
+}
+#endif
+
+template< typename T >
+class TD;
+
+TEST_CASE( "frame_row", "[frame]" )
+{
+    //double d1 = 0.1; int i1 = 2; short s1 = 67;
+    //double d2 = 1.3; int i2 = 4; short s2 = 68;
+    //double d3 = 0.1;             short s3 = 67;
+    //                 int i4 = 1;
+    //using T = frame_row<double, int, short>;
+    //T r111{ &d1, &i1, &s1 };
+    //T r111_2{ &d1, &i1, &s1 };
+    //T r222{ &d2, &i2, &s2 };
+    //T r313{ &d3, &i1, &s3 };
+    //T r323{ &d3, &i2, &s3 };
+    //T r142{ &d1, &i4, &s2 };
+    //T r221{ &d2, &i2, &s1 };
+
+    //// simple inequality
+    //REQUIRE( r111 != r222 ); 
+
+    //// equality
+    //REQUIRE( r111 == r111 ); 
+    //REQUIRE( r111 == r111_2 ); 
+    //REQUIRE( r111 == r313 ); 
+    //REQUIRE( r313 == r111 ); 
+
+    //REQUIRE( r111 <= r313 );
+    //REQUIRE( r111 >= r313 );
+
+    //// (0.1,2,67) < (1.3,4,67)
+    //REQUIRE( r111 < r222 ); 
+    //REQUIRE( r222 > r111 ); 
+
+    //REQUIRE( !(r111 < r221) ); 
+    //REQUIRE( r111 <= r221 ); 
+
+    //REQUIRE( !(r111 > r142) );
+    //REQUIRE( !(r111 < r142) );
+    //REQUIRE( !(r111 == r142) );
+    //// (0.1,2,67) >= (0.1,1,67)
+    //REQUIRE( !(r111 >= r142) );
+    //REQUIRE( !(r111 <= r142) );
+    frame_row<double, int> r1{ { 1.0, 2001 } };
+    frame_row<double, int> r2{ { 2.0, 2002 } };
+    frame_row<double, int> r3{ { 3.0, 2003 } };
+    //double d1 = 1.0; int i1 = 1;
+    //_frame_row<double, int> _r2{ &d1, &i1 };
+
+    //vector<double> vd1{ 1.0, 2.0, 3.0 };
+    //vector<int> vi1{ 1, 2, 3 };
+    //tuple<vector<double>,vector<int>> t{ vd1, vi1 };
+    //auto p = pointerize<decltype(t)>::op( t );
+
+    fr<double, int> f1;
+
+    const int NUM = 17;
+    //const int NUM = 16;
+    for ( int i = 0; i < NUM; ++i ) {
+        frame_row< double, int > row { { (double)(NUM-i), NUM-i } };
+        f1.push_back( row );
+    }
+    //f1.push_back( r2 );
+    //f1.push_back( r1 );
+    //f1.push_back( r3 );
+
+    cout << f1 << "\n";
+
+    //frit<double, int> itb = f1.begin(); 
+    //REQUIRE( (itb+1)->at( _c0 ) == 1.0 );
+    //REQUIRE( (itb+1)->at( _c1 ) == 2001 );
+    //REQUIRE( (itb+0)->at( _c0 ) == 2.0 );
+    //REQUIRE( (itb+0)->at( _c1 ) == 2002 );
+    //REQUIRE( (itb+2)->at( _c0 ) == 3.0 );
+    //REQUIRE( (itb+2)->at( _c1 ) == 2003 );
+
+    std::sort( f1.begin(), f1.end() );
+
+    cout << f1 << "\n";
+    //REQUIRE( (itb+0)->at( _c0 ) == 1.0 );
+    //REQUIRE( (itb+0)->at( _c1 ) == 2001 );
+    //REQUIRE( (itb+1)->at( _c0 ) == 2.0 );
+    //REQUIRE( (itb+1)->at( _c1 ) == 2002 );
+    //REQUIRE( (itb+2)->at( _c0 ) == 3.0 );
+    //REQUIRE( (itb+2)->at( _c1 ) == 2003 );
 }
 
 

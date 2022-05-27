@@ -21,6 +21,7 @@ using namespace mf::placeholders;
 template<typename T>
 class TD;
 
+#if 0
 TEST_CASE( "load_csv( istream )", "[frame]" )
 {
     stringstream ss;
@@ -50,3 +51,4 @@ TEST_CASE( "load_csv( istream )", "[frame]" )
     REQUIRE( (f1.begin() + 13)->at( _3 ) == "my friend said, \"crazy, crazy windy!\"" );
 }
 
+#endif

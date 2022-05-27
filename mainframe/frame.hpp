@@ -31,7 +31,7 @@
 
 namespace mf
 {
-
+#if 0
 template< typename ... Ts >
 class frame;
 
@@ -681,7 +681,7 @@ public:
 
     template< template<typename> typename Iter >
     void 
-    push_back( const frame_iterator_row< Iter, Ts... >& fr )
+    push_back( const frame_row< Ts... >& fr )
     {
         push_back_impl<0>( fr );
     }
@@ -995,9 +995,9 @@ private:
         }
     }
 
-    template< size_t Ind, template<typename> typename Iter >
+    template< size_t Ind >
     void 
-    push_back_impl( const frame_iterator_row< Iter, Ts... >& fr )
+    push_back_impl( const frame_row< Ts... >& fr )
     {
         auto elem = fr.template at< Ind >();
         std::get< Ind >( m_columns ).push_back( elem );
@@ -1129,6 +1129,7 @@ std::ostream & operator<<( std::ostream& o, const frame< Ts... >& f )
     o.flags( fl );
     return o;
 }
+#endif
 
 } // namespace mf
 
