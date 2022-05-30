@@ -1295,31 +1295,65 @@ TEST_CASE( "frame_row", "[frame]" )
     //tuple<vector<double>,vector<int>> t{ vd1, vi1 };
     //auto p = pointerize<decltype(t)>::op( t );
 
+    cout << std::boolalpha;
     fr<double, int> f1;
 
     const int NUM = 17;
-    //const int NUM = 16;
+    //const int NUM = 3;
     for ( int i = 0; i < NUM; ++i ) {
         frame_row< double, int > row { { (double)(NUM-i), NUM-i } };
         f1.push_back( row );
     }
-    //f1.push_back( r2 );
-    //f1.push_back( r1 );
-    //f1.push_back( r3 );
 
     cout << f1 << "\n";
-
-    //frit<double, int> itb = f1.begin(); 
-    //REQUIRE( (itb+1)->at( _c0 ) == 1.0 );
-    //REQUIRE( (itb+1)->at( _c1 ) == 2001 );
-    //REQUIRE( (itb+0)->at( _c0 ) == 2.0 );
-    //REQUIRE( (itb+0)->at( _c1 ) == 2002 );
-    //REQUIRE( (itb+2)->at( _c0 ) == 3.0 );
-    //REQUIRE( (itb+2)->at( _c1 ) == 2003 );
 
     std::sort( f1.begin(), f1.end() );
+    
+    cout << f1 << "\n";
+
+    //////frit<double, int> itb = f1.begin(); 
+    //////REQUIRE( (itb+1)->at( _c0 ) == 1.0 );
+    //////REQUIRE( (itb+1)->at( _c1 ) == 2001 );
+    //////REQUIRE( (itb+0)->at( _c0 ) == 2.0 );
+    //////REQUIRE( (itb+0)->at( _c1 ) == 2002 );
+    //////REQUIRE( (itb+2)->at( _c0 ) == 3.0 );
+    //////REQUIRE( (itb+2)->at( _c1 ) == 2003 );
+
+    ////frit<double, int> bit = f1.begin();
+    ////frit<double, int> fbit = bit + 1;
+    ////// cases
+    ////// 1
+    ////{
+    ////    decltype(bit)::value_type row1 = *bit;
+    ////    // row1 has values in it
+    ////    // in this case, row1 must be frame_row
+    ////    auto res1 = ceil( row1.at( _c0 ) );
+    ////    cout << res1 << endl;
+    ////}
+    ////// 2
+    ////{
+    ////    auto& rrow2 = *bit;
+    ////    // row1 has pointers in it to column data
+    ////    // in this case, rrow2 must be _row_proxy
+    ////    auto res2 = ceil( rrow2.at( _c0 ) );
+    ////    cout << res2 << endl;
+    ////}
+    // 3
+    {
+        auto it2 = f1.begin() + 2;
+        auto it4 = f1.begin() + 4;
+        decltype(it2)::value_type temp = *it2;
+        // Somehow temp has actual values in it
+        *it2 = *it4;
+        *it4 = temp;
+    }
+    //////auto c = *fbit;
+    ////cout << bit->at( _c0 ) << ", " << bit->at( _c1 ) << "\n";
+    ////cout << (*bit < *fbit) << "\n";
+    ////fr<double, int>::iterator::value_type rp = *bit;
 
     cout << f1 << "\n";
+
     //REQUIRE( (itb+0)->at( _c0 ) == 1.0 );
     //REQUIRE( (itb+0)->at( _c1 ) == 2001 );
     //REQUIRE( (itb+1)->at( _c0 ) == 2.0 );

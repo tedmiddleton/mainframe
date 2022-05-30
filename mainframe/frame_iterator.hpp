@@ -38,27 +38,31 @@ template< typename ... Ts >
 class frame_row
 {
 public:
-    frame_row( std::tuple<Ts...> args ) : data( args ) {}
+    frame_row( std::tuple<Ts...> args ) 
+        : data( args ) 
+    {
+    }
 
     frame_row( const frame_row& other )
     {
-        init_from_ptrs<0>( other );
-    }
-
-    frame_row& operator=( const frame_row& other )
-    {
-        init_from_ptrs<0>( other );
-        return *this;
+        init<0>( other );
     }
 
     frame_row( const _row_proxy< Ts... >& refs )
     {
-        init_from_ptrs<0>( refs );
+        init<0>( refs );
+    }
+
+    frame_row& operator=( const frame_row& other )
+    {
+        init<0>( other );
+        return *this;
     }
 
     frame_row& operator=( const _row_proxy< Ts... >& refs )
     {
-        init_from_ptrs<0>( refs );
+        init<0>( refs );
+        return *this;
     }
 
     template< size_t Ind >
@@ -95,19 +99,12 @@ public:
 private:
 
     template< size_t Ind, template < typename... > typename Row >
-    void init_from_ptrs( const Row< Ts... >& refs )
+    void init( const Row< Ts... >& refs )
     {
-        if constexpr ( Ind == 0 ) {
-            std::cout << "frame_row::init_from_ptrs( const Row< Ts... >& refs )\n";
-            debug( std::cout );
-            std::cout << " := ";
-            refs.debug( std::cout );
-            std::cout << "\n";
-        }
         columnindex<Ind> ci;
         at( ci ) = refs.at( ci );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            init_from_ptrs<Ind+1>( refs );
+            init<Ind+1>( refs );
         }
     }
 
@@ -120,93 +117,15 @@ class _row_proxy
     template< typename ... Us >
     friend class base_frit;
 
-    _row_proxy( std::tuple<Ts*...> p ) : ptrs( p ) {}
-
+    // Only base_frit should be able to create one of these
     _row_proxy( const _row_proxy& other )
         : ptrs( other.ptrs )
     {
-        std::cout << "_row_proxy::_row_proxy( const _row_proxy& other )\n";
     }
-
-public:
-    _row_proxy& operator=( const _row_proxy& row )
+    
+    void swap_ptrs( _row_proxy& other ) noexcept
     {
-        assign_from_vals_impl<0>( row );
-        return *this;
-    }
-
-    _row_proxy& operator=( const frame_row<Ts...>& vals )
-    {
-        assign_from_vals_impl<0>( vals );
-        return *this;
-    }
-
-    template< size_t Ind >
-    typename detail::pack_element<Ind, Ts...>::type&
-    at( const columnindex<Ind>& )
-    {
-        return *(std::get<Ind>( ptrs ));
-    }
-
-    template< size_t Ind >
-    const typename detail::pack_element<Ind, Ts...>::type&
-    at( const columnindex<Ind>& ) const
-    {
-        return *(std::get<Ind>( ptrs ));
-    }
-
-    template< size_t Ind=0 >
-    bool operator==( const _row_proxy& other ) const
-    {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
-        const T* ptr = std::get<Ind>( ptrs );
-        const T* otherptr = std::get<Ind>( other.ptrs );
-        if ( *ptr == *otherptr ) {
-            if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-                return operator==<Ind+1>( other );
-            }
-            else {
-                return true;
-            }
-        }
-        else {
-            return false;
-        }
-    }
-
-    bool operator!=( const _row_proxy& other ) const
-    {
-        return !(*this == other);
-    }
-
-    // Wrong, kind of, but we'll go with it for now
-    template< size_t Ind=0 >
-    bool operator<( const _row_proxy& other ) const
-    {
-        if constexpr ( Ind == 0 ) {
-            std::cout << "_row_proxy::operator<( const _row_proxy<Ts...>& other ):\n";
-            debug( std::cout );
-            std::cout << " < ";
-            other.debug( std::cout );
-            std::cout << "\n";
-        }
-        columnindex<Ind> ci;
-        const auto& thisval = at( ci );
-        const auto& otherval = other.at( ci );
-        if ( thisval < otherval ) {
-            return true;
-        }
-        else if ( thisval == otherval ) {
-            if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-                return operator< <Ind+1>( other );
-            }
-            else {
-                return false;
-            }
-        }
-        else {
-            return false;
-        }
+        swap( ptrs, other.ptrs );
     }
 
     ptrdiff_t operator-( const _row_proxy& other ) const
@@ -234,6 +153,49 @@ public:
         out += off;
         return out;
     }
+public:
+    _row_proxy( std::tuple<Ts*...> p ) 
+        : ptrs( p ) 
+    {
+    }
+
+    _row_proxy& operator=( const _row_proxy& row )
+    {
+        init<0>( row );
+        return *this;
+    }
+
+    _row_proxy& operator=( const frame_row<Ts...>& vals )
+    {
+        init<0>( vals );
+        return *this;
+    }
+
+    // by-value swap
+    template< size_t Ind = 0 >
+    void swap( _row_proxy& other ) noexcept
+    {
+        columnindex<Ind> ci;
+        ::swap( at( ci ), other.at( ci ) );
+        if constexpr ( Ind + 1 < sizeof...(Ts) ) {
+            swap< Ind + 1 >( other );
+        }
+    }
+
+    template< size_t Ind >
+    typename detail::pack_element<Ind, Ts...>::type&
+    at( const columnindex<Ind>& )
+    {
+        return *(std::get<Ind>( ptrs ));
+    }
+
+    template< size_t Ind >
+    const typename detail::pack_element<Ind, Ts...>::type&
+    at( const columnindex<Ind>& ) const
+    {
+        return *(std::get<Ind>( ptrs ));
+    }
+
 
     template< size_t Ind=0 >
     void debug( std::ostream& o ) const
@@ -254,10 +216,10 @@ public:
 
 private:
     template< size_t Ind, template <typename...> typename Row >
-    void assign_from_vals_impl( const Row<Ts...>& vals )
+    void init( const Row<Ts...>& vals )
     {
         if constexpr ( Ind == 0 ) {
-            std::cout << "_row_proxy::assign_from_vals_impl( const Row<Ts...>& vals )\n";
+            std::cout << "_row_proxy::init( const Row<Ts...>& vals )\n";
             debug( std::cout );
             std::cout << " := ";
             vals.debug( std::cout );
@@ -266,75 +228,116 @@ private:
         columnindex<Ind> ci;
         at( ci ) = vals.at( ci );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            assign_from_vals_impl<Ind+1>( vals );
+            init<Ind+1>( vals );
         }
     }
 
     std::tuple<Ts*...> ptrs;
 };
 
-// This is wrong - but go with it for now anyways
-template< size_t Ind=0, typename ... Ts >
-bool operator<( const frame_row<Ts...>& row, const _row_proxy<Ts...>& proxy )
+// Here we just swap the pointers - swapping iterators is like that
+template< typename ... Ts >
+void swap( mf::base_frit< Ts... >& , mf::base_frit< Ts... >& ) noexcept
 {
-    if constexpr ( Ind == 0 ) {
-        std::cout << 
-            "operator<( const frame_row<Ts...>& row, const _row_proxy<Ts...>& proxy ):\n";
-        row.debug( std::cout );
-        std::cout << " < ";
-        proxy.debug( std::cout );
-        std::cout << "\n";
-    }
+    swap( left, right );
+}
+
+template< typename ... Ts >
+void swap( mf::_row_proxy< Ts... >& left, mf::_row_proxy< Ts... >& right ) noexcept
+{
+    left.swap( right );
+}
+
+template< size_t Ind=0, typename ... Ts >
+bool operator==( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& right )
+{
     columnindex<Ind> ci;
-    const auto& rowval = row.at( ci );
-    const auto& proxyval = proxy.at( ci );
-    if ( rowval < proxyval ) {
-        return true;
-    }
-    else if ( rowval == proxyval ) {
+    const auto& leftval = left.at( ci );
+    const auto& rightval = right.at( ci );
+    if ( leftval == rightval ) {
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            return operator< <Ind+1>( row, proxy );
+            return operator==<Ind+1>( left, right );
         }
         else {
-            // eq
+            return true;
+        }
+    }
+    else {
+        return false;
+    }
+}
+
+template< typename ... Ts >
+bool operator!=( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& right )
+{
+    return !(left == right);
+}
+
+// Wrong, kind of, but we'll go with it for now
+template< size_t Ind=0, typename ... Ts >
+bool operator<( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& right )
+{
+    columnindex<Ind> ci;
+    const auto& leftval = left.at( ci );
+    const auto& rightval = right.at( ci );
+    if ( leftval < rightval ) {
+        return true;
+    }
+    else if ( leftval == rightval ) {
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator< <Ind+1>( left, right );
+        }
+        else {
             return false;
         }
     }
     else {
-        // gt
         return false;
     }
 }
 
 // This is wrong - but go with it for now anyways
 template< size_t Ind=0, typename ... Ts >
-bool operator<( const _row_proxy<Ts...>& proxy, const frame_row<Ts...>& row )
+bool operator<( const frame_row<Ts...>& left, const _row_proxy<Ts...>& right )
 {
-    if constexpr ( Ind == 0 ) {
-        std::cout << 
-            "operator<( const _row_proxy<Ts...>& proxy, const frame_row<Ts...>& row ):\n";
-        proxy.debug( std::cout );
-        std::cout << " < ";
-        row.debug( std::cout );
-        std::cout << "\n";
-    }
     columnindex<Ind> ci;
-    const auto& proxyval = proxy.at( ci );
-    const auto& rowval = row.at( ci );
-    if ( proxyval < rowval ) {
+    const auto& leftval = left.at( ci );
+    const auto& rightval = right.at( ci );
+    if ( leftval < rightval ) {
         return true;
     }
-    else if ( proxyval == rowval ) {
+    else if ( leftval == rightval ) {
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            return operator< <Ind+1>( proxy, row );
+            return operator< <Ind+1>( left, right );
         }
         else {
-            // eq
             return false;
         }
     }
     else {
-        // gt
+        return false;
+    }
+}
+
+// This is wrong - but go with it for now anyways
+template< size_t Ind=0, typename ... Ts >
+bool operator<( const _row_proxy<Ts...>& left, const frame_row<Ts...>& right )
+{
+    columnindex<Ind> ci;
+    const auto& leftval = left.at( ci );
+    const auto& rightval = right.at( ci );
+    if ( leftval < rightval ) {
+        return true;
+    }
+    else if ( leftval == rightval ) {
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator< <Ind+1>( left, right );
+        }
+        else {
+            return false;
+        }
+    }
+    else {
         return false;
     }
 }
@@ -346,6 +349,7 @@ public:
     using iterator_category = std::random_access_iterator_tag;
     using difference_type   = ptrdiff_t;
     using value_type = frame_row<Ts...>;
+    //using value_type = _row_proxy<Ts...>;
     using reference = _row_proxy<Ts...>&;
     using pointer = _row_proxy<Ts...>*;
 
@@ -355,23 +359,28 @@ public:
         std::cout << "base_frit::base_frit( std::tuple<Ts*...> t )\n";
     }
 
-    //base_frit( _row_proxy<Ts...> r )
-    //    : row( r )
-    //{
-    //    std::cout << "base_frit::base_frit( std::tuple<Ts*...> t )\n";
-    //}
+    base_frit( _row_proxy<Ts...> r )
+        : row( r )
+    {
+        std::cout << "base_frit::base_frit( std::tuple<Ts*...> t )\n";
+    }
 
     base_frit( const base_frit& ) = default;
     base_frit& operator=( const base_frit& ) = default;
 
-    reference operator*()
+    reference operator*() const
     {
-        return row;
+        return const_cast<reference>( row );
     }
 
-    pointer operator->()
+    pointer operator->() const
     {
-        return &row;
+        return const_cast<pointer>( &row );
+    }
+
+    void swap( base_frit& other ) noexcept
+    {
+        row.swap_ptrs( other );
     }
 
     base_frit& operator++() 
@@ -428,6 +437,11 @@ public:
     {
         return base_frit( row + (-off) );
     }
+
+private:
+
+    template< typename ... Us >
+    friend void swap( base_frit< Us... >& left, base_frit< Us... >& right ) noexcept;
 
     _row_proxy<Ts...> row;
 };
@@ -490,6 +504,7 @@ template< typename ... Ts >
 class fr
 {
 public:
+    using iterator = frit<Ts...>;
     fr() = default;
 
     frit<Ts...> begin()
