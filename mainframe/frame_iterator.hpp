@@ -173,12 +173,13 @@ public:
 
     // by-value swap
     template< size_t Ind = 0 >
-    void swap( _row_proxy& other ) noexcept
+    void swap_values( _row_proxy& other ) noexcept
     {
+        using std::swap;
         columnindex<Ind> ci;
-        ::swap( at( ci ), other.at( ci ) );
+        swap( at( ci ), other.at( ci ) );
         if constexpr ( Ind + 1 < sizeof...(Ts) ) {
-            swap< Ind + 1 >( other );
+            swap_values< Ind + 1 >( other );
         }
     }
 
@@ -235,17 +236,10 @@ private:
     std::tuple<Ts*...> ptrs;
 };
 
-// Here we just swap the pointers - swapping iterators is like that
-template< typename ... Ts >
-void swap( mf::base_frit< Ts... >& , mf::base_frit< Ts... >& ) noexcept
-{
-    swap( left, right );
-}
-
 template< typename ... Ts >
 void swap( mf::_row_proxy< Ts... >& left, mf::_row_proxy< Ts... >& right ) noexcept
 {
-    left.swap( right );
+    left.swap_values( right );
 }
 
 template< size_t Ind=0, typename ... Ts >
