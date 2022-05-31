@@ -38,15 +38,23 @@ template< typename ... Ts >
 class frame_row
 {
 public:
-    frame_row( std::tuple<Ts...> args ) 
+    using row_type = std::true_type;
+
+    frame_row( const std::tuple<Ts...>& args ) 
         : data( args ) 
-    {
-    }
+    {}
+
+    frame_row( std::tuple<Ts...>&& args ) 
+        : data( std::move( args ) ) 
+    {}
 
     frame_row( const frame_row& other )
-    {
-        init<0>( other );
-    }
+        : data( other.data )
+    {}
+
+    frame_row( frame_row&& other )
+        : data( std::move( other.data ) )
+    {}
 
     frame_row( const _row_proxy< Ts... >& refs )
     {
@@ -56,6 +64,12 @@ public:
     frame_row& operator=( const frame_row& other )
     {
         init<0>( other );
+        return *this;
+    }
+
+    frame_row& operator=( frame_row&& other )
+    {
+        init<0>( std::move( other ) );
         return *this;
     }
 
@@ -108,6 +122,16 @@ private:
         }
     }
 
+    template< size_t Ind, template < typename... > typename Row >
+    void init( Row< Ts... >&& refs )
+    {
+        columnindex<Ind> ci;
+        at( ci ) = std::move( refs.at( ci ) );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            init<Ind+1>( std::move( refs ) );
+        }
+    }
+
     std::tuple<Ts...> data;
 };
 
@@ -154,6 +178,8 @@ class _row_proxy
         return out;
     }
 public:
+    using row_type = std::true_type;
+
     _row_proxy( std::tuple<Ts*...> p ) 
         : ptrs( p ) 
     {
@@ -219,13 +245,6 @@ private:
     template< size_t Ind, template <typename...> typename Row >
     void init( const Row<Ts...>& vals )
     {
-        if constexpr ( Ind == 0 ) {
-            std::cout << "_row_proxy::init( const Row<Ts...>& vals )\n";
-            debug( std::cout );
-            std::cout << " := ";
-            vals.debug( std::cout );
-            std::cout << "\n";
-        }
         columnindex<Ind> ci;
         at( ci ) = vals.at( ci );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
@@ -242,8 +261,11 @@ void swap( mf::_row_proxy< Ts... >& left, mf::_row_proxy< Ts... >& right ) noexc
     left.swap_values( right );
 }
 
-template< size_t Ind=0, typename ... Ts >
-bool operator==( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& right )
+template< size_t Ind=0, typename ... Ts, 
+    template <typename...> typename LRow, template <typename...> typename RRow,
+    typename = std::enable_if_t< LRow<Ts...>::row_type::value && RRow<Ts...>::row_type::value, void >
+>
+bool operator==( const LRow< Ts... >& left, const RRow< Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -261,16 +283,25 @@ bool operator==( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& rig
     }
 }
 
-template< typename ... Ts >
-bool operator!=( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& right )
+template< typename ... Ts, 
+    template <typename...> typename LRow, template <typename...> typename RRow,
+    typename = std::enable_if_t< LRow<Ts...>::row_type::value && RRow<Ts...>::row_type::value, void >
+>
+bool operator!=( const LRow< Ts... >& left, const RRow< Ts... >& right )
 {
     return !(left == right);
 }
 
+
 // Wrong, kind of, but we'll go with it for now
-template< size_t Ind=0, typename ... Ts >
-bool operator<( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& right )
+template< size_t Ind=0, typename ... Ts, 
+    template <typename...> typename LRow, template <typename...> typename RRow,
+    typename = std::enable_if_t< LRow<Ts...>::row_type::value && RRow<Ts...>::row_type::value, void >
+>
+bool operator<( const LRow<Ts...>& left, const RRow<Ts...>& right )
 {
+    static int times = 0;
+    std::cout << "operator<( " << typeid(LRow<Ts...>).name() << ", " << typeid(RRow<Ts...>).name() << ") " << times++ << " times so far.\n";
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
     const auto& rightval = right.at( ci );
@@ -290,19 +321,23 @@ bool operator<( const _row_proxy< Ts... >& left, const _row_proxy< Ts... >& righ
     }
 }
 
-// This is wrong - but go with it for now anyways
-template< size_t Ind=0, typename ... Ts >
-bool operator<( const frame_row<Ts...>& left, const _row_proxy<Ts...>& right )
+template< size_t Ind=0, typename ... Ts, 
+    template <typename...> typename LRow, template <typename...> typename RRow,
+    typename = std::enable_if_t< LRow<Ts...>::row_type::value && RRow<Ts...>::row_type::value, void >
+>
+bool operator>( const LRow< Ts... >& left, const RRow< Ts... >& right )
 {
+    static int times = 0;
+    std::cout << "operator>( " << typeid(LRow<Ts...>).name() << ", " << typeid(RRow<Ts...>).name() << ") " << times++ << " times so far.\n";
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
     const auto& rightval = right.at( ci );
-    if ( leftval < rightval ) {
+    if ( leftval > rightval ) {
         return true;
     }
     else if ( leftval == rightval ) {
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            return operator< <Ind+1>( left, right );
+            return operator> <Ind+1>( left, right );
         }
         else {
             return false;
@@ -313,9 +348,12 @@ bool operator<( const frame_row<Ts...>& left, const _row_proxy<Ts...>& right )
     }
 }
 
-// This is wrong - but go with it for now anyways
-template< size_t Ind=0, typename ... Ts >
-bool operator<( const _row_proxy<Ts...>& left, const frame_row<Ts...>& right )
+// Wrong, kind of, but we'll go with it for now
+template< size_t Ind=0, typename ... Ts, 
+    template <typename...> typename LRow, template <typename...> typename RRow,
+    typename = std::enable_if_t< LRow<Ts...>::row_type::value && RRow<Ts...>::row_type::value, void >
+>
+bool operator<=( const LRow<Ts...>& left, const RRow<Ts...>& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -328,7 +366,32 @@ bool operator<( const _row_proxy<Ts...>& left, const frame_row<Ts...>& right )
             return operator< <Ind+1>( left, right );
         }
         else {
-            return false;
+            return true;
+        }
+    }
+    else {
+        return false;
+    }
+}
+
+template< size_t Ind=0, typename ... Ts, 
+    template <typename...> typename LRow, template <typename...> typename RRow,
+    typename = std::enable_if_t< LRow<Ts...>::row_type::value && RRow<Ts...>::row_type::value, void >
+>
+bool operator>=( const LRow< Ts... >& left, const RRow< Ts... >& right )
+{
+    columnindex<Ind> ci;
+    const auto& leftval = left.at( ci );
+    const auto& rightval = right.at( ci );
+    if ( leftval > rightval ) {
+        return true;
+    }
+    else if ( leftval == rightval ) {
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            return operator> <Ind+1>( left, right );
+        }
+        else {
+            return true;
         }
     }
     else {
@@ -350,13 +413,11 @@ public:
     base_frit( std::tuple<Ts*...> t )
         : row( t )
     {
-        std::cout << "base_frit::base_frit( std::tuple<Ts*...> t )\n";
     }
 
     base_frit( _row_proxy<Ts...> r )
         : row( r )
     {
-        std::cout << "base_frit::base_frit( std::tuple<Ts*...> t )\n";
     }
 
     base_frit( const base_frit& ) = default;
@@ -413,7 +474,6 @@ public:
 
     bool operator<( const base_frit& other ) const
     {
-        std::cout << "base_frit::operator<( const base_frit& ) const\n";
         return row < other.row;
     }
 

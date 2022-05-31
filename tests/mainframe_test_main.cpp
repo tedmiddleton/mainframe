@@ -1244,6 +1244,59 @@ TEST_CASE( "corr()", "[frame]" )
 template< typename T >
 class TD;
 
+template< typename T >
+ostream& operator<<( ostream& o, const vector<T>& v )
+{
+    o << "[ ";
+    for ( unsigned i = 0; i < v.size(); ++i ) {
+        const T& vv = v[i];
+        if ( i == 0 ) {
+            o << vv;
+        }
+        else {
+            o << ", " << vv;
+        }
+    }
+    o << " ]";
+    return o;
+}
+
+template< typename T >
+struct Brack
+{
+    Brack() = default;
+    Brack( T t ) : val( t ) {}
+    Brack( const Brack& ) = default;
+    Brack( Brack&& ) = default;
+    Brack& operator=( const Brack& ) = default;
+    Brack& operator=( Brack&& ) = default;
+
+    T val;
+};
+
+template< typename T >
+ostream& operator<<( ostream& o, const Brack<T>& b )
+{
+    o << "Brack<" << typeid(T).name() << ">{ " << b.val << " }";
+    return o;
+}
+
+template< typename T >
+bool operator<( const Brack<T>& left, const Brack<T>& right )
+{
+    static int times = 0;
+    std::cout << "operator<( " << typeid(Brack<T>).name() << ", " << typeid(Brack<T>).name() << ") " << times++ << " times so far.\n";
+    return left.val < right.val;
+}
+
+template< typename T >
+bool operator>( const Brack<T>& left, const Brack<T>& right )
+{
+    static int times = 0;
+    std::cout << "operator>( " << typeid(Brack<T>).name() << ", " << typeid(Brack<T>).name() << ") " << times++ << " times so far.\n";
+    return left.val > right.val;
+}
+
 TEST_CASE( "frame_row", "[frame]" )
 {
     //double d1 = 0.1; int i1 = 2; short s1 = 67;
@@ -1298,18 +1351,42 @@ TEST_CASE( "frame_row", "[frame]" )
     cout << std::boolalpha;
     fr<double, int> f1;
 
+    vector<Brack<int>> v;
     const int NUM = 17;
     //const int NUM = 3;
     for ( int i = 0; i < NUM; ++i ) {
-        frame_row< double, int > row { { (double)(NUM-i), NUM-i } };
+        frame_row< double, int > row { { (double)(NUM-i), i } };
         f1.push_back( row );
+        v.push_back( NUM-i );
     }
 
     cout << f1 << "\n";
 
-    std::sort( f1.begin(), f1.end() );
+    std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a < b; } );
     
     cout << f1 << "\n";
+
+    std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a > b; } );
+    
+    cout << f1 << "\n";
+
+    //std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a < b; } );
+    
+    //cout << f1 << "\n";
+
+    //std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a.at( _c1 ) < b.at( _c1 ); } );
+
+    //cout << f1 << "\n";
+
+    //cout << v << "\n";
+
+    //std::sort( v.begin(), v.end(), []( auto&a, auto&b ) { return a < b; } );
+
+    //cout << v << "\n";
+
+    //std::sort( v.begin(), v.end(), []( auto&a, auto&b ) { return a > b; } );
+
+    //cout << v << "\n";
 
     //////frit<double, int> itb = f1.begin(); 
     //////REQUIRE( (itb+1)->at( _c0 ) == 1.0 );
@@ -1338,21 +1415,21 @@ TEST_CASE( "frame_row", "[frame]" )
     ////    auto res2 = ceil( rrow2.at( _c0 ) );
     ////    cout << res2 << endl;
     ////}
-    // 3
-    {
-        auto it2 = f1.begin() + 2;
-        auto it4 = f1.begin() + 4;
-        decltype(it2)::value_type temp = *it2;
-        // Somehow temp has actual values in it
-        *it2 = *it4;
-        *it4 = temp;
-    }
+    ////// 3
+    ////{
+    ////    auto it2 = f1.begin() + 2;
+    ////    auto it4 = f1.begin() + 4;
+    ////    decltype(it2)::value_type temp = *it2;
+    ////    // Somehow temp has actual values in it
+    ////    *it2 = *it4;
+    ////    *it4 = temp;
+    ////}
     //////auto c = *fbit;
     ////cout << bit->at( _c0 ) << ", " << bit->at( _c1 ) << "\n";
     ////cout << (*bit < *fbit) << "\n";
     ////fr<double, int>::iterator::value_type rp = *bit;
 
-    cout << f1 << "\n";
+    ////cout << f1 << "\n";
 
     //REQUIRE( (itb+0)->at( _c0 ) == 1.0 );
     //REQUIRE( (itb+0)->at( _c1 ) == 2001 );
