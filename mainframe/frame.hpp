@@ -681,7 +681,7 @@ public:
 
     template< template<typename> typename Iter >
     void 
-    push_back( const frame_iterator_row< Iter, Ts... >& fr )
+    push_back( const _row_proxy< Iter, Ts... >& fr )
     {
         push_back_impl<0>( fr );
     }
@@ -997,7 +997,7 @@ private:
 
     template< size_t Ind, template<typename> typename Iter >
     void 
-    push_back_impl( const frame_iterator_row< Iter, Ts... >& fr )
+    push_back_impl( const _row_proxy< Iter, Ts... >& fr )
     {
         auto elem = fr.template at< Ind >();
         std::get< Ind >( m_columns ).push_back( elem );

@@ -10,6 +10,7 @@
 #include "catch.hpp"
 
 #include "date.h"
+#include "debug_cout.hpp"
 
 #include <mainframe/base.hpp>
 #include <mainframe/csv.hpp>
@@ -41,7 +42,7 @@ TEST_CASE( "load_csv( istream )", "[frame]" )
     ss << "2022/January/14,9.2,7,\"my friend said, \"\"crazy, crazy windy!\"\"\"\n";
 
     auto f1 = load_csv( 4, ss, true );
-    cout << f1;
+    dout << f1;
     REQUIRE( f1.size() == 14 );
     REQUIRE( (f1.begin() + 9)->at( _1 ) == missing );
     REQUIRE( (f1.begin() + 10)->at( _3 ) == missing );
