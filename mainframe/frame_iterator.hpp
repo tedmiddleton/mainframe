@@ -138,45 +138,6 @@ private:
 template< typename ... Ts >
 class _row_proxy
 {
-    template< typename ... Us >
-    friend class base_frit;
-
-    // Only base_frit should be able to create one of these
-    _row_proxy( const _row_proxy& other )
-        : ptrs( other.ptrs )
-    {
-    }
-    
-    void swap_ptrs( _row_proxy& other ) noexcept
-    {
-        swap( ptrs, other.ptrs );
-    }
-
-    ptrdiff_t operator-( const _row_proxy& other ) const
-    {
-        using T = typename detail::pack_element<0, Ts...>::type;
-        const T* ptr = std::get<0>( ptrs );
-        const T* otherptr = std::get<0>( other.ptrs );
-        return ptr - otherptr;
-    }
-
-    template< size_t Ind=0 >
-    void operator+=( ptrdiff_t off )
-    {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
-        T* ptr = std::get<Ind>( ptrs );
-        std::get<Ind>( ptrs ) = ptr + off;
-        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
-            operator+= <Ind+1>( off );
-        }
-    }
-
-    _row_proxy operator+( ptrdiff_t off ) const
-    {
-        _row_proxy out( ptrs );
-        out += off;
-        return out;
-    }
 public:
     using row_type = std::true_type;
 
@@ -242,6 +203,76 @@ public:
     }
 
 private:
+    template< typename ... Us >
+    friend class base_frit;
+
+    // Only base_frit should be able to create one of these
+    _row_proxy( const _row_proxy& other )
+        : ptrs( other.ptrs )
+    {
+    }
+    
+    void swap_ptrs( _row_proxy& other ) noexcept
+    {
+        swap( ptrs, other.ptrs );
+    }
+
+    ptrdiff_t addr_diff( const _row_proxy& other ) const
+    {
+        using T = typename detail::pack_element<0, Ts...>::type;
+        const T* ptr = std::get<0>( ptrs );
+        const T* otherptr = std::get<0>( other.ptrs );
+        return ptr - otherptr;
+    }
+
+    bool addr_eq( const _row_proxy& other ) const
+    {
+        return std::get<0>( ptrs ) == std::get<0>( other.ptrs );
+    }
+
+    bool addr_ne( const _row_proxy& other ) const
+    {
+        return std::get<0>( ptrs ) != std::get<0>( other.ptrs );
+    }
+
+    bool addr_le( const _row_proxy& other ) const
+    {
+        return std::get<0>( ptrs ) <= std::get<0>( other.ptrs );
+    }
+
+    bool addr_lt( const _row_proxy& other ) const
+    {
+        return std::get<0>( ptrs ) < std::get<0>( other.ptrs );
+    }
+
+    bool addr_ge( const _row_proxy& other ) const
+    {
+        return std::get<0>( ptrs ) >= std::get<0>( other.ptrs );
+    }
+
+    bool addr_gt( const _row_proxy& other ) const
+    {
+        return std::get<0>( ptrs ) > std::get<0>( other.ptrs );
+    }
+
+    template< size_t Ind=0 >
+    void operator+=( ptrdiff_t off )
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        T* ptr = std::get<Ind>( ptrs );
+        std::get<Ind>( ptrs ) = ptr + off;
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            operator+= <Ind+1>( off );
+        }
+    }
+
+    _row_proxy new_row_plus_offset( ptrdiff_t off ) const
+    {
+        _row_proxy out( ptrs );
+        out += off;
+        return out;
+    }
+
     template< size_t Ind, template <typename...> typename Row >
     void init( const Row<Ts...>& vals )
     {
@@ -292,6 +323,8 @@ bool operator!=( const LRow< Ts... >& left, const RRow< Ts... >& right )
     return !(left == right);
 }
 
+bool g_trapit = false;
+
 
 // Wrong, kind of, but we'll go with it for now
 template< size_t Ind=0, typename ... Ts, 
@@ -300,8 +333,8 @@ template< size_t Ind=0, typename ... Ts,
 >
 bool operator<( const LRow<Ts...>& left, const RRow<Ts...>& right )
 {
-    static int times = 0;
-    std::cout << "operator<( " << typeid(LRow<Ts...>).name() << ", " << typeid(RRow<Ts...>).name() << ") " << times++ << " times so far.\n";
+    //static int times = 0;
+    //std::cout << "operator<( " << typeid(LRow<Ts...>).name() << ", " << typeid(RRow<Ts...>).name() << ") " << times++ << " times so far.\n";
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
     const auto& rightval = right.at( ci );
@@ -327,8 +360,8 @@ template< size_t Ind=0, typename ... Ts,
 >
 bool operator>( const LRow< Ts... >& left, const RRow< Ts... >& right )
 {
-    static int times = 0;
-    std::cout << "operator>( " << typeid(LRow<Ts...>).name() << ", " << typeid(RRow<Ts...>).name() << ") " << times++ << " times so far.\n";
+    //static int times = 0;
+    //std::cout << "operator>( " << typeid(LRow<Ts...>).name() << ", " << typeid(RRow<Ts...>).name() << ") " << times++ << " times so far.\n";
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
     const auto& rightval = right.at( ci );
@@ -406,7 +439,6 @@ public:
     using iterator_category = std::random_access_iterator_tag;
     using difference_type   = ptrdiff_t;
     using value_type = frame_row<Ts...>;
-    //using value_type = _row_proxy<Ts...>;
     using reference = _row_proxy<Ts...>&;
     using pointer = _row_proxy<Ts...>*;
 
@@ -464,32 +496,47 @@ public:
 
     bool operator==( const base_frit& other ) const
     {
-        return row == other.row;
+        return row.addr_eq( other.row );
     }
 
     bool operator!=( const base_frit& other ) const
     {
-        return row != other.row;
+        return row.addr_ne( other.row );
     }
 
     bool operator<( const base_frit& other ) const
     {
-        return row < other.row;
+        return row.addr_lt( other.row );
+    }
+
+    bool operator>( const base_frit& other ) const
+    {
+        return row.addr_gt( other.row );
+    }
+
+    bool operator<=( const base_frit& other ) const
+    {
+        return row.addr_le( other.row );
+    }
+
+    bool operator>=( const base_frit& other ) const
+    {
+        return row.addr_ge( other.row );
     }
 
     difference_type operator-( const base_frit& other ) const
     {
-        return this->row - other.row;
+        return row.addr_diff( other.row );
     }
 
     base_frit operator+( ptrdiff_t off ) const
     {
-        return base_frit( row + off );
+        return base_frit( row.new_row_plus_offset( off ) );
     }
 
     base_frit operator-( ptrdiff_t off ) const
     {
-        return base_frit( row + (-off) );
+        return base_frit( row.new_row_plus_offset(-off) );
     }
 
 private:

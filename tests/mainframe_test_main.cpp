@@ -1365,19 +1365,47 @@ TEST_CASE( "frame_row", "[frame]" )
     std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a < b; } );
     
     cout << f1 << "\n";
+    //g_trapit = true;
 
-    std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a > b; } );
+    auto fauto = 
+        //[]( auto&a, auto&b ) { 
+        []( _row_proxy<double,int>&a, _row_proxy<double,int>&b ) { 
+            cout << "a=" << typeid(a).name() << ", b=" << typeid(b).name() << "\n";
+            return a > b; 
+        };
+    (void)fauto;
+    struct foo
+    {
+        bool operator()( _row_proxy<double,int>&a, _row_proxy<double,int>&b ) { 
+            return a > b; 
+        }
+        bool operator()( frame_row<double,int>&a, _row_proxy<double,int>&b ) { 
+            return a > b; 
+        }
+        bool operator()( _row_proxy<double,int>&a, frame_row<double,int>&b ) { 
+            return a > b; 
+        }
+    };
+
+    std::sort( f1.begin(), f1.end(), foo{} );
+ 
+    cout << f1 << "\n";
+
+    std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a < b; } );
     
     cout << f1 << "\n";
 
-    //std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a < b; } );
-    
-    //cout << f1 << "\n";
+    std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a.at( _c1 ) < b.at( _c1 ); } );
 
-    //std::sort( f1.begin(), f1.end(), []( auto&a, auto&b ) { return a.at( _c1 ) < b.at( _c1 ); } );
+    cout << f1 << "\n";
 
-    //cout << f1 << "\n";
 
+    //auto vb = v.begin();
+    //auto vb1 = v.begin() + 1;
+    //cout << "*vb = " << *vb << endl;
+    //cout << "*vb1 = " << *vb1 << endl;
+    //cout << "(vb1 < vb) = " << (vb1 < vb) << endl;
+    //cout << "(*vb1 < *vb) = " << (*vb1 < *vb) << endl;
     //cout << v << "\n";
 
     //std::sort( v.begin(), v.end(), []( auto&a, auto&b ) { return a < b; } );
