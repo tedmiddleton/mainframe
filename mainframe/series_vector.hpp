@@ -206,6 +206,8 @@ public:
             this->m_curr -= p; 
         }
     }
+    
+    pointer data() const { return m_curr; }
 
     reference operator*() const { return *this->m_curr; }
     pointer operator->() const { return this->m_curr; }
