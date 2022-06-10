@@ -324,12 +324,13 @@ class frame
 {
 public:
     using iterator = frame_iterator< Ts... >;
-    using const_iterator = const_frame_iterator< Ts... >;
-    using reverse_iterator = reverse_frame_iterator< Ts... >;
-    using const_reverse_iterator = const_reverse_frame_iterator< Ts... >;
+    using const_iterator = frame_iterator< Ts... >;
+    using reverse_iterator = frame_iterator< Ts... >;
+    using const_reverse_iterator = frame_iterator< Ts... >;
+    //using const_iterator = const_frame_iterator< Ts... >;
+    //using reverse_iterator = reverse_frame_iterator< Ts... >;
+    //using const_reverse_iterator = const_reverse_frame_iterator< Ts... >;
     using name_array = std::array< std::string, sizeof...(Ts) >;
-    using variant_type = typename detail::variant_unique<Ts...>::type;
-    using row_type = std::vector<variant_type>;
 
     frame() = default;
     frame( const frame& ) = default;
@@ -578,31 +579,41 @@ public:
     iterator 
     erase( iterator first, iterator last )
     {
-        return erase_impl< 0, Ts... >( first, last );
+        std::tuple<Ts*...> ptrs;
+        erase_impl< 0 >( ptrs, first, last );
+        return iterator{ ptrs };
     }
 
     iterator 
     erase( iterator pos )
     {
-        return erase_impl< 0, Ts... >( pos );
+        std::tuple<Ts*...> ptrs;
+        erase_impl< 0 >( ptrs, pos );
+        return iterator{ ptrs };
     }
 
     iterator 
     insert( iterator pos, const_iterator first, const_iterator last )
     {
-        return insert_impl< 0, Ts... >( pos, first, last );
+        std::tuple<Ts*...> ptrs;
+        insert_impl< 0 >( ptrs, pos, first, last );
+        return iterator{ ptrs };
     }
 
     iterator 
     insert( iterator pos, const Ts&... ts )
     {
-        return insert_impl< 0, Ts... >( pos, 1, ts... );
+        std::tuple<Ts*...> ptrs;
+        insert_impl< 0 >( ptrs, pos, 1, ts... );
+        return iterator{ ptrs };
     }
 
     iterator 
     insert( iterator pos, size_t count, const Ts&... ts )
     {
-        return insert_impl< 0, Ts... >( pos, count, ts... );
+        std::tuple<Ts*...> ptrs;
+        insert_impl< 0 >( ptrs, pos, count, ts... );
+        return iterator{ ptrs };
     }
 
     template< size_t Ind >
@@ -679,9 +690,14 @@ public:
         pop_back_impl<0>();
     }
 
-    template< template<typename> typename Iter >
     void 
-    push_back( const _row_proxy< Iter, Ts... >& fr )
+    push_back( const _row_proxy< Ts... >& fr )
+    {
+        push_back_impl<0>( fr );
+    }
+
+    void 
+    push_back( const frame_row< Ts... >& fr )
     {
         push_back_impl<0>( fr );
     }
@@ -691,32 +707,6 @@ public:
     push_back( U first_arg, V second_arg, Us... args )
     {
         push_back_impl<0, U, V, Us...>( first_arg, second_arg, args... );
-    }
-
-    void
-    push_back( row_type& row )
-    {
-        push_back_impl<0>(row);
-    }
-
-    template<size_t Ind >
-    void
-    push_back_impl( row_type& row ) 
-    {
-        if ( Ind < row.size() ) {
-            variant_type& v = row[Ind];
-            using U = typename detail::pack_element<Ind, Ts...>::type;
-            series<U>& s = std::get<Ind>( m_columns );
-            if ( std::holds_alternative<U>( v ) ) {
-                s.push_back( std::get<U>( v ) );
-            }
-            else {
-                s.push_back( U{} );
-            }
-        }
-        if constexpr ( Ind+1 < sizeof...(Ts) ) {
-            push_back_impl< Ind + 1 >( row );
-        }
     }
 
     void 
@@ -874,39 +864,32 @@ private:
         }
     }
 
-    template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> 
-    erase_impl( iterator pos )
+    template< size_t Ind >
+    void
+    erase_impl( std::tuple<Ts*...>& ptrs, iterator pos )
     {
-        series<U>& s = std::get< Ind >( m_columns );
-        auto column_pos = pos.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.erase( column_pos );
-        frame_iterator<U> out{ std::make_tuple( newcpos ) };
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = erase_impl<Ind+1, Us...>( pos );
-            return out.combine( dstream );
-        }
-        else {
-            return out;
+        columnindex< Ind > ci;
+        auto& s = std::get< Ind >( m_columns );
+        auto column_pos = pos.column_iterator( ci );
+        auto newcpos = s.erase( column_pos );
+        std::get<Ind>( ptrs ) = newcpos.data();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            erase_impl<Ind+1>( ptrs, pos );
         }
     }
 
-    template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> 
-    erase_impl( iterator first, iterator last )
+    template< size_t Ind >
+    void
+    erase_impl( std::tuple<Ts*...>& ptrs, iterator first, iterator last )
     {
-        series<U>& s = std::get< Ind >( m_columns );
-        auto column_first = first.template column_iterator< Ind >();
-        auto column_last = last.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.erase( column_first, column_last );
-        frame_iterator<U> out{ std::make_tuple( newcpos ) };
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = 
-                erase_impl<Ind+1, Us...>( first, last );
-            return out.combine( dstream );
-        }
-        else {
-            return out;
+        columnindex< Ind > ci;
+        auto& s = std::get< Ind >( m_columns );
+        auto column_first = first.column_iterator( ci );
+        auto column_last = last.column_iterator( ci );
+        auto newcpos = s.erase( column_first, column_last );
+        std::get<Ind>( ptrs ) = newcpos.data();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            erase_impl<Ind+1>( ptrs, first, last );
         }
     }
 
@@ -926,43 +909,34 @@ private:
     }
 
     template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> 
-    insert_impl( iterator pos, size_t count, const U& u, const Us& ... us )
+    void
+    insert_impl( std::tuple<Ts*...>& ptrs, iterator pos, size_t count, 
+                 const U& u, const Us& ... us )
     {
-        series<U>& s = std::get< Ind >( m_columns );
-        auto column_pos = pos.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.insert( column_pos, count, u );
-        frame_iterator<U> out{ std::make_tuple( newcpos ) };
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = 
-                insert_impl<Ind+1, Us...>( pos, count, us... );
-            return out.combine( dstream );
-        }
-        else {
-            return out;
+        columnindex<Ind> ci;
+        auto& s = std::get< Ind >( m_columns );
+        auto column_pos = pos.column_iterator( ci );
+        auto newcpos = s.insert( column_pos, count, u );
+        std::get<Ind>( ptrs ) = newcpos.data();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            insert_impl<Ind+1>( ptrs, pos, count, us... );
         }
     }
 
-    template< size_t Ind, typename U, typename ... Us >
-    frame_iterator<U, Us...> 
-    insert_impl( iterator pos, const_iterator first, const_iterator last )
+    template< size_t Ind >
+    void
+    insert_impl( std::tuple<Ts*...>& ptrs, iterator pos, const_iterator first, 
+                 const_iterator last )
     {
-        series<U>& s = std::get< Ind >( m_columns );
-        auto column_pos = pos.template column_iterator< Ind >();
-        auto column_first = first.template column_iterator< Ind >();
-        auto column_last = last.template column_iterator< Ind >();
-        typename series<U>::iterator newcpos = s.insert( 
-            column_pos, 
-            column_first, 
-            column_last
-            );
-        frame_iterator<U> out{ std::make_tuple( newcpos ) };
-        if constexpr ( sizeof...( Us ) > 0 ) {
-            frame_iterator<Us...> dstream = insert_impl<Ind+1, Us...>( pos, first, last );
-            return out.combine( dstream );
-        }
-        else {
-            return out;
+        columnindex< Ind > ci; 
+        auto& s = std::get< Ind >( m_columns );
+        auto column_pos = pos.column_iterator( ci );
+        auto column_first = first.column_iterator( ci );
+        auto column_last = last.column_iterator( ci );
+        auto newcpos = s.insert( column_pos, column_first, column_last );
+        std::get<Ind>( ptrs ) = newcpos.data();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            insert_impl<Ind+1>( ptrs, pos, first, last );
         }
     }
 
@@ -995,11 +969,12 @@ private:
         }
     }
 
-    template< size_t Ind, template<typename> typename Iter >
+    template< size_t Ind >
     void 
-    push_back_impl( const _row_proxy< Iter, Ts... >& fr )
+    push_back_impl( const _row_proxy< Ts... >& fr )
     {
-        auto elem = fr.template at< Ind >();
+        columnindex<Ind> ci;
+        auto& elem = fr.at( ci );
         std::get< Ind >( m_columns ).push_back( elem );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
             push_back_impl< Ind+1 >( fr );
