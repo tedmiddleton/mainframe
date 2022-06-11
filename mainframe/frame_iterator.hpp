@@ -45,18 +45,6 @@ struct pointerize<std::tuple< series<Ts>... >>
 
 };
 
-template< typename T >
-using series_iterator = typename series<T>::iterator;
-
-template< typename T >
-using const_series_iterator = typename series<T>::const_iterator;
-
-template< typename T >
-using reverse_series_iterator = typename series<T>::reverse_iterator;
-
-template< typename T >
-using const_reverse_series_iterator = typename series<T>::const_reverse_iterator;
-
 template< size_t Ind >
 struct expr_column;
 
@@ -232,7 +220,7 @@ public:
 
 private:
 
-    template< typename ... Us >
+    template< bool IsConst, typename ... Us >
     friend class base_frame_iterator;
 
     // Only base_frame_iterator should be able to create one of these
@@ -438,7 +426,7 @@ bool operator>(  const _row_proxy< Ts... >& left,
     }
 }
 
-template< typename ... Ts >
+template< bool IsConst, typename ... Ts >
 class base_frame_iterator
 {
 public:
@@ -540,16 +528,14 @@ public:
 
 private:
 
-    template< typename ... Us >
-    friend void swap( base_frame_iterator< Us... >& left, 
-                      base_frame_iterator< Us... >& right ) noexcept;
-
     _row_proxy< Ts... > m_row;
 };
 
 template< typename ... Ts >
-using frame_iterator = base_frame_iterator< Ts... >;
+using frame_iterator = base_frame_iterator< false, Ts... >;
 
+template< typename ... Ts >
+using const_frame_iterator = base_frame_iterator< true, Ts... >;
 
 } // namespace mf
 
