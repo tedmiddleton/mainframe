@@ -57,55 +57,56 @@ using columnindex = terminal<expr_column<Ind>>;
 template< bool IsConst, typename ... Ts >
 class _row_proxy;
 
-template< typename ... Ts >
-class frame_row
+// IsConstDummy is just for template-template params with _row_proxy
+template< bool IsConstDummy, typename ... Ts >
+class _base_frame_row
 {
 public:
     using row_type = std::true_type;
 
-    frame_row( const std::tuple<Ts...>& args ) 
+    _base_frame_row( const std::tuple<Ts...>& args ) 
         : data( args ) 
     {}
 
-    frame_row( std::tuple<Ts...>&& args ) 
+    _base_frame_row( std::tuple<Ts...>&& args ) 
         : data( std::move( args ) ) 
     {}
 
-    frame_row( const frame_row& other )
+    _base_frame_row( const _base_frame_row& other )
         : data( other.data )
     {}
 
-    frame_row( frame_row&& other )
+    _base_frame_row( _base_frame_row&& other )
         : data( std::move( other.data ) )
     {}
 
     template< bool IsConst >
-    frame_row( const _row_proxy< IsConst, Ts... >& refs )
+    _base_frame_row( const _row_proxy< IsConst, Ts... >& refs )
     {
         init<0>( refs );
     }
 
-    frame_row& operator=( const frame_row& other )
+    _base_frame_row& operator=( const _base_frame_row& other )
     {
         init<0>( other );
         return *this;
     }
 
-    frame_row& operator=( frame_row&& other )
+    _base_frame_row& operator=( _base_frame_row&& other )
     {
         init<0>( std::move( other ) );
         return *this;
     }
 
     template< bool IsConst >
-    frame_row& operator=( const _row_proxy< IsConst, Ts... >& refs )
+    _base_frame_row& operator=( const _row_proxy< IsConst, Ts... >& refs )
     {
         init<0>( refs );
         return *this;
     }
 
     template< size_t Ind >
-    typename detail::pack_element<Ind, Ts...>::type&
+    const typename detail::pack_element<Ind, Ts...>::type&
     at() const
     {
         return std::get<Ind>( data );
@@ -113,7 +114,21 @@ public:
 
     template< size_t Ind >
     typename detail::pack_element<Ind, Ts...>::type&
+    at()
+    {
+        return std::get<Ind>( data );
+    }
+
+    template< size_t Ind >
+    const typename detail::pack_element<Ind, Ts...>::type&
     at( columnindex<Ind> ) const
+    {
+        return std::get<Ind>( data );
+    }
+
+    template< size_t Ind >
+    typename detail::pack_element<Ind, Ts...>::type&
+    at( columnindex<Ind> )
     {
         return std::get<Ind>( data );
     }
@@ -121,7 +136,7 @@ public:
 private:
 
     template< size_t Ind >
-    void init( const frame_row< Ts... >& refs )
+    void init( const _base_frame_row& refs )
     {
         columnindex<Ind> ci;
         at( ci ) = refs.at( ci );
@@ -131,7 +146,7 @@ private:
     }
 
     template< size_t Ind >
-    void init( frame_row< Ts... >&& refs )
+    void init( _base_frame_row&& refs )
     {
         columnindex<Ind> ci;
         at( ci ) = std::move( refs.at( ci ) );
@@ -144,7 +159,7 @@ private:
     void init( const _row_proxy< IsConst, Ts... >& refs )
     {
         columnindex<Ind> ci;
-        at( ci ) = refs.at( ci );
+        std::get<Ind>( data ) = refs.at( ci );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
             init<Ind+1>( refs );
         }
@@ -153,6 +168,9 @@ private:
     std::tuple<Ts...> data;
 };
 
+template< typename ... Ts >
+using frame_row = _base_frame_row< false, Ts... >;
+
 template< bool IsConst, typename ... Ts >
 class _row_proxy
 {
@@ -160,6 +178,12 @@ public:
     using row_type = std::true_type;
 
     _row_proxy& operator=( const _row_proxy& row )
+    {
+        init<0>( row );
+        return *this;
+    }
+
+    _row_proxy& operator=( const frame_row< Ts... >& row )
     {
         init<0>( row );
         return *this;
@@ -317,6 +341,16 @@ private:
         }
     }
 
+    template< size_t Ind >
+    void init( const frame_row<Ts...>& vals )
+    {
+        columnindex<Ind> ci;
+        at( ci ) = vals.at( ci );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            init<Ind+1>( vals );
+        }
+    }
+
     std::tuple< Ts*... > m_ptrs;
 };
 
@@ -327,9 +361,12 @@ void swap( mf::_row_proxy< IsConst, Ts... >& left,
     left.swap_values( right );
 }
 
-template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
-bool operator==( const _row_proxy< LC, Ts... >& left, 
-                 const _row_proxy< RC, Ts... >& right )
+template< size_t Ind=0, 
+          template< bool, typename... > typename LRow,
+          template< bool, typename... > typename RRow,
+          bool LC, bool RC, typename ... Ts >
+bool operator==( const LRow< LC, Ts... >& left, 
+                 const RRow< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -347,16 +384,22 @@ bool operator==( const _row_proxy< LC, Ts... >& left,
     }
 }
 
-template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
-bool operator!=( const _row_proxy< LC, Ts... >& left, 
-                 const _row_proxy< RC, Ts... >& right )
+template< size_t Ind=0, 
+          template< bool, typename... > typename LRow,
+          template< bool, typename... > typename RRow,
+          bool LC, bool RC, typename ... Ts >
+bool operator!=( const LRow< LC, Ts... >& left, 
+                 const RRow< RC, Ts... >& right )
 {
     return !(left == right);
 }
 
-template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
-bool operator<=( const _row_proxy< LC, Ts... >& left, 
-                 const _row_proxy< RC, Ts... >& right )
+template< size_t Ind=0, 
+          template< bool, typename... > typename LRow,
+          template< bool, typename... > typename RRow,
+          bool LC, bool RC, typename ... Ts >
+bool operator<=( const LRow< LC, Ts... >& left, 
+                 const RRow< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -377,9 +420,12 @@ bool operator<=( const _row_proxy< LC, Ts... >& left,
     }
 }
 
-template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
-bool operator>=( const _row_proxy< LC, Ts... >& left, 
-                 const _row_proxy< RC, Ts... >& right )
+template< size_t Ind=0, 
+          template< bool, typename... > typename LRow,
+          template< bool, typename... > typename RRow,
+          bool LC, bool RC, typename ... Ts >
+bool operator>=( const LRow< LC, Ts... >& left, 
+                 const RRow< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -400,9 +446,12 @@ bool operator>=( const _row_proxy< LC, Ts... >& left,
     }
 }
 
-template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
-bool operator<(  const _row_proxy< LC, Ts... >& left, 
-                 const _row_proxy< RC, Ts... >& right )
+template< size_t Ind=0, 
+          template< bool, typename... > typename LRow,
+          template< bool, typename... > typename RRow,
+          bool LC, bool RC, typename ... Ts >
+bool operator<( const LRow< LC, Ts... >& left, 
+                const RRow< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -423,9 +472,12 @@ bool operator<(  const _row_proxy< LC, Ts... >& left,
     }
 }
 
-template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
-bool operator>(  const _row_proxy< LC, Ts... >& left, 
-                 const _row_proxy< RC, Ts... >& right )
+template< size_t Ind=0, 
+          template< bool, typename... > typename LRow,
+          template< bool, typename... > typename RRow,
+          bool LC, bool RC, typename ... Ts >
+bool operator>( const LRow< LC, Ts... >& left, 
+                const RRow< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -470,29 +522,43 @@ public:
         : m_row( r )
     {}
 
-    void operator++() { operator+=( 1 ); }
-    void operator++(int) { operator+=( 1 ); }
-    void operator--() { operator-=( 1 ); }
-    void operator--(int) { operator-=( 1 ); }
+    base_frame_iterator& operator++() { return operator+=( 1 ); }
+    base_frame_iterator& operator++(int) { return operator+=( 1 ); }
+    base_frame_iterator& operator--() { return operator-=( 1 ); }
+    base_frame_iterator& operator--(int) { return operator-=( 1 ); }
 
-    void operator+=( ptrdiff_t n )
+    base_frame_iterator& operator+=( ptrdiff_t n )
     {
-        m_row.addr_modify( n );
+        if constexpr ( IsReverse ) {
+            m_row.addr_modify( -n );
+        }
+        else {
+            m_row.addr_modify( n );
+        }
+        return *this;
     }
-    void operator-=( ptrdiff_t n )
+    base_frame_iterator& operator-=( ptrdiff_t n )
     {
-        m_row.addr_modify( -n );
+        if constexpr ( IsReverse ) {
+            m_row.addr_modify( n );
+        }
+        else {
+            m_row.addr_modify( -n );
+        }
+        return *this;
     }
 
     reference operator*() const { return const_cast<reference>(m_row); }
     pointer operator->() const { return const_cast<pointer>(&m_row); }
 
     template< size_t Ind >
-    base_sv_iterator<typename detail::pack_element< Ind, Ts... >::type, IsConst>
+    base_sv_iterator<
+        typename detail::pack_element< Ind, Ts... >::type, 
+        IsConst, IsReverse>
     column_iterator( columnindex< Ind > ci ) const
     {
         using T = typename detail::pack_element< Ind, Ts... >::type;
-        base_sv_iterator<T, IsConst> it{ m_row.data( ci ) };
+        base_sv_iterator<T, IsConst, IsReverse> it{ m_row.data( ci ) };
         return it;
     }
 
@@ -513,37 +579,72 @@ public:
 
     bool operator<( const base_frame_iterator& other ) const
     {
-        return m_row.addr_lt( other.m_row );
+        if constexpr ( IsReverse ) {
+            return m_row.addr_gt( other.m_row );
+        }
+        else {
+            return m_row.addr_lt( other.m_row );
+        }
     }
 
     bool operator>( const base_frame_iterator& other ) const
     {
-        return m_row.addr_gt( other.m_row );
+        if constexpr ( IsReverse ) {
+            return m_row.addr_lt( other.m_row );
+        }
+        else {
+            return m_row.addr_gt( other.m_row );
+        }
     }
 
     bool operator<=( const base_frame_iterator& other ) const
     {
-        return m_row.addr_le( other.m_row );
+        if constexpr ( IsReverse ) {
+            return m_row.addr_ge( other.m_row );
+        }
+        else {
+            return m_row.addr_le( other.m_row );
+        }
     }
 
     bool operator>=( const base_frame_iterator& other ) const
     {
-        return m_row.addr_ge( other.m_row );
+        if constexpr ( IsReverse ) {
+            return m_row.addr_le( other.m_row );
+        }
+        else {
+            return m_row.addr_ge( other.m_row );
+        }
     }
 
     difference_type operator-( const base_frame_iterator& other ) const
     {
-        return m_row.addr_diff( other.m_row );
+        if constexpr ( IsReverse ) {
+            return -m_row.addr_diff( other.m_row );
+        }
+        else {
+            return m_row.addr_diff( other.m_row );
+        }
     }
 
     base_frame_iterator operator+( ptrdiff_t off ) const
     {
-        return base_frame_iterator( m_row.new_row_plus_offset( off ) );
+        if constexpr ( IsReverse ) {
+            return base_frame_iterator( m_row.new_row_plus_offset(-off) );
+        }
+        else {
+            return base_frame_iterator( m_row.new_row_plus_offset( off ) );
+        }
     }
 
     base_frame_iterator operator-( ptrdiff_t off ) const
     {
-        return base_frame_iterator( m_row.new_row_plus_offset(-off) );
+        if constexpr ( IsReverse ) {
+            return base_frame_iterator( m_row.new_row_plus_offset( off ) );
+        }
+        else {
+            return base_frame_iterator( m_row.new_row_plus_offset(-off) );
+        }
     }
 
 private:
@@ -559,6 +660,9 @@ using const_frame_iterator = base_frame_iterator< true, false, Ts... >;
 
 template< typename ... Ts >
 using reverse_frame_iterator = base_frame_iterator< false, true, Ts... >;
+
+template< typename ... Ts >
+using const_reverse_frame_iterator = base_frame_iterator< true, true, Ts... >;
 
 } // namespace mf
 

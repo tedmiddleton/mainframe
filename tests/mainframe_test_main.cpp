@@ -195,6 +195,9 @@ TEST_CASE( "begin()/end()", "[frame]" )
     REQUIRE( f1i->at(_2) == true );
 }
 
+template< typename T >
+class TD;
+
 TEST_CASE( "rbegin()/rend()", "[frame]" )
 {
     frame<year_month_day, double, bool> f1;
@@ -1253,7 +1256,13 @@ TEST_CASE( "std::sort", "[frame]" )
     f1.push_back( 2022_y/January/1, 8.9,  10 );
     f1.push_back( 2022_y/January/2, 10.0, 10 );
 
-    //std::sort( f1.begin(), f1.end() );
+    frame_row<year_month_day, double, int> fr = *(f1.begin());
+    (void)fr;
+    _row_proxy<false, year_month_day, double, int> &rp = *f1.begin();
+    (void)rp;
+    dout << "fr==rp: " << (rp == fr) << "\n";
+
+    std::sort( f1.begin(), f1.end() );
 
     auto it = f1.cbegin();
     REQUIRE( (it + 0)->at( _0 ) == 2022_y/January/1 );
