@@ -690,8 +690,9 @@ public:
         pop_back_impl<0>();
     }
 
+    template< bool IsConst >
     void 
-    push_back( const _row_proxy< Ts... >& fr )
+    push_back( const _row_proxy< IsConst, Ts... >& fr )
     {
         push_back_impl<0>( fr );
     }
@@ -969,12 +970,12 @@ private:
         }
     }
 
-    template< size_t Ind >
+    template< size_t Ind, bool IsConst >
     void 
-    push_back_impl( const _row_proxy< Ts... >& fr )
+    push_back_impl( const _row_proxy< IsConst, Ts... >& fr )
     {
         columnindex<Ind> ci;
-        auto& elem = fr.at( ci );
+        const auto& elem = fr.at( ci );
         std::get< Ind >( m_columns ).push_back( elem );
         if constexpr ( Ind+1 < sizeof...( Ts ) ) {
             push_back_impl< Ind+1 >( fr );

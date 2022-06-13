@@ -54,7 +54,7 @@ struct terminal;
 template< size_t Ind >
 using columnindex = terminal<expr_column<Ind>>;
 
-template< typename ... Ts >
+template< bool IsConst, typename ... Ts >
 class _row_proxy;
 
 template< typename ... Ts >
@@ -79,7 +79,8 @@ public:
         : data( std::move( other.data ) )
     {}
 
-    frame_row( const _row_proxy< Ts... >& refs )
+    template< bool IsConst >
+    frame_row( const _row_proxy< IsConst, Ts... >& refs )
     {
         init<0>( refs );
     }
@@ -96,7 +97,8 @@ public:
         return *this;
     }
 
-    frame_row& operator=( const _row_proxy< Ts... >& refs )
+    template< bool IsConst >
+    frame_row& operator=( const _row_proxy< IsConst, Ts... >& refs )
     {
         init<0>( refs );
         return *this;
@@ -118,8 +120,8 @@ public:
 
 private:
 
-    template< size_t Ind, template < typename... > typename Row >
-    void init( const Row< Ts... >& refs )
+    template< size_t Ind >
+    void init( const frame_row< Ts... >& refs )
     {
         columnindex<Ind> ci;
         at( ci ) = refs.at( ci );
@@ -128,8 +130,8 @@ private:
         }
     }
 
-    template< size_t Ind, template < typename... > typename Row >
-    void init( Row< Ts... >&& refs )
+    template< size_t Ind >
+    void init( frame_row< Ts... >&& refs )
     {
         columnindex<Ind> ci;
         at( ci ) = std::move( refs.at( ci ) );
@@ -138,10 +140,20 @@ private:
         }
     }
 
+    template< size_t Ind, bool IsConst >
+    void init( const _row_proxy< IsConst, Ts... >& refs )
+    {
+        columnindex<Ind> ci;
+        at( ci ) = refs.at( ci );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            init<Ind+1>( refs );
+        }
+    }
+
     std::tuple<Ts...> data;
 };
 
-template< typename ... Ts >
+template< bool IsConst, typename ... Ts >
 class _row_proxy
 {
 public:
@@ -170,28 +182,36 @@ public:
     }
 
     template< size_t Ind >
-    typename detail::pack_element< Ind, Ts...>::type&
+    typename std::conditional< IsConst, 
+        const typename detail::pack_element< Ind, Ts...>::type&,
+        typename detail::pack_element< Ind, Ts...>::type& >::type
     at() const
     {
         return *std::get<Ind>( m_ptrs );
     }
 
     template< size_t Ind >
-    typename detail::pack_element< Ind, Ts...>::type&
+    typename std::conditional< IsConst, 
+        const typename detail::pack_element< Ind, Ts...>::type&,
+        typename detail::pack_element< Ind, Ts...>::type& >::type
     at( columnindex<Ind> ) const
     {
         return *std::get<Ind>( m_ptrs );
     }
 
     template< size_t Ind >
-    typename detail::pack_element< Ind, Ts...>::type&
+    typename std::conditional< IsConst, 
+        const typename detail::pack_element< Ind, Ts...>::type&,
+        typename detail::pack_element< Ind, Ts...>::type& >::type
     operator[]( columnindex<Ind> ) const
     {
         return *std::get<Ind>( m_ptrs );
     }
 
     template< size_t Ind >
-    typename detail::pack_element< Ind, Ts...>::type*
+    typename std::conditional< IsConst, 
+        const typename detail::pack_element< Ind, Ts...>::type*,
+        typename detail::pack_element< Ind, Ts...>::type* >::type
     data( columnindex<Ind> ) const
     {
         return std::get<Ind>( m_ptrs );
@@ -220,7 +240,7 @@ public:
 
 private:
 
-    template< bool IsConst, typename ... Us >
+    template< bool IC, typename ... Us >
     friend class base_frame_iterator;
 
     // Only base_frame_iterator should be able to create one of these
@@ -288,8 +308,8 @@ private:
         return out;
     }
 
-    template< size_t Ind, template <typename...> typename Row >
-    void init( const Row<Ts...>& vals )
+    template< size_t Ind >
+    void init( const _row_proxy& vals )
     {
         columnindex<Ind> ci;
         at( ci ) = vals.at( ci );
@@ -301,15 +321,16 @@ private:
     std::tuple< Ts*... > m_ptrs;
 };
 
-template< typename ... Ts >
-void swap( mf::_row_proxy< Ts... >& left, mf::_row_proxy< Ts... >& right ) noexcept
+template< bool IsConst, typename ... Ts >
+void swap( mf::_row_proxy< IsConst, Ts... >& left, 
+           mf::_row_proxy< IsConst, Ts... >& right ) noexcept
 {
     left.swap_values( right );
 }
 
-template< size_t Ind=0, typename ... Ts >
-bool operator==( const _row_proxy< Ts... >& left, 
-                 const _row_proxy< Ts... >& right )
+template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
+bool operator==( const _row_proxy< LC, Ts... >& left, 
+                 const _row_proxy< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -327,16 +348,16 @@ bool operator==( const _row_proxy< Ts... >& left,
     }
 }
 
-template< size_t Ind=0, typename ... Ts >
-bool operator!=( const _row_proxy< Ts... >& left, 
-                 const _row_proxy< Ts... >& right )
+template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
+bool operator!=( const _row_proxy< LC, Ts... >& left, 
+                 const _row_proxy< RC, Ts... >& right )
 {
     return !(left == right);
 }
 
-template< size_t Ind=0, typename ... Ts >
-bool operator<=( const _row_proxy< Ts... >& left, 
-                 const _row_proxy< Ts... >& right )
+template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
+bool operator<=( const _row_proxy< LC, Ts... >& left, 
+                 const _row_proxy< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -357,9 +378,9 @@ bool operator<=( const _row_proxy< Ts... >& left,
     }
 }
 
-template< size_t Ind=0, typename ... Ts >
-bool operator>=( const _row_proxy< Ts... >& left, 
-                 const _row_proxy< Ts... >& right )
+template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
+bool operator>=( const _row_proxy< LC, Ts... >& left, 
+                 const _row_proxy< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -380,9 +401,9 @@ bool operator>=( const _row_proxy< Ts... >& left,
     }
 }
 
-template< size_t Ind=0, typename ... Ts >
-bool operator<(  const _row_proxy< Ts... >& left, 
-                 const _row_proxy< Ts... >& right )
+template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
+bool operator<(  const _row_proxy< LC, Ts... >& left, 
+                 const _row_proxy< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -403,9 +424,9 @@ bool operator<(  const _row_proxy< Ts... >& left,
     }
 }
 
-template< size_t Ind=0, typename ... Ts >
-bool operator>(  const _row_proxy< Ts... >& left, 
-                 const _row_proxy< Ts... >& right )
+template< size_t Ind=0, bool LC, bool RC, typename ... Ts >
+bool operator>(  const _row_proxy< LC, Ts... >& left, 
+                 const _row_proxy< RC, Ts... >& right )
 {
     columnindex<Ind> ci;
     const auto& leftval = left.at( ci );
@@ -433,8 +454,8 @@ public:
     using iterator_category = std::random_access_iterator_tag;
     using difference_type   = ptrdiff_t;
     using value_type = frame_row<Ts...>;
-    using reference = _row_proxy<Ts...>&;
-    using pointer = _row_proxy<Ts...>*;
+    using reference = _row_proxy<IsConst, Ts...>&;
+    using pointer = _row_proxy<IsConst, Ts...>*;
 
     base_frame_iterator() = default;
 
@@ -446,7 +467,7 @@ public:
         : m_row( ptrs )
     {}
 
-    base_frame_iterator( _row_proxy<Ts...> r )
+    base_frame_iterator( _row_proxy<IsConst, Ts...> r )
         : m_row( r )
     {}
 
@@ -528,7 +549,7 @@ public:
 
 private:
 
-    _row_proxy< Ts... > m_row;
+    _row_proxy< IsConst, Ts... > m_row;
 };
 
 template< typename ... Ts >
