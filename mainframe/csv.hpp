@@ -46,37 +46,37 @@ public:
 
     template< size_t NumColumns >
     static typename detail::make_string_frame< NumColumns >::type
-    load( std::istream& stream, bool header_row )
+    load( std::istream& /*stream*/, bool /*header_row*/ )
     {
         using frame_type = typename detail::make_string_frame< NumColumns >::type;
         frame_type out;
-        using row_type = typename frame_type::row_type;
-        if ( header_row ) {
+        //using row_type = typename frame_type::row_type;
+        //if ( header_row ) {
 
-            std::string line; 
-            std::getline(stream, line);
-            std::vector<mi<std::string>> elems;
-            if ( !parse_line( line, elems ) ) {
-                out.clear();
-                return out;
-            }
-            std::array<std::string, NumColumns> column_names;
-            for (size_t i = 0; i < elems.size(); ++i ) {
-                auto& elem = elems[i];
-                if (elem.has_value()) {
-                    column_names[i] = *elem;
-                } 
-            }
-            out.set_column_names(column_names);
-        }
-        for ( std::string line; std::getline( stream, line );  ) {
-            row_type elems;
-            if ( !parse_line( line, elems ) ) {
-                out.clear();
-                return out;
-            }
-            out.push_back(elems);
-        }
+        //    std::string line; 
+        //    std::getline(stream, line);
+        //    std::vector<mi<std::string>> elems;
+        //    if ( !parse_line( line, elems ) ) {
+        //        out.clear();
+        //        return out;
+        //    }
+        //    std::array<std::string, NumColumns> column_names;
+        //    for (size_t i = 0; i < elems.size(); ++i ) {
+        //        auto& elem = elems[i];
+        //        if (elem.has_value()) {
+        //            column_names[i] = *elem;
+        //        } 
+        //    }
+        //    out.set_column_names(column_names);
+        //}
+        //for ( std::string line; std::getline( stream, line );  ) {
+        //    row_type elems;
+        //    if ( !parse_line( line, elems ) ) {
+        //        out.clear();
+        //        return out;
+        //    }
+        //    out.push_back(elems);
+        //}
         return out;
     }
 
