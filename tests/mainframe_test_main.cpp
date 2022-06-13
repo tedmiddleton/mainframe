@@ -1242,6 +1242,39 @@ TEST_CASE( "corr()", "[frame]" )
     }
 }
 
+TEST_CASE( "std::sortw", "[frame]" )
+{
+    frame<year_month_day> f1;
+    f1.set_column_names( "date" );
+    //f1.push_back( 2022_y/January/8 );
+    //f1.push_back( 2022_y/January/9 );
+    //f1.push_back( 2022_y/January/5 );
+    //f1.push_back( 2022_y/January/6 );
+    //f1.push_back( 2022_y/January/3 );
+    //f1.push_back( 2022_y/January/4 );
+    //f1.push_back( 2022_y/January/7 );
+    //f1.push_back( 2022_y/January/1 );
+    //f1.push_back( 2022_y/January/2 );
+
+    f1.push_back( 2022_y/January/3 );
+    f1.push_back( 2022_y/January/1 );
+    f1.push_back( 2022_y/January/2 );
+    dout << f1;
+    std::sort( f1.begin(), f1.end() );
+    dout << f1;
+
+    //auto it = f1.cbegin();
+    //REQUIRE( (it + 0)->at( _0 ) == 2022_y/January/1 );
+    //REQUIRE( (it + 1)->at( _0 ) == 2022_y/January/2 );
+    //REQUIRE( (it + 2)->at( _0 ) == 2022_y/January/3 );
+    //REQUIRE( (it + 3)->at( _0 ) == 2022_y/January/4 );
+    //REQUIRE( (it + 4)->at( _0 ) == 2022_y/January/5 );
+    //REQUIRE( (it + 5)->at( _0 ) == 2022_y/January/6 );
+    //REQUIRE( (it + 6)->at( _0 ) == 2022_y/January/7 );
+    //REQUIRE( (it + 7)->at( _0 ) == 2022_y/January/8 );
+    //REQUIRE( (it + 8)->at( _0 ) == 2022_y/January/9 );
+}
+
 TEST_CASE( "std::sort", "[frame]" )
 {
     frame<year_month_day, double, int> f1;
@@ -1256,13 +1289,9 @@ TEST_CASE( "std::sort", "[frame]" )
     f1.push_back( 2022_y/January/1, 8.9,  10 );
     f1.push_back( 2022_y/January/2, 10.0, 10 );
 
-    frame_row<year_month_day, double, int> fr = *(f1.begin());
-    (void)fr;
-    _row_proxy<false, year_month_day, double, int> &rp = *f1.begin();
-    (void)rp;
-    dout << "fr==rp: " << (rp == fr) << "\n";
-
+    dout << f1;
     std::sort( f1.begin(), f1.end() );
+    dout << f1;
 
     auto it = f1.cbegin();
     REQUIRE( (it + 0)->at( _0 ) == 2022_y/January/1 );

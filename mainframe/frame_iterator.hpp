@@ -66,41 +66,43 @@ public:
 
     _base_frame_row( const std::tuple<Ts...>& args ) 
         : data( args ) 
-    {}
+    {
+        std::cout << __PRETTY_FUNCTION__ << "\n";
+    }
 
     _base_frame_row( std::tuple<Ts...>&& args ) 
         : data( std::move( args ) ) 
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
 
     _base_frame_row( const _base_frame_row& other )
         : data( other.data )
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
 
     _base_frame_row( _base_frame_row&& other )
         : data( std::move( other.data ) )
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
 
     template< bool IsConst >
     _base_frame_row( const _row_proxy< IsConst, Ts... >& refs )
-    {
+    {std::cout << __PRETTY_FUNCTION__ << "\n";
         init<0>( refs );
     }
 
     _base_frame_row& operator=( const _base_frame_row& other )
-    {
+    {std::cout << __PRETTY_FUNCTION__ << "\n";
         init<0>( other );
         return *this;
     }
 
     _base_frame_row& operator=( _base_frame_row&& other )
-    {
+    {std::cout << __PRETTY_FUNCTION__ << "\n";
         init<0>( std::move( other ) );
         return *this;
     }
 
     template< bool IsConst >
     _base_frame_row& operator=( const _row_proxy< IsConst, Ts... >& refs )
-    {
+    {std::cout << __PRETTY_FUNCTION__ << "\n";
         init<0>( refs );
         return *this;
     }
@@ -178,13 +180,13 @@ public:
     using row_type = std::true_type;
 
     _row_proxy& operator=( const _row_proxy& row )
-    {
+    {std::cout << __PRETTY_FUNCTION__ << "\n";
         init<0>( row );
         return *this;
     }
 
     _row_proxy& operator=( const frame_row< Ts... >& row )
-    {
+    {std::cout << __PRETTY_FUNCTION__ << "\n";
         init<0>( row );
         return *this;
     }
@@ -266,11 +268,11 @@ private:
     // Only base_frame_iterator should be able to create one of these
     _row_proxy( std::tuple< Ts*... > p ) 
         : m_ptrs( p ) 
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
 
     _row_proxy( const _row_proxy& other )
         : m_ptrs( other.m_ptrs )
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
     
     void swap_ptrs( _row_proxy& other ) noexcept
     {
@@ -507,20 +509,26 @@ public:
     using value_type = frame_row<Ts...>;
     using reference = _row_proxy<IsConst, Ts...>&;
     using pointer = _row_proxy<IsConst, Ts...>*;
+    using const_reference = const _row_proxy<IsConst, Ts...>&;
+    using const_pointer = const _row_proxy<IsConst, Ts...>*;
 
-    base_frame_iterator() = default;
+    //base_frame_iterator() = default;
+    base_frame_iterator()
+    {
+std::cout << __PRETTY_FUNCTION__ << "\n";
+    }
 
     base_frame_iterator( const std::tuple<series<Ts>...>& data, difference_type off = 0 )
         : m_row( pointerize<std::tuple<series<Ts>...>>::op( const_cast< std::tuple<series<Ts>...>&>(data), off ) )
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
 
     base_frame_iterator( std::tuple<Ts*...> ptrs )
         : m_row( ptrs )
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
 
     base_frame_iterator( _row_proxy<IsConst, Ts...> r )
         : m_row( r )
-    {}
+    {std::cout << __PRETTY_FUNCTION__ << "\n";}
 
     base_frame_iterator& operator++() { return operator+=( 1 ); }
     base_frame_iterator& operator++(int) { return operator+=( 1 ); }
@@ -548,8 +556,10 @@ public:
         return *this;
     }
 
-    reference operator*() const { return const_cast<reference>(m_row); }
-    pointer operator->() const { return const_cast<pointer>(&m_row); }
+    reference operator*() { return m_row; }
+    const_reference operator*() const { return m_row; }
+    pointer operator->() { return &m_row; }
+    const_pointer operator->() const { return &m_row; }
 
     template< size_t Ind >
     base_sv_iterator<
