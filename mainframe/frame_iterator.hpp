@@ -13,7 +13,7 @@
 namespace mf
 {
 
-template< typename ... Ts >
+template< typename T >
 struct pointerize;
 
 template< typename ... Ts >

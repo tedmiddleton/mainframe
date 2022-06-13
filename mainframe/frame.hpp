@@ -700,11 +700,11 @@ public:
         push_back_impl<0>( fr );
     }
 
-    template< typename U, typename V, typename ...Us >
-    void 
-    push_back( U first_arg, V second_arg, Us... args )
+    template< typename U, typename ...Us >
+    void
+    push_back( U first_arg, Us... args )
     {
-        push_back_impl<0, U, V, Us...>( first_arg, second_arg, args... );
+        push_back_impl<0, U, Us...>( first_arg, args... );
     }
 
     void 
