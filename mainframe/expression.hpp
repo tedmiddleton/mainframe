@@ -151,12 +151,13 @@ struct expr_column
         return indexed_expr_column<Ind>{ off };
     }
 
-    template< template <bool, typename...> typename Iter, bool IsConst, typename ... Ts >
+    template< template <bool, bool, typename...> typename Iter, 
+        bool IsConst, bool IsReverse, typename ... Ts >
     typename detail::pack_element<Ind, Ts...>::type
     operator()( 
-        const Iter< IsConst, Ts... >&,
-        const Iter< IsConst, Ts... >& curr, 
-        const Iter< IsConst, Ts... >&
+        const Iter< IsConst, IsReverse, Ts... >&,
+        const Iter< IsConst, IsReverse, Ts... >& curr, 
+        const Iter< IsConst, IsReverse, Ts... >&
         ) const
     {
         return curr->template at<Ind>();
@@ -176,12 +177,13 @@ struct indexed_expr_column
     indexed_expr_column& operator=( const indexed_expr_column& ) = default;
     indexed_expr_column& operator=( indexed_expr_column&& ) = default;
 
-    template< template <bool, typename...> typename Iter, bool IsConst, typename ... Ts >
+    template< template <bool, bool, typename...> typename Iter, 
+        bool IsConst, bool IsReverse, typename ... Ts >
     typename detail::ensure_missing<typename detail::pack_element<Ind, Ts...>::type>::type
     operator()( 
-        const Iter< IsConst, Ts... >& begin,
-        const Iter< IsConst, Ts... >& curr, 
-        const Iter< IsConst, Ts... >& end
+        const Iter< IsConst, IsReverse, Ts... >& begin,
+        const Iter< IsConst, IsReverse, Ts... >& curr, 
+        const Iter< IsConst, IsReverse, Ts... >& end
         ) const
     {
         using T = typename detail::pack_element<Ind, Ts...>::type;
@@ -209,11 +211,12 @@ struct terminal
 
     terminal( T _t ) : t( _t ) {}
 
-    template< template <bool, typename...> typename Iter, bool IsConst, typename ... Ts >
+    template< template <bool, bool, typename...> typename Iter, 
+        bool IsConst, bool IsReverse, typename ... Ts >
     T operator()( 
-        const Iter< IsConst, Ts... >&,
-        const Iter< IsConst, Ts... >&, 
-        const Iter< IsConst, Ts... >&
+        const Iter< IsConst, IsReverse, Ts... >&,
+        const Iter< IsConst, IsReverse, Ts... >&, 
+        const Iter< IsConst, IsReverse, Ts... >&
         ) const
     {
         return t;
@@ -231,12 +234,13 @@ struct terminal< indexed_expr_column<Ind> >
     terminal() = default;
     terminal( indexed_expr_column<Ind> _t ) : t( _t ) {}
 
-    template< template <bool, typename...> typename Iter, bool IsConst, typename ... Ts >
+    template< template <bool, bool, typename...> typename Iter, 
+        bool IsConst, bool IsReverse, typename ... Ts >
     typename detail::ensure_missing<typename detail::pack_element<Ind, Ts...>::type>::type
     operator()( 
-        const Iter< IsConst, Ts... >& begin,
-        const Iter< IsConst, Ts... >& curr, 
-        const Iter< IsConst, Ts... >& end 
+        const Iter< IsConst, IsReverse, Ts... >& begin,
+        const Iter< IsConst, IsReverse, Ts... >& curr, 
+        const Iter< IsConst, IsReverse, Ts... >& end 
         ) const
     {
         return t.operator()( begin, curr, end );
@@ -254,12 +258,13 @@ struct terminal< expr_column<Ind> >
     terminal() = default;
     terminal( expr_column<Ind> _t ) : t( _t ) {}
 
-    template< template <bool, typename...> typename Iter, bool IsConst, typename ... Ts >
+    template< template <bool, bool, typename...> typename Iter, 
+        bool IsConst, bool IsReverse, typename ... Ts >
     typename detail::pack_element<Ind, Ts...>::type
     operator()( 
-        const Iter< IsConst, Ts... >& begin,
-        const Iter< IsConst, Ts... >& curr, 
-        const Iter< IsConst, Ts... >& end 
+        const Iter< IsConst, IsReverse, Ts... >& begin,
+        const Iter< IsConst, IsReverse, Ts... >& curr, 
+        const Iter< IsConst, IsReverse, Ts... >& end 
         ) const
     {
         return t.operator()( begin, curr, end );
@@ -282,11 +287,12 @@ struct binary_expr
 
     binary_expr( L _l, R _r ) : l( _l ), r( _r ) {}
 
-    template< template <bool, typename...> typename Iter, bool IsConst, typename ... Ts >
+    template< template <bool, bool, typename...> typename Iter, 
+        bool IsConst, bool IsReverse, typename ... Ts >
     auto operator()( 
-        const Iter< IsConst, Ts... >& begin,
-        const Iter< IsConst, Ts... >& curr, 
-        const Iter< IsConst, Ts... >& end 
+        const Iter< IsConst, IsReverse, Ts... >& begin,
+        const Iter< IsConst, IsReverse, Ts... >& curr, 
+        const Iter< IsConst, IsReverse, Ts... >& end 
         ) const -> 
     decltype( Op::exec( 
             quickval<L>::value.operator()( begin, curr, end ), 
@@ -312,11 +318,12 @@ struct unary_expr
 
     unary_expr( T _t ) : t( _t ) {}
 
-    template< template <bool, typename...> typename Iter, bool IsConst, typename ... Ts >
+    template< template <bool, bool, typename...> typename Iter, 
+        bool IsConst, bool IsReverse, typename ... Ts >
     auto operator()( 
-        const Iter< IsConst, Ts... >& begin,
-        const Iter< IsConst, Ts... >& curr, 
-        const Iter< IsConst, Ts... >& end 
+        const Iter< IsConst, IsReverse, Ts... >& begin,
+        const Iter< IsConst, IsReverse, Ts... >& curr, 
+        const Iter< IsConst, IsReverse, Ts... >& end 
         ) const -> 
     decltype( Op::exec( quickval<T>::value.operator()( curr ) ) )
     {

@@ -159,10 +159,6 @@ class _row_proxy
 public:
     using row_type = std::true_type;
 
-    _row_proxy( std::tuple< Ts*... > p ) 
-        : m_ptrs( p ) 
-    {}
-
     _row_proxy& operator=( const _row_proxy& row )
     {
         init<0>( row );
@@ -240,14 +236,17 @@ public:
 
 private:
 
-    template< bool IC, typename ... Us >
+    template< bool IC, bool IR, typename ... Us >
     friend class base_frame_iterator;
 
     // Only base_frame_iterator should be able to create one of these
+    _row_proxy( std::tuple< Ts*... > p ) 
+        : m_ptrs( p ) 
+    {}
+
     _row_proxy( const _row_proxy& other )
         : m_ptrs( other.m_ptrs )
-    {
-    }
+    {}
     
     void swap_ptrs( _row_proxy& other ) noexcept
     {
@@ -447,7 +446,7 @@ bool operator>(  const _row_proxy< LC, Ts... >& left,
     }
 }
 
-template< bool IsConst, typename ... Ts >
+template< bool IsConst, bool IsReverse, typename ... Ts >
 class base_frame_iterator
 {
 public:
@@ -489,11 +488,11 @@ public:
     pointer operator->() const { return const_cast<pointer>(&m_row); }
 
     template< size_t Ind >
-    base_sv_iterator<typename detail::pack_element< Ind, Ts... >::type>
+    base_sv_iterator<typename detail::pack_element< Ind, Ts... >::type, IsConst>
     column_iterator( columnindex< Ind > ci ) const
     {
         using T = typename detail::pack_element< Ind, Ts... >::type;
-        base_sv_iterator<T> it{ m_row.data( ci ) };
+        base_sv_iterator<T, IsConst> it{ m_row.data( ci ) };
         return it;
     }
 
@@ -553,10 +552,13 @@ private:
 };
 
 template< typename ... Ts >
-using frame_iterator = base_frame_iterator< false, Ts... >;
+using frame_iterator = base_frame_iterator< false, false, Ts... >;
 
 template< typename ... Ts >
-using const_frame_iterator = base_frame_iterator< true, Ts... >;
+using const_frame_iterator = base_frame_iterator< true, false, Ts... >;
+
+template< typename ... Ts >
+using reverse_frame_iterator = base_frame_iterator< false, true, Ts... >;
 
 } // namespace mf
 
