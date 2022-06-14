@@ -96,7 +96,7 @@ public:
     _base_frame_row& operator=( _base_frame_row&& other )
     {
         _base_frame_row<IsConstDummy, Ts...> out{ std::move( other ) };
-        std::swap( data, other.data );
+        std::swap( data, out.data );
         return *this;
     }
 
@@ -104,7 +104,7 @@ public:
     _base_frame_row& operator=( const _row_proxy< IsConst, Ts... >& refs )
     {
         _base_frame_row<IsConstDummy, Ts...> out{ refs };
-        std::swap( data, other.data );
+        std::swap( data, out.data );
         return *this;
     }
 
@@ -180,42 +180,42 @@ class _row_proxy
 public:
     using row_type = std::true_type;
 
-    template< typename = enable_if_t<!IsConst, void> >
+    template< bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true >
     _row_proxy& operator=( _row_proxy&& row )
     {
         init<0>( std::move( row ) );
         return *this;
     }
 
-    template< typename = enable_if_t<!IsConst, void> >
+    template< bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true >
     const _row_proxy& operator=( _row_proxy&& row ) const
     {
         init<0>( std::move( row ) );
         return *this;
     }
 
-    template< typename = enable_if_t<!IsConst, void> >
+    template< bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true >
     _row_proxy& operator=( const _row_proxy& row )
     {
         init<0>( row );
         return *this;
     }
 
-    template< typename = enable_if_t<!IsConst, void> >
+    template< bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true >
     const _row_proxy& operator=( const _row_proxy& row ) const
     {
         init<0>( row );
         return *this;
     }
 
-    template< typename = enable_if_t<!IsConst, void> >
+    template< bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true >
     _row_proxy& operator=( const frame_row< Ts... >& row )
     {
         init<0>( row );
         return *this;
     }
 
-    template< typename = enable_if_t<!IsConst, void> >
+    template< bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true >
     const _row_proxy& operator=( const frame_row< Ts... >& row ) const
     {
         init<0>( row );
@@ -223,7 +223,7 @@ public:
     }
 
     // by-value swap
-    template< size_t Ind = 0, typename = enable_if_t<!IsConst, void> >
+    template< size_t Ind = 0, bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true >
     void swap_values( _row_proxy& other ) noexcept
     {
         using std::swap;

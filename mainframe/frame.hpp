@@ -328,6 +328,7 @@ public:
     using reverse_iterator = reverse_frame_iterator< Ts... >;
     using const_reverse_iterator = const_reverse_frame_iterator< Ts... >;
     using name_array = std::array< std::string, sizeof...(Ts) >;
+    using row_type = frame_row< Ts... >;
 
     frame() = default;
     frame( const frame& ) = default;
