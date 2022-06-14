@@ -64,6 +64,8 @@ class _base_frame_row
 public:
     using row_type = std::true_type;
 
+    _base_frame_row() = default;
+
     _base_frame_row( const std::tuple<Ts...>& args ) 
         : data( args ) 
     {}
