@@ -66,44 +66,45 @@ public:
 
     _base_frame_row( const std::tuple<Ts...>& args ) 
         : data( args ) 
-    {
-        std::cout << __PRETTY_FUNCTION__ << "\n";
-    }
+    {}
 
     _base_frame_row( std::tuple<Ts...>&& args ) 
         : data( std::move( args ) ) 
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
 
     _base_frame_row( const _base_frame_row& other )
         : data( other.data )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
 
     _base_frame_row( _base_frame_row&& other )
         : data( std::move( other.data ) )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
 
     template< bool IsConst >
     _base_frame_row( const _row_proxy< IsConst, Ts... >& refs )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";
+    {
         init<0>( refs );
     }
 
     _base_frame_row& operator=( const _base_frame_row& other )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";
-        init<0>( other );
+    {
+        _base_frame_row<IsConstDummy, Ts...> out{ other };
+        std::swap( data, other.data );
         return *this;
     }
 
     _base_frame_row& operator=( _base_frame_row&& other )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";
-        init<0>( std::move( other ) );
+    {
+        _base_frame_row<IsConstDummy, Ts...> out{ std::move( other ) };
+        std::swap( data, other.data );
         return *this;
     }
 
     template< bool IsConst >
     _base_frame_row& operator=( const _row_proxy< IsConst, Ts... >& refs )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";
-        init<0>( refs );
+    {
+        _base_frame_row<IsConstDummy, Ts...> out{ refs };
+        std::swap( data, other.data );
         return *this;
     }
 
@@ -179,20 +180,50 @@ class _row_proxy
 public:
     using row_type = std::true_type;
 
+    template< typename = enable_if_t<!IsConst, void> >
+    _row_proxy& operator=( _row_proxy&& row )
+    {
+        init<0>( std::move( row ) );
+        return *this;
+    }
+
+    template< typename = enable_if_t<!IsConst, void> >
+    const _row_proxy& operator=( _row_proxy&& row ) const
+    {
+        init<0>( std::move( row ) );
+        return *this;
+    }
+
+    template< typename = enable_if_t<!IsConst, void> >
     _row_proxy& operator=( const _row_proxy& row )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";
+    {
         init<0>( row );
         return *this;
     }
 
+    template< typename = enable_if_t<!IsConst, void> >
+    const _row_proxy& operator=( const _row_proxy& row ) const
+    {
+        init<0>( row );
+        return *this;
+    }
+
+    template< typename = enable_if_t<!IsConst, void> >
     _row_proxy& operator=( const frame_row< Ts... >& row )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";
+    {
+        init<0>( row );
+        return *this;
+    }
+
+    template< typename = enable_if_t<!IsConst, void> >
+    const _row_proxy& operator=( const frame_row< Ts... >& row ) const
+    {
         init<0>( row );
         return *this;
     }
 
     // by-value swap
-    template< size_t Ind = 0 >
+    template< size_t Ind = 0, typename = enable_if_t<!IsConst, void> >
     void swap_values( _row_proxy& other ) noexcept
     {
         using std::swap;
@@ -234,6 +265,15 @@ public:
     typename std::conditional< IsConst, 
         const typename detail::pack_element< Ind, Ts...>::type*,
         typename detail::pack_element< Ind, Ts...>::type* >::type
+    data() const
+    {
+        return std::get<Ind>( m_ptrs );
+    }
+
+    template< size_t Ind >
+    typename std::conditional< IsConst, 
+        const typename detail::pack_element< Ind, Ts...>::type*,
+        typename detail::pack_element< Ind, Ts...>::type* >::type
     data( columnindex<Ind> ) const
     {
         return std::get<Ind>( m_ptrs );
@@ -243,6 +283,11 @@ public:
     {
         return any_missing_impl<0>();
     }
+
+private:
+
+    template< bool IC, bool IR, typename ... Us >
+    friend class base_frame_iterator;
 
     template< size_t Ind=0 >
     bool any_missing_impl() const
@@ -260,23 +305,18 @@ public:
         return false;
     }
 
-private:
-
-    template< bool IC, bool IR, typename ... Us >
-    friend class base_frame_iterator;
-
     // Only base_frame_iterator should be able to create one of these
     _row_proxy( std::tuple< Ts*... > p ) 
         : m_ptrs( p ) 
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
 
     _row_proxy( const _row_proxy& other )
         : m_ptrs( other.m_ptrs )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
     
     void swap_ptrs( _row_proxy& other ) noexcept
     {
-        swap( m_ptrs, other.m_ptrs );
+        std::swap( m_ptrs, other.m_ptrs );
     }
 
     ptrdiff_t addr_diff( const _row_proxy& other ) const
@@ -334,7 +374,7 @@ private:
     }
 
     template< size_t Ind >
-    void init( const _row_proxy& vals )
+    void init( const _row_proxy& vals ) const
     {
         columnindex<Ind> ci;
         at( ci ) = vals.at( ci );
@@ -344,7 +384,17 @@ private:
     }
 
     template< size_t Ind >
-    void init( const frame_row<Ts...>& vals )
+    void init( _row_proxy&& vals ) const
+    {
+        columnindex<Ind> ci;
+        at( ci ) = std::move( vals.at( ci ) );
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            init<Ind+1>( std::move( vals ) );
+        }
+    }
+
+    template< size_t Ind >
+    void init( const frame_row<Ts...>& vals ) const
     {
         columnindex<Ind> ci;
         at( ci ) = vals.at( ci );
@@ -512,23 +562,30 @@ public:
     using const_reference = const _row_proxy<IsConst, Ts...>&;
     using const_pointer = const _row_proxy<IsConst, Ts...>*;
 
-    //base_frame_iterator() = default;
-    base_frame_iterator()
-    {
-std::cout << __PRETTY_FUNCTION__ << "\n";
-    }
+    base_frame_iterator() = default;
 
     base_frame_iterator( const std::tuple<series<Ts>...>& data, difference_type off = 0 )
         : m_row( pointerize<std::tuple<series<Ts>...>>::op( const_cast< std::tuple<series<Ts>...>&>(data), off ) )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
 
     base_frame_iterator( std::tuple<Ts*...> ptrs )
         : m_row( ptrs )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
 
     base_frame_iterator( _row_proxy<IsConst, Ts...> r )
         : m_row( r )
-    {std::cout << __PRETTY_FUNCTION__ << "\n";}
+    {}
+
+    base_frame_iterator( const base_frame_iterator& other )
+        : m_row( other.m_row )
+    {}
+
+    base_frame_iterator& operator=( const base_frame_iterator& other )
+    {
+        base_frame_iterator<IsConst, IsReverse, Ts...> out{ other };
+        swap( out );
+        return *this;
+    }
 
     base_frame_iterator& operator++() { return operator+=( 1 ); }
     base_frame_iterator& operator++(int) { return operator+=( 1 ); }
@@ -574,7 +631,7 @@ std::cout << __PRETTY_FUNCTION__ << "\n";
 
     void swap( base_frame_iterator& other ) noexcept
     {
-        m_row.swap_ptrs( other );
+        m_row.swap_ptrs( other.m_row );
     }
 
     bool operator==( const base_frame_iterator& other ) const

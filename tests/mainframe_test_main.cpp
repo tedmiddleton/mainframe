@@ -1246,83 +1246,167 @@ TEST_CASE( "std::sortw", "[frame]" )
 {
     frame<year_month_day> f1;
     f1.set_column_names( "date" );
-    //f1.push_back( 2022_y/January/8 );
-    //f1.push_back( 2022_y/January/9 );
-    //f1.push_back( 2022_y/January/5 );
-    //f1.push_back( 2022_y/January/6 );
-    //f1.push_back( 2022_y/January/3 );
-    //f1.push_back( 2022_y/January/4 );
-    //f1.push_back( 2022_y/January/7 );
-    //f1.push_back( 2022_y/January/1 );
-    //f1.push_back( 2022_y/January/2 );
 
-    f1.push_back( 2022_y/January/3 );
+    f1.push_back( 2022_y/January/8);
+    f1.push_back( 2022_y/January/9 );
+    f1.push_back( 2022_y/January/5 );
+    f1.push_back( 2022_y/January/6);
+    f1.push_back( 2022_y/January/3);
+    f1.push_back( 2022_y/January/4 );
+    f1.push_back( 2022_y/January/7 );
     f1.push_back( 2022_y/January/1 );
     f1.push_back( 2022_y/January/2 );
     dout << f1;
     std::sort( f1.begin(), f1.end() );
     dout << f1;
-
-    //auto it = f1.cbegin();
-    //REQUIRE( (it + 0)->at( _0 ) == 2022_y/January/1 );
-    //REQUIRE( (it + 1)->at( _0 ) == 2022_y/January/2 );
-    //REQUIRE( (it + 2)->at( _0 ) == 2022_y/January/3 );
-    //REQUIRE( (it + 3)->at( _0 ) == 2022_y/January/4 );
-    //REQUIRE( (it + 4)->at( _0 ) == 2022_y/January/5 );
-    //REQUIRE( (it + 5)->at( _0 ) == 2022_y/January/6 );
-    //REQUIRE( (it + 6)->at( _0 ) == 2022_y/January/7 );
-    //REQUIRE( (it + 7)->at( _0 ) == 2022_y/January/8 );
-    //REQUIRE( (it + 8)->at( _0 ) == 2022_y/January/9 );
 }
 
 TEST_CASE( "std::sort", "[frame]" )
 {
-    frame<year_month_day, double, int> f1;
-    f1.set_column_names( "date", "temperature", "rain" );
-    f1.push_back( 2022_y/January/8, 9.1,  7 );
-    f1.push_back( 2022_y/January/9, 9.3,  10 );
-    f1.push_back( 2022_y/January/5, 13.3, 10 );
-    f1.push_back( 2022_y/January/6, 14.4, 7 );
-    f1.push_back( 2022_y/January/3, 11.1, 7 );
-    f1.push_back( 2022_y/January/4, 12.2, 10 );
-    f1.push_back( 2022_y/January/7, 15.5, 10 );
-    f1.push_back( 2022_y/January/1, 8.9,  10 );
-    f1.push_back( 2022_y/January/2, 10.0, 10 );
+    SECTION( "uniseries" )
+    { 
+        frame<year_month_day> f1;
+        f1.set_column_names( "date" );
 
-    dout << f1;
-    std::sort( f1.begin(), f1.end() );
-    dout << f1;
+        f1.push_back( 2022_y/January/8);
+        f1.push_back( 2022_y/January/9 );
+        f1.push_back( 2022_y/January/5 );
+        f1.push_back( 2022_y/January/6);
+        f1.push_back( 2022_y/January/3);
+        f1.push_back( 2022_y/January/4 );
+        f1.push_back( 2022_y/January/7 );
+        f1.push_back( 2022_y/January/1 );
+        f1.push_back( 2022_y/January/2 );
+        dout << f1;
+        std::sort( f1.begin(), f1.end() );
+        dout << f1;
+        auto it = f1.cbegin();
+        REQUIRE( (it + 0)->at( _0 ) == 2022_y / January / 1 );
+        REQUIRE( (it + 1)->at( _0 ) == 2022_y / January / 2 );
+        REQUIRE( (it + 2)->at( _0 ) == 2022_y / January / 3 );
+        REQUIRE( (it + 3)->at( _0 ) == 2022_y / January / 4 );
+        REQUIRE( (it + 4)->at( _0 ) == 2022_y / January / 5 );
+        REQUIRE( (it + 5)->at( _0 ) == 2022_y / January / 6 );
+        REQUIRE( (it + 6)->at( _0 ) == 2022_y / January / 7 );
+        REQUIRE( (it + 7)->at( _0 ) == 2022_y / January / 8 );
+        REQUIRE( (it + 8)->at( _0 ) == 2022_y / January / 9 );
+    }
 
-    auto it = f1.cbegin();
-    REQUIRE( (it + 0)->at( _0 ) == 2022_y/January/1 );
-    REQUIRE( (it + 1)->at( _0 ) == 2022_y/January/2 );
-    REQUIRE( (it + 2)->at( _0 ) == 2022_y/January/3 );
-    REQUIRE( (it + 3)->at( _0 ) == 2022_y/January/4 );
-    REQUIRE( (it + 4)->at( _0 ) == 2022_y/January/5 );
-    REQUIRE( (it + 5)->at( _0 ) == 2022_y/January/6 );
-    REQUIRE( (it + 6)->at( _0 ) == 2022_y/January/7 );
-    REQUIRE( (it + 7)->at( _0 ) == 2022_y/January/8 );
-    REQUIRE( (it + 8)->at( _0 ) == 2022_y/January/9 );
+    SECTION( "multiseries" )
+    {
+        frame<year_month_day, double, int> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y / January / 8, 9.1, 7 );
+        f1.push_back( 2022_y / January / 9, 9.3, 10 );
+        f1.push_back( 2022_y / January / 5, 13.3, 10 );
+        f1.push_back( 2022_y / January / 6, 14.4, 7 );
+        f1.push_back( 2022_y / January / 3, 11.1, 7 );
+        f1.push_back( 2022_y / January / 4, 12.2, 10 );
+        f1.push_back( 2022_y / January / 7, 15.5, 10 );
+        f1.push_back( 2022_y / January / 1, 8.9, 10 );
+        f1.push_back( 2022_y / January / 2, 10.0, 10 );
 
-    REQUIRE( (it + 0)->at( _1 ) == 8.9  );
-    REQUIRE( (it + 1)->at( _1 ) == 10.0 );
-    REQUIRE( (it + 2)->at( _1 ) == 11.1 );
-    REQUIRE( (it + 3)->at( _1 ) == 12.2 );
-    REQUIRE( (it + 4)->at( _1 ) == 13.3 );
-    REQUIRE( (it + 5)->at( _1 ) == 14.4 );
-    REQUIRE( (it + 6)->at( _1 ) == 15.5 );
-    REQUIRE( (it + 7)->at( _1 ) == 9.1  );
-    REQUIRE( (it + 8)->at( _1 ) == 9.3  );
+        dout << f1;
+        std::sort( f1.begin(), f1.end() );
+        dout << f1;
 
-    REQUIRE( (it + 0)->at( _2 ) == 10 );
-    REQUIRE( (it + 1)->at( _2 ) == 10 );
-    REQUIRE( (it + 2)->at( _2 ) == 7  );
-    REQUIRE( (it + 3)->at( _2 ) == 10 );
-    REQUIRE( (it + 4)->at( _2 ) == 10 );
-    REQUIRE( (it + 5)->at( _2 ) == 7  );
-    REQUIRE( (it + 6)->at( _2 ) == 10 );
-    REQUIRE( (it + 7)->at( _2 ) == 7  );
-    REQUIRE( (it + 8)->at( _2 ) == 10 );
+        auto it = f1.cbegin();
+        REQUIRE( (it + 0)->at( _0 ) == 2022_y / January / 1 );
+        REQUIRE( (it + 1)->at( _0 ) == 2022_y / January / 2 );
+        REQUIRE( (it + 2)->at( _0 ) == 2022_y / January / 3 );
+        REQUIRE( (it + 3)->at( _0 ) == 2022_y / January / 4 );
+        REQUIRE( (it + 4)->at( _0 ) == 2022_y / January / 5 );
+        REQUIRE( (it + 5)->at( _0 ) == 2022_y / January / 6 );
+        REQUIRE( (it + 6)->at( _0 ) == 2022_y / January / 7 );
+        REQUIRE( (it + 7)->at( _0 ) == 2022_y / January / 8 );
+        REQUIRE( (it + 8)->at( _0 ) == 2022_y / January / 9 );
+
+        REQUIRE( (it + 0)->at( _1 ) == 8.9 );
+        REQUIRE( (it + 1)->at( _1 ) == 10.0 );
+        REQUIRE( (it + 2)->at( _1 ) == 11.1 );
+        REQUIRE( (it + 3)->at( _1 ) == 12.2 );
+        REQUIRE( (it + 4)->at( _1 ) == 13.3 );
+        REQUIRE( (it + 5)->at( _1 ) == 14.4 );
+        REQUIRE( (it + 6)->at( _1 ) == 15.5 );
+        REQUIRE( (it + 7)->at( _1 ) == 9.1 );
+        REQUIRE( (it + 8)->at( _1 ) == 9.3 );
+
+        REQUIRE( (it + 0)->at( _2 ) == 10 );
+        REQUIRE( (it + 1)->at( _2 ) == 10 );
+        REQUIRE( (it + 2)->at( _2 ) == 7 );
+        REQUIRE( (it + 3)->at( _2 ) == 10 );
+        REQUIRE( (it + 4)->at( _2 ) == 10 );
+        REQUIRE( (it + 5)->at( _2 ) == 7 );
+        REQUIRE( (it + 6)->at( _2 ) == 10 );
+        REQUIRE( (it + 7)->at( _2 ) == 7 );
+        REQUIRE( (it + 8)->at( _2 ) == 10 );
+    }
+
+    SECTION( "Rearranged" )
+    {
+        frame<year_month_day, double, int> f1;
+        f1.set_column_names( "date", "temperature", "rain" );
+        f1.push_back( 2022_y / January / 8, 9.1, 7 );
+        f1.push_back( 2022_y / January / 9, 9.3, 10 );
+        f1.push_back( 2022_y / January / 5, 13.3, 10 );
+        f1.push_back( 2022_y / January / 6, 14.4, 7 );
+        f1.push_back( 2022_y / January / 3, 11.1, 7 );
+        f1.push_back( 2022_y / January / 4, 12.2, 10 );
+        f1.push_back( 2022_y / January / 7, 15.5, 10 );
+        f1.push_back( 2022_y / January / 1, 8.9, 10 );
+        f1.push_back( 2022_y / January / 2, 10.0, 10 );
+        auto f2 = f1.columns( _2, _1, _0 );
+
+        dout << f2;
+        std::sort( f2.begin(), f2.end() );
+        dout << f2;
+
+        // Should be:
+        //  | rain | temperature |       date
+        //__|______|_____________|____________
+        // 0|    7 |         9.1 | 2022-01-08
+        // 1|    7 |        11.1 | 2022-01-03
+        // 2|    7 |        14.4 | 2022-01-06
+        // 3|   10 |         8.9 | 2022-01-01
+        // 4|   10 |         9.3 | 2022-01-09
+        // 5|   10 |          10 | 2022-01-02
+        // 6|   10 |        12.2 | 2022-01-04
+        // 7|   10 |        13.3 | 2022-01-05
+        // 8|   10 |        15.5 | 2022-01-07
+
+        auto it = f2.cbegin();
+        REQUIRE( (it + 0)->at( _0 ) == 7 );
+        REQUIRE( (it + 1)->at( _0 ) == 7 );
+        REQUIRE( (it + 2)->at( _0 ) == 7 );
+        REQUIRE( (it + 3)->at( _0 ) == 10 );
+        REQUIRE( (it + 4)->at( _0 ) == 10 );
+        REQUIRE( (it + 5)->at( _0 ) == 10 );
+        REQUIRE( (it + 6)->at( _0 ) == 10 );
+        REQUIRE( (it + 7)->at( _0 ) == 10 );
+        REQUIRE( (it + 8)->at( _0 ) == 10 );
+
+        REQUIRE( (it + 0)->at( _1 ) == 9.1 );
+        REQUIRE( (it + 1)->at( _1 ) == 11.1 );
+        REQUIRE( (it + 2)->at( _1 ) == 14.4 );
+        REQUIRE( (it + 3)->at( _1 ) == 8.9 );
+        REQUIRE( (it + 4)->at( _1 ) == 9.3 );
+        REQUIRE( (it + 5)->at( _1 ) == 10.0 );
+        REQUIRE( (it + 6)->at( _1 ) == 12.2 );
+        REQUIRE( (it + 7)->at( _1 ) == 13.3 );
+        REQUIRE( (it + 8)->at( _1 ) == 15.5 );
+
+        REQUIRE( (it + 0)->at( _2 ) == 2022_y / January / 8 );
+        REQUIRE( (it + 1)->at( _2 ) == 2022_y / January / 3 );
+        REQUIRE( (it + 2)->at( _2 ) == 2022_y / January / 6 );
+        REQUIRE( (it + 3)->at( _2 ) == 2022_y / January / 1 );
+        REQUIRE( (it + 4)->at( _2 ) == 2022_y / January / 9 );
+        REQUIRE( (it + 5)->at( _2 ) == 2022_y / January / 2 );
+        REQUIRE( (it + 6)->at( _2 ) == 2022_y / January / 4 );
+        REQUIRE( (it + 7)->at( _2 ) == 2022_y / January / 5 );
+        REQUIRE( (it + 8)->at( _2 ) == 2022_y / January / 7 );
+
+
+    }
 }
 
 
