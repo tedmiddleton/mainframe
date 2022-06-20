@@ -23,6 +23,9 @@ const char * get_emptyspace( size_t num );
 size_t get_max_string_length( const std::vector<std::string>& );
 std::vector<size_t> get_max_string_lengths( const std::vector<std::vector<std::string>>& );
 
+template< typename T >
+struct quickval { static T value; };
+
 template<typename T>
 auto stringify( std::ostream & o, const T & t, bool ) -> decltype( o << t, o )
 {

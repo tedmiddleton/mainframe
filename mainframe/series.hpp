@@ -266,6 +266,11 @@ public:
         return m_sharedvec->data();
     }
 
+    const T* data() const
+    {
+        return m_sharedvec->data();
+    }
+
     // begin, cbegin, end, cend
     iterator begin()
     {
@@ -511,8 +516,6 @@ public:
             *m_sharedvec != *(other.m_sharedvec);
     }
 
-private:
-
     void unref()
     {
         if ( m_sharedvec.use_count() > 1 ) {
@@ -521,6 +524,8 @@ private:
             m_sharedvec = n;
         }
     }
+
+private:
 
     iterator unref( iterator it )
     {

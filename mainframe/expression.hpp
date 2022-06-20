@@ -15,8 +15,6 @@
 namespace mf
 {
 
-template< typename T >
-struct quickval { static T value; };
 namespace expr_op
 {
 struct GT 
@@ -295,8 +293,8 @@ struct binary_expr
         const Iter< IsConst, IsReverse, Ts... >& end 
         ) const -> 
     decltype( Op::exec( 
-            quickval<L>::value.operator()( begin, curr, end ), 
-            quickval<R>::value.operator()( begin, curr, end ) ) )
+            detail::quickval<L>::value.operator()( begin, curr, end ), 
+            detail::quickval<R>::value.operator()( begin, curr, end ) ) )
     {
         return Op::exec( 
             l.operator()( begin, curr, end ), 
@@ -325,7 +323,7 @@ struct unary_expr
         const Iter< IsConst, IsReverse, Ts... >& curr, 
         const Iter< IsConst, IsReverse, Ts... >& end 
         ) const -> 
-    decltype( Op::exec( quickval<T>::value.operator()( curr ) ) )
+    decltype( Op::exec( detail::quickval<T>::value.operator()( curr ) ) )
     {
         return Op::exec( t.operator()( begin, curr, end ) );
     }

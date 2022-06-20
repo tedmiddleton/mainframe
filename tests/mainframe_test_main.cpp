@@ -1166,7 +1166,7 @@ TEST_CASE( "drop_missing()", "[frame]" )
 
 TEST_CASE( "corr()", "[frame]" )
 {
-    SECTION( "mean()" )
+    SECTION( "frame::mean()" )
     {
         frame<mi<year_month_day>, double, int> f1;
         f1.set_column_names( "date", "temperature", "rain" );
@@ -1183,12 +1183,67 @@ TEST_CASE( "corr()", "[frame]" )
         double mtemp = f1.mean( _1 );
         double mrain = f1.mean( _2 );
 
-        dout << f1;
-        dout << mtemp << endl;
-        dout << mrain << endl;
+        REQUIRE( mtemp == Approx(11.533333) );
+        REQUIRE( mrain == Approx(9.0) );
     }
 
-    SECTION( "corr()" )
+    SECTION( "detail::mean()" )
+    {
+        const auto NUMELEMS = 1000;
+        double ad[NUMELEMS];
+        float af[NUMELEMS];
+        int ai[NUMELEMS];
+        unsigned au[NUMELEMS];
+        for ( auto i = 0; i < NUMELEMS; ++i ) {
+            ad[i] = i+1;
+            af[i] = i+1;
+            ai[i] = i+1;
+            au[i] = i+1;
+        }
+
+        double adm = mf::detail::mean<double>( ad, NUMELEMS );
+        REQUIRE( adm == Approx( 500.5 ) );
+        double admv = mf::detail::mean( ad, NUMELEMS );
+        REQUIRE( admv == Approx( 500.5 ) );
+
+        float afm = mf::detail::mean<float>( af, NUMELEMS );
+        REQUIRE( afm == Approx( 500.5f ) );
+        float afmv = mf::detail::mean( af, NUMELEMS );
+        REQUIRE( afmv == Approx( 500.5 ) );
+
+        int aim = mf::detail::mean( ai, NUMELEMS );
+        REQUIRE( aim == Approx( 500 ) );
+        int aum = mf::detail::mean( au, NUMELEMS );
+        REQUIRE( aum == Approx( 500U ) );
+    }
+
+    SECTION( "detail::correlate_pearson()" )
+    {
+        const auto NUMELEMS = 1'000'000;
+        double *adl = new double[NUMELEMS];
+        double *adr = new double[NUMELEMS];
+        float *afl = new float[NUMELEMS];
+        float *afr = new float[NUMELEMS];
+        for ( auto i = 0; i < NUMELEMS; ++i ) {
+            adl[i] = i+1;
+            adr[i] = std::sin(i);
+            afl[i] = i+1;
+            afr[i] = std::sin(i);
+        }
+
+        double doublcorr = mf::detail::correlate_pearson( adl, adr, NUMELEMS );
+        float floatcorr = mf::detail::correlate_pearson( afl, afr, NUMELEMS );
+
+        REQUIRE( doublcorr == Approx( -0.0000039133 ) );
+        REQUIRE( floatcorr == Approx( -0.0000039133f ) );
+
+        delete[] adl;
+        delete[] adr;
+        delete[] afl;
+        delete[] afr;
+    }
+
+    SECTION( "frame::corr()" )
     {
         frame<double, double> f1;
         f1.set_column_names( "temperature", "rain" );
@@ -1202,8 +1257,7 @@ TEST_CASE( "corr()", "[frame]" )
         f1.push_back( 8.0, 2.0 );
         f1.push_back( 9.0, 1.0 );
         double corr = f1.corr( _0, _1 );
-        dout << f1;
-        dout << corr << endl;
+        REQUIRE( corr == Approx( -1.0 ) );
         f1.clear();
         f1.push_back( 1.0, 1.0 );
         f1.push_back( 2.0, 2.0 );
@@ -1215,8 +1269,7 @@ TEST_CASE( "corr()", "[frame]" )
         f1.push_back( 8.0, 8.0 );
         f1.push_back( 9.0, 9.0 );
         corr = f1.corr( _0, _1 );
-        dout << f1;
-        dout << corr << endl;
+        REQUIRE( corr == Approx( 1.0 ) );
     }
 
     SECTION( "corr() with int" )
@@ -1236,28 +1289,8 @@ TEST_CASE( "corr()", "[frame]" )
         double corr1 = f1.corr( _2, _1 );
         double corr2 = f1.corr( _1, _2 );
 
-        dout << corr1 << ", " << corr2 << endl;
-        REQUIRE( corr1 == corr2 );
+        REQUIRE( corr1 == Approx( corr2 ) );
     }
-}
-
-TEST_CASE( "std::sortw", "[frame]" )
-{
-    frame<year_month_day> f1;
-    f1.set_column_names( "date" );
-
-    f1.push_back( 2022_y/January/8);
-    f1.push_back( 2022_y/January/9 );
-    f1.push_back( 2022_y/January/5 );
-    f1.push_back( 2022_y/January/6);
-    f1.push_back( 2022_y/January/3);
-    f1.push_back( 2022_y/January/4 );
-    f1.push_back( 2022_y/January/7 );
-    f1.push_back( 2022_y/January/1 );
-    f1.push_back( 2022_y/January/2 );
-    dout << f1;
-    std::sort( f1.begin(), f1.end() );
-    dout << f1;
 }
 
 TEST_CASE( "std::sort", "[frame]" )
@@ -1403,8 +1436,6 @@ TEST_CASE( "std::sort", "[frame]" )
         REQUIRE( (it + 6)->at( _2 ) == 2022_y / January / 4 );
         REQUIRE( (it + 7)->at( _2 ) == 2022_y / January / 5 );
         REQUIRE( (it + 8)->at( _2 ) == 2022_y / January / 7 );
-
-
     }
 }
 

@@ -23,7 +23,12 @@
 #include <sstream>
 #include <variant>
 
+#if __AVX__
+#include <immintrin.h>
+#endif
+
 #include "mainframe/base.hpp"
+#include "mainframe/simd.hpp"
 #include "mainframe/missing.hpp"
 #include "mainframe/frame_iterator.hpp"
 #include "mainframe/expression.hpp"
@@ -347,11 +352,13 @@ public:
     iterator 
     begin()
     {
+        unref();
         return iterator{ m_columns, 0 };
     }
     iterator 
     end()
     {
+        unref();
         return iterator{ m_columns, static_cast<int>(size()) };
     }
     const_iterator 
@@ -378,21 +385,25 @@ public:
     reverse_iterator 
     rbegin()
     {
+        unref();
         return reverse_iterator{ m_columns, static_cast<int>(size())-1 };
     }
     reverse_iterator 
     rend()
     {
+        unref();
         return reverse_iterator{ m_columns, -1 };
     }
     const_reverse_iterator 
     rbegin() const
     {
+        unref();
         return const_reverse_iterator{ m_columns, static_cast<int>(size())-1 };
     }
     const_reverse_iterator 
     rend() const
     {
+        unref();
         return const_reverse_iterator{ m_columns, -1 };
     }
     const_reverse_iterator 
@@ -426,6 +437,7 @@ public:
     void 
     clear()
     {
+        unref();
         clear_impl< 0 >();
     }
 
@@ -498,39 +510,16 @@ public:
 
     template< size_t Ind1, size_t Ind2 >
     double
-    corr( terminal<expr_column<Ind1>> col1, 
-          terminal<expr_column<Ind2>> col2 ) const
+    corr( terminal<expr_column<Ind1>>, 
+          terminal<expr_column<Ind2>> ) const
     {
         using T1 = typename detail::pack_element<Ind1, Ts...>::type;
         using T2 = typename detail::pack_element<Ind2, Ts...>::type;
         const series<T1>& s1 = std::get<Ind1>( m_columns );
         const series<T2>& s2 = std::get<Ind2>( m_columns );
 
-        auto b1 = s1.cbegin();
-        auto b2 = s2.cbegin();
-        auto e1 = s1.cend();
-        auto c1 = b1; 
-        auto c2 = b2; 
-        double corr = 0.0;
-        double m1 = mean( col1 );
-        double m2 = mean( col2 );
-        double var1 = 0.0;
-        double var2 = 0.0;
-        double cov = 0.0;
-        for ( ; c1 != e1; c1++, c2++ ) {
-            double x1 = *c1;
-            double x2 = *c2;
-            double diff1 = x1-m1;
-            double diff2 = x2-m2;
-            double diff1sq = diff1 * diff1;
-            double diff2sq = diff2 * diff2;
-            double diff12 = diff1 * diff2;
-            var1 += diff1sq;
-            var2 += diff2sq;
-            cov += diff12;
-        }
-        corr = cov / std::sqrt( var1 * var2 );
-        return corr;
+        double c = detail::correlate_pearson( s1.data(), s2.data(), s1.size() );
+        return c;
     }
 
     template< size_t ... Inds >
@@ -620,13 +609,8 @@ public:
     {
         using T = typename detail::pack_element<Ind, Ts...>::type;
         const series<T>& s = std::get<Ind>( m_columns );
-        auto b = s.cbegin();
-        auto e = s.cend();
-        double mean = 0.0;
-        for ( auto c = b ; c != e; c++ ) {
-            mean += *c;
-        }
-        return mean / s.size();
+        double m = detail::mean( s.data(), s.size() );
+        return m;
     }
 
     template< typename T >
@@ -1047,6 +1031,18 @@ private:
         strs.push_back( colstrs );
         if constexpr ( sizeof...( Us ) > 0 ) {
             to_string_impl< Ind+1, Us... >( strs );
+        }
+    }
+
+    template< size_t Ind=0 >
+    void
+    unref()
+    {
+        using T = typename detail::pack_element< Ind, Ts... >::type;
+        series<T>& s = std::get< Ind >( m_columns );
+        s.unref();
+        if constexpr ( Ind+1 < sizeof...( Ts ) ) {
+            unref< Ind+1 >();
         }
     }
 
