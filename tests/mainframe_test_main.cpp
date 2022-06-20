@@ -11,6 +11,7 @@
 #include "catch.hpp"
 
 #include <mainframe/frame.hpp>
+#include <mainframe/grouped_frame.hpp>
 #include "date.h"
 #include "debug_cout.hpp"
 

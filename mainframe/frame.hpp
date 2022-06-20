@@ -23,10 +23,6 @@
 #include <sstream>
 #include <variant>
 
-#if __AVX__
-#include <immintrin.h>
-#endif
-
 #include "mainframe/base.hpp"
 #include "mainframe/simd.hpp"
 #include "mainframe/missing.hpp"
