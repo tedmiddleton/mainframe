@@ -1195,10 +1195,10 @@ TEST_CASE( "corr()", "[frame]" )
         int ai[NUMELEMS];
         unsigned au[NUMELEMS];
         for ( auto i = 0; i < NUMELEMS; ++i ) {
-            ad[i] = i+1;
-            af[i] = i+1;
-            ai[i] = i+1;
-            au[i] = i+1;
+            ad[i] = static_cast<double>(i+1);
+            af[i] = static_cast<float>(i+1);
+            ai[i] = static_cast<int>(i+1);
+            au[i] = static_cast<unsigned>(i+1);
         }
 
         double adm = mf::detail::mean<double>( ad, NUMELEMS );
@@ -1225,10 +1225,10 @@ TEST_CASE( "corr()", "[frame]" )
         float *afl = new float[NUMELEMS];
         float *afr = new float[NUMELEMS];
         for ( auto i = 0; i < NUMELEMS; ++i ) {
-            adl[i] = i+1;
-            adr[i] = std::sin(i);
-            afl[i] = i+1;
-            afr[i] = std::sin(i);
+            adl[i] = static_cast<double>(i+1);
+            adr[i] = static_cast<double>(std::sin(i));
+            afl[i] = static_cast<float>(i+1);
+            afr[i] = static_cast<float>(std::sin(i));
         }
 
         double doublcorr = mf::detail::correlate_pearson( adl, adr, NUMELEMS );

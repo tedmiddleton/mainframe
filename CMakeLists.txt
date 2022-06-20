@@ -40,6 +40,7 @@ add_library( mainframe STATIC
     mainframe/base.cpp 
     mainframe/series.hpp 
     mainframe/series_vector.hpp 
+    mainframe/simd.hpp 
     mainframe/missing.hpp 
     mainframe/frame.hpp 
     mainframe/expression.hpp 

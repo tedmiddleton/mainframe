@@ -26,7 +26,7 @@ namespace mf { namespace detail
         for ( const T* c = t ; c != e; c++ ) {
             m += *c;
         }
-        return m / num;
+        return static_cast<T>(m / num);
     }
     
     #ifdef __AVX__
@@ -68,9 +68,10 @@ namespace mf { namespace detail
     #endif
     
     template< typename A, typename B >
-    double 
-    correlate_pearson( const A* a, const B* b, size_t num )
+    auto 
+    correlate_pearson( const A* a, const B* b, size_t num ) -> decltype( a[0] * b[0] )
     {
+        using T = decltype(a[0] * b[0]);
         A amean = mean( a, num );
         B bmean = mean( b, num );
         const A* aend = a + num;
@@ -86,13 +87,13 @@ namespace mf { namespace detail
             B bdiff = xb - bmean;
             A adiffsq = adiff * adiff;
             B bdiffsq = bdiff * bdiff;
-            double abdiff = adiff * bdiff;
+            T abdiff = adiff * bdiff;
             aaccum += adiffsq;
             baccum += bdiffsq;
             cov += abdiff;
         }
 
-        double corr = cov / std::sqrt( aaccum * baccum ); 
+        T corr = static_cast<T>(cov / std::sqrt( aaccum * baccum )); 
         return corr; 
     }
 
