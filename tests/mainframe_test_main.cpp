@@ -1164,9 +1164,9 @@ TEST_CASE( "drop_missing()", "[frame]" )
 
 }
 
-TEST_CASE( "corr()", "[frame]" )
+TEST_CASE( "corr", "[frame]" )
 {
-    SECTION( "frame::mean()" )
+    SECTION( "frame::mean" )
     {
         frame<mi<year_month_day>, double, int> f1;
         f1.set_column_names( "date", "temperature", "rain" );
@@ -1187,7 +1187,7 @@ TEST_CASE( "corr()", "[frame]" )
         REQUIRE( mrain == Approx(9.0) );
     }
 
-    SECTION( "detail::mean()" )
+    SECTION( "detail::mean" )
     {
         const auto NUMELEMS = 1000;
         double ad[NUMELEMS];
@@ -1217,25 +1217,25 @@ TEST_CASE( "corr()", "[frame]" )
         REQUIRE( aum == Approx( 500U ) );
     }
 
-    SECTION( "detail::correlate_pearson()" )
+    SECTION( "detail::correlate_pearson" )
     {
-        const auto NUMELEMS = 1'000'000;
+        const auto NUMELEMS = 20;
         double *adl = new double[NUMELEMS];
         double *adr = new double[NUMELEMS];
         float *afl = new float[NUMELEMS];
         float *afr = new float[NUMELEMS];
         for ( auto i = 0; i < NUMELEMS; ++i ) {
             adl[i] = static_cast<double>(i+1);
-            adr[i] = static_cast<double>(std::sin(i));
+            adr[i] = static_cast<double>(i + std::sin(i));
             afl[i] = static_cast<float>(i+1);
-            afr[i] = static_cast<float>(std::sin(i));
+            afr[i] = static_cast<float>(i + std::sin(i));
         }
 
         double doublcorr = mf::detail::correlate_pearson( adl, adr, NUMELEMS );
         float floatcorr = mf::detail::correlate_pearson( afl, afr, NUMELEMS );
 
-        REQUIRE( doublcorr == Approx( -0.0000039133 ) );
-        REQUIRE( floatcorr == Approx( -0.0000039133f ) );
+        REQUIRE( doublcorr == Approx( 0.992916306 ) );
+        REQUIRE( floatcorr == Approx( 0.992916f ) );
 
         delete[] adl;
         delete[] adr;
