@@ -1440,5 +1440,16 @@ TEST_CASE( "std::sort", "[frame]" )
     }
 }
 
+TEST_CASE( "groupby", "[frame]" )
+{
+    group_index<0, 1, 3> gi;
+    (void)gi;
+
+    frame< date::year_month, int, double > f;
+    auto gf = groupby( f, _1, _2 );
+    (void)gf;
+    //TD<decltype(gf)> fff;
+}
+
 
 
