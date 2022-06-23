@@ -38,11 +38,11 @@ class frame;
 class uframe
 {
 public:
-    uframe() = default;
-    uframe(const uframe&) = default;
-    uframe(uframe&&) = default;
+    uframe()                         = default;
+    uframe(const uframe&)            = default;
+    uframe(uframe&&)                 = default;
     uframe& operator=(const uframe&) = default;
-    uframe& operator=(uframe&&) = default;
+    uframe& operator=(uframe&&)      = default;
 
     template<typename... Ts>
     uframe(const frame<Ts...>& f)
@@ -158,16 +158,16 @@ struct rearrange;
 template<size_t IndHead, size_t... IndRest, typename... Ts>
 struct rearrange<frame<Ts...>, IndHead, IndRest...>
 {
-    using indexed_type = typename pack_element<IndHead, Ts...>::type;
+    using indexed_type    = typename pack_element<IndHead, Ts...>::type;
     using remaining_frame = typename rearrange<frame<Ts...>, IndRest...>::type;
-    using type = typename prepend<indexed_type, remaining_frame>::type;
+    using type            = typename prepend<indexed_type, remaining_frame>::type;
 };
 
 template<size_t IndHead, typename... Ts>
 struct rearrange<frame<Ts...>, IndHead>
 {
     using indexed_type = typename pack_element<IndHead, Ts...>::type;
-    using type = frame<indexed_type>;
+    using type         = frame<indexed_type>;
 };
 
 template<typename T, typename U>
@@ -192,18 +192,18 @@ struct add_opt;
 template<typename T, typename... Ts, size_t Curr, size_t... IndList>
 struct add_opt<frame<mi<T>, Ts...>, Curr, IndList...>
 {
-    using frame_type = frame<mi<T>>;
+    using frame_type   = frame<mi<T>>;
     using add_opt_type = typename add_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type = typename join_frames<frame_type, add_opt_type>::type;
+    using type         = typename join_frames<frame_type, add_opt_type>::type;
 };
 
 template<typename T, typename... Ts, size_t Curr, size_t... IndList>
 struct add_opt<frame<T, Ts...>, Curr, IndList...>
 {
     static const bool inds_contains = contains<Curr, IndList...>::value;
-    using frame_type = typename std::conditional<inds_contains, frame<mi<T>>, frame<T>>::type;
+    using frame_type   = typename std::conditional<inds_contains, frame<mi<T>>, frame<T>>::type;
     using add_opt_type = typename add_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type = typename join_frames<frame_type, add_opt_type>::type;
+    using type         = typename join_frames<frame_type, add_opt_type>::type;
 };
 
 template<typename T, size_t Curr, size_t... IndList>
@@ -226,17 +226,17 @@ template<typename T, typename... Ts, size_t Curr, size_t... IndList>
 struct remove_opt<frame<mi<T>, Ts...>, Curr, IndList...>
 {
     static const bool inds_contains = contains<Curr, IndList...>::value;
-    using frame_type = typename std::conditional<inds_contains, frame<T>, frame<mi<T>>>::type;
+    using frame_type      = typename std::conditional<inds_contains, frame<T>, frame<mi<T>>>::type;
     using remove_opt_type = typename remove_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type = typename join_frames<frame_type, remove_opt_type>::type;
+    using type            = typename join_frames<frame_type, remove_opt_type>::type;
 };
 
 template<typename T, typename... Ts, size_t Curr, size_t... IndList>
 struct remove_opt<frame<T, Ts...>, Curr, IndList...>
 {
-    using frame_type = frame<T>;
+    using frame_type      = frame<T>;
     using remove_opt_type = typename remove_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type = typename join_frames<frame_type, remove_opt_type>::type;
+    using type            = typename join_frames<frame_type, remove_opt_type>::type;
 };
 
 template<typename T, size_t Curr, size_t... IndList>
@@ -259,14 +259,14 @@ template<typename T, typename... Ts>
 struct add_all_opt<frame<mi<T>, Ts...>>
 {
     using remaining_frame = typename add_all_opt<frame<Ts...>>::type;
-    using type = typename prepend<mi<T>, remaining_frame>::type;
+    using type            = typename prepend<mi<T>, remaining_frame>::type;
 };
 
 template<typename T, typename... Ts>
 struct add_all_opt<frame<T, Ts...>>
 {
     using remaining_frame = typename add_all_opt<frame<Ts...>>::type;
-    using type = typename prepend<mi<T>, remaining_frame>::type;
+    using type            = typename prepend<mi<T>, remaining_frame>::type;
 };
 
 template<typename T>
@@ -294,14 +294,14 @@ template<typename T, typename... Ts>
 struct remove_all_opt<frame<T, Ts...>>
 {
     using remaining_frame = typename remove_all_opt<frame<Ts...>>::type;
-    using type = typename prepend<T, remaining_frame>::type;
+    using type            = typename prepend<T, remaining_frame>::type;
 };
 
 template<typename T, typename... Ts>
 struct remove_all_opt<frame<mi<T>, Ts...>>
 {
     using remaining_frame = typename remove_all_opt<frame<Ts...>>::type;
-    using type = typename prepend<T, remaining_frame>::type;
+    using type            = typename prepend<T, remaining_frame>::type;
 };
 
 template<typename T>
@@ -328,18 +328,18 @@ template<typename... Ts>
 class frame
 {
 public:
-    using iterator = frame_iterator<Ts...>;
-    using const_iterator = const_frame_iterator<Ts...>;
-    using reverse_iterator = reverse_frame_iterator<Ts...>;
+    using iterator               = frame_iterator<Ts...>;
+    using const_iterator         = const_frame_iterator<Ts...>;
+    using reverse_iterator       = reverse_frame_iterator<Ts...>;
     using const_reverse_iterator = const_reverse_frame_iterator<Ts...>;
-    using name_array = std::array<std::string, sizeof...(Ts)>;
-    using row_type = frame_row<Ts...>;
+    using name_array             = std::array<std::string, sizeof...(Ts)>;
+    using row_type               = frame_row<Ts...>;
 
-    frame() = default;
-    frame(const frame&) = default;
-    frame(frame&&) = default;
+    frame()                        = default;
+    frame(const frame&)            = default;
+    frame(frame&&)                 = default;
     frame& operator=(const frame&) = default;
-    frame& operator=(frame&&) = default;
+    frame& operator=(frame&&)      = default;
 
     frame<Ts...>
     operator+(const frame<Ts...>& other) const
@@ -512,8 +512,8 @@ public:
     double
     corr(terminal<expr_column<Ind1>>, terminal<expr_column<Ind2>>) const
     {
-        using T1 = typename detail::pack_element<Ind1, Ts...>::type;
-        using T2 = typename detail::pack_element<Ind2, Ts...>::type;
+        using T1             = typename detail::pack_element<Ind1, Ts...>::type;
+        using T2             = typename detail::pack_element<Ind2, Ts...>::type;
         const series<T1>& s1 = std::get<Ind1>(m_columns);
         const series<T2>& s2 = std::get<Ind2>(m_columns);
 
@@ -544,9 +544,9 @@ public:
         frame<Ts...> out;
         out.set_column_names(column_names());
 
-        auto b = cbegin();
+        auto b    = cbegin();
         auto curr = b;
-        auto e = cend();
+        auto e    = cend();
         for (; curr != e; ++curr) {
             auto& row = *curr;
             if (!row.any_missing()) {
@@ -606,9 +606,9 @@ public:
     double
     mean(terminal<expr_column<Ind>>) const
     {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
+        using T            = typename detail::pack_element<Ind, Ts...>::type;
         const series<T>& s = std::get<Ind>(m_columns);
-        double m = detail::mean(s.data(), s.size());
+        double m           = detail::mean(s.data(), s.size());
         return m;
     }
 
@@ -634,18 +634,18 @@ public:
         useries us(ns);
         plust.add_series(us);
         frame<Ts..., T> out = plust;
-        auto b = out.begin();
-        auto e = out.end();
-        auto it = b;
+        auto b              = out.begin();
+        auto e              = out.end();
+        auto it             = b;
         if constexpr (detail::is_missing<T>::value) {
             for (; it != e; ++it) {
-                auto val = expr(b, it, e);
+                auto val                         = expr(b, it, e);
                 it->template at<sizeof...(Ts)>() = val;
             }
         }
         else {
             for (; it != e; ++it) {
-                auto val = expr(b, it, e);
+                auto val  = expr(b, it, e);
                 auto uval = detail::unwrap_missing<decltype(val)>::unwrap(val);
                 it->template at<sizeof...(Ts)>() = uval;
             }
@@ -704,9 +704,9 @@ public:
         frame<Ts...> out;
         out.set_column_names(column_names());
 
-        auto b = cbegin();
+        auto b    = cbegin();
         auto curr = b;
-        auto e = cend();
+        auto e    = cend();
         for (; curr != e; ++curr) {
             auto exprval = ex(b, curr, e);
             if (exprval) {
@@ -750,7 +750,7 @@ private:
     allow_missing_impl(uframe& uf, terminal<expr_column<Inds>>... cols) const
     {
         if constexpr (detail::contains<Ind, Inds...>::value) {
-            auto& s = column<Ind>();
+            auto& s  = column<Ind>();
             auto ams = s.allow_missing();
             uf.set_series(Ind, ams);
         }
@@ -764,7 +764,7 @@ private:
     allow_missing_impl(uframe& uf) const
     {
         const series<U>& s = std::get<Ind>(m_columns);
-        auto os = s.allow_missing();
+        auto os            = s.allow_missing();
         uf.add_series(os);
         if constexpr (sizeof...(Us) > 0) {
             allow_missing_impl<Ind + 1, Us...>(uf);
@@ -801,7 +801,7 @@ private:
     void
     column_names_impl(std::array<std::string, sizeof...(Ts)>& out) const
     {
-        auto& s = std::get<Ind>(m_columns);
+        auto& s  = std::get<Ind>(m_columns);
         out[Ind] = s.name();
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             column_names_impl<Ind + 1>(out);
@@ -824,7 +824,7 @@ private:
     disallow_missing_impl(uframe& uf, terminal<expr_column<Inds>>... cols) const
     {
         if constexpr (detail::contains<Ind, Inds...>::value) {
-            auto& s = column<Ind>();
+            auto& s  = column<Ind>();
             auto ams = s.disallow_missing();
             uf.set_series(Ind, ams);
         }
@@ -838,7 +838,7 @@ private:
     disallow_missing_impl(uframe& uf) const
     {
         const series<U>& s = std::get<Ind>(m_columns);
-        auto os = s.disallow_missing();
+        auto os            = s.disallow_missing();
         uf.add_series(os);
         if constexpr (sizeof...(Us) > 0) {
             disallow_missing_impl<Ind + 1, Us...>(uf);
@@ -850,9 +850,9 @@ private:
     erase_impl(std::tuple<Ts*...>& ptrs, iterator pos)
     {
         columnindex<Ind> ci;
-        auto& s = std::get<Ind>(m_columns);
-        auto column_pos = pos.column_iterator(ci);
-        auto newcpos = s.erase(column_pos);
+        auto& s             = std::get<Ind>(m_columns);
+        auto column_pos     = pos.column_iterator(ci);
+        auto newcpos        = s.erase(column_pos);
         std::get<Ind>(ptrs) = newcpos.data();
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             erase_impl<Ind + 1>(ptrs, pos);
@@ -864,10 +864,10 @@ private:
     erase_impl(std::tuple<Ts*...>& ptrs, iterator first, iterator last)
     {
         columnindex<Ind> ci;
-        auto& s = std::get<Ind>(m_columns);
-        auto column_first = first.column_iterator(ci);
-        auto column_last = last.column_iterator(ci);
-        auto newcpos = s.erase(column_first, column_last);
+        auto& s             = std::get<Ind>(m_columns);
+        auto column_first   = first.column_iterator(ci);
+        auto column_last    = last.column_iterator(ci);
+        auto newcpos        = s.erase(column_first, column_last);
         std::get<Ind>(ptrs) = newcpos.data();
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             erase_impl<Ind + 1>(ptrs, first, last);
@@ -878,7 +878,7 @@ private:
     bool
     eq_impl(const frame<Ts...>& other) const
     {
-        auto& s = std::get<Ind>(m_columns);
+        auto& s  = std::get<Ind>(m_columns);
         auto& os = std::get<Ind>(other.m_columns);
         if (s != os) {
             return false;
@@ -894,9 +894,9 @@ private:
     insert_impl(std::tuple<Ts*...>& ptrs, iterator pos, size_t count, const U& u, const Us&... us)
     {
         columnindex<Ind> ci;
-        auto& s = std::get<Ind>(m_columns);
-        auto column_pos = pos.column_iterator(ci);
-        auto newcpos = s.insert(column_pos, count, u);
+        auto& s             = std::get<Ind>(m_columns);
+        auto column_pos     = pos.column_iterator(ci);
+        auto newcpos        = s.insert(column_pos, count, u);
         std::get<Ind>(ptrs) = newcpos.data();
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             insert_impl<Ind + 1>(ptrs, pos, count, us...);
@@ -908,11 +908,11 @@ private:
     insert_impl(std::tuple<Ts*...>& ptrs, iterator pos, const_iterator first, const_iterator last)
     {
         columnindex<Ind> ci;
-        auto& s = std::get<Ind>(m_columns);
-        auto column_pos = pos.column_iterator(ci);
-        auto column_first = first.column_iterator(ci);
-        auto column_last = last.column_iterator(ci);
-        auto newcpos = s.insert(column_pos, column_first, column_last);
+        auto& s             = std::get<Ind>(m_columns);
+        auto column_pos     = pos.column_iterator(ci);
+        auto column_first   = first.column_iterator(ci);
+        auto column_last    = last.column_iterator(ci);
+        auto newcpos        = s.insert(column_pos, column_first, column_last);
         std::get<Ind>(ptrs) = newcpos.data();
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             insert_impl<Ind + 1>(ptrs, pos, first, last);
@@ -941,8 +941,8 @@ private:
     populate_impl(const std::vector<useries>& columns)
     {
         const useries& su = columns.at(Ind);
-        series<U>& s = std::get<Ind>(m_columns);
-        s = series<U>(su);
+        series<U>& s      = std::get<Ind>(m_columns);
+        s                 = series<U>(su);
         if constexpr (sizeof...(Us) > 0) {
             populate_impl<Ind + 1, Us...>(columns);
         }
@@ -1008,7 +1008,7 @@ private:
     size_impl_with_check() const
     {
         const series<U>& series = std::get<Ind>(m_columns);
-        size_t s = series.size();
+        size_t s                = series.size();
         if constexpr (sizeof...(Us) > 0) {
             size_t si = size_impl_with_check<Ind + 1, Us...>();
             if (si != s) {
@@ -1022,7 +1022,7 @@ private:
     void
     to_string_impl(std::vector<std::vector<std::string>>& strs) const
     {
-        const series<U>& s = std::get<Ind>(m_columns);
+        const series<U>& s               = std::get<Ind>(m_columns);
         std::vector<std::string> colstrs = s.to_string();
         strs.push_back(colstrs);
         if constexpr (sizeof...(Us) > 0) {
@@ -1034,7 +1034,7 @@ private:
     void
     unref()
     {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
+        using T      = typename detail::pack_element<Ind, Ts...>::type;
         series<T>& s = std::get<Ind>(m_columns);
         s.unref();
         if constexpr (Ind + 1 < sizeof...(Ts)) {
@@ -1056,19 +1056,19 @@ operator<<(std::ostream& o, const frame<Ts...>& f)
     std::ios_base::fmtflags fl(o.flags());
 
     std::vector<std::vector<std::string>> uf = f.to_string();
-    auto names = f.column_names();
-    auto widths = detail::get_max_string_lengths(uf);
-    constexpr size_t num_columns = sizeof...(Ts);
-    const size_t num_rows = f.size();
+    auto names                               = f.column_names();
+    auto widths                              = detail::get_max_string_lengths(uf);
+    constexpr size_t num_columns             = sizeof...(Ts);
+    const size_t num_rows                    = f.size();
 
     auto gutter_width = num_rows > 0 ? static_cast<size_t>(std::ceil(std::log10(num_rows))) + 1 : 1;
 
     o << std::boolalpha;
     o << detail::get_emptyspace(gutter_width);
     for (size_t i = 0; i < num_columns; ++i) {
-        auto& name = names[i];
+        auto& name  = names[i];
         auto& width = widths[i];
-        width = std::max(width, name.size());
+        width       = std::max(width, name.size());
         o << "| " << std::setw(width) << name << " ";
     }
     o << "\n";
@@ -1085,7 +1085,7 @@ operator<<(std::ostream& o, const frame<Ts...>& f)
         for (size_t colind = 0; colind < num_columns; ++colind) {
 
             std::string& datum = uf[colind][rowind];
-            auto width = widths[colind];
+            auto width         = widths[colind];
 
             o << "| " << std::setw(width) << datum << " ";
         }

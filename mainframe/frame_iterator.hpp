@@ -20,8 +20,8 @@ template<typename... Ts>
 struct pointerize<std::tuple<series<Ts>...>>
 {
     using series_tuple_type = std::tuple<series<Ts>...>;
-    using type = std::tuple<Ts*...>;
-    using const_type = std::tuple<Ts*...>;
+    using type              = std::tuple<Ts*...>;
+    using const_type        = std::tuple<Ts*...>;
 
     static type
     op(series_tuple_type& sertup, ptrdiff_t offset = 0)
@@ -35,9 +35,9 @@ struct pointerize<std::tuple<series<Ts>...>>
     static void
     assign_impl(series_tuple_type& sertup, ptrdiff_t offset, type& out)
     {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
+        using T               = typename detail::pack_element<Ind, Ts...>::type;
         series<T>& sertupelem = std::get<Ind>(sertup);
-        std::get<Ind>(out) = sertupelem.data() + offset;
+        std::get<Ind>(out)    = sertupelem.data() + offset;
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             assign_impl<Ind + 1>(sertup, offset, out);
         }
@@ -65,13 +65,21 @@ public:
 
     _base_frame_row() = default;
 
-    _base_frame_row(const std::tuple<Ts...>& args) : data(args) {}
+    _base_frame_row(const std::tuple<Ts...>& args)
+        : data(args)
+    {}
 
-    _base_frame_row(std::tuple<Ts...>&& args) : data(std::move(args)) {}
+    _base_frame_row(std::tuple<Ts...>&& args)
+        : data(std::move(args))
+    {}
 
-    _base_frame_row(const _base_frame_row& other) : data(other.data) {}
+    _base_frame_row(const _base_frame_row& other)
+        : data(other.data)
+    {}
 
-    _base_frame_row(_base_frame_row&& other) : data(std::move(other.data)) {}
+    _base_frame_row(_base_frame_row&& other)
+        : data(std::move(other.data))
+    {}
 
     template<bool IsConst>
     _base_frame_row(const _row_proxy<IsConst, Ts...>& refs)
@@ -293,7 +301,7 @@ private:
     bool
     any_missing_impl() const
     {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
+        using T       = typename detail::pack_element<Ind, Ts...>::type;
         const T& elem = at<Ind>();
         if constexpr (detail::is_missing<T>::value) {
             if (!elem.has_value()) {
@@ -307,9 +315,13 @@ private:
     }
 
     // Only base_frame_iterator should be able to create one of these
-    _row_proxy(std::tuple<Ts*...> p) : m_ptrs(p) {}
+    _row_proxy(std::tuple<Ts*...> p)
+        : m_ptrs(p)
+    {}
 
-    _row_proxy(const _row_proxy& other) : m_ptrs(other.m_ptrs) {}
+    _row_proxy(const _row_proxy& other)
+        : m_ptrs(other.m_ptrs)
+    {}
 
     void
     swap_ptrs(_row_proxy& other) noexcept
@@ -320,8 +332,8 @@ private:
     ptrdiff_t
     addr_diff(const _row_proxy& other) const
     {
-        using T = typename detail::pack_element<0, Ts...>::type;
-        const T* ptr = std::get<0>(m_ptrs);
+        using T           = typename detail::pack_element<0, Ts...>::type;
+        const T* ptr      = std::get<0>(m_ptrs);
         const T* otherptr = std::get<0>(other.m_ptrs);
         return ptr - otherptr;
     }
@@ -429,7 +441,7 @@ bool
 operator==(const LRow<LC, Ts...>& left, const RRow<RC, Ts...>& right)
 {
     columnindex<Ind> ci;
-    const auto& leftval = left.at(ci);
+    const auto& leftval  = left.at(ci);
     const auto& rightval = right.at(ci);
     if (leftval == rightval) {
         if constexpr (Ind + 1 < sizeof...(Ts)) {
@@ -458,7 +470,7 @@ bool
 operator<=(const LRow<LC, Ts...>& left, const RRow<RC, Ts...>& right)
 {
     columnindex<Ind> ci;
-    const auto& leftval = left.at(ci);
+    const auto& leftval  = left.at(ci);
     const auto& rightval = right.at(ci);
     if (leftval < rightval) {
         return true;
@@ -482,7 +494,7 @@ bool
 operator>=(const LRow<LC, Ts...>& left, const RRow<RC, Ts...>& right)
 {
     columnindex<Ind> ci;
-    const auto& leftval = left.at(ci);
+    const auto& leftval  = left.at(ci);
     const auto& rightval = right.at(ci);
     if (leftval > rightval) {
         return true;
@@ -506,7 +518,7 @@ bool
 operator<(const LRow<LC, Ts...>& left, const RRow<RC, Ts...>& right)
 {
     columnindex<Ind> ci;
-    const auto& leftval = left.at(ci);
+    const auto& leftval  = left.at(ci);
     const auto& rightval = right.at(ci);
     if (leftval < rightval) {
         return true;
@@ -530,7 +542,7 @@ bool
 operator>(const LRow<LC, Ts...>& left, const RRow<RC, Ts...>& right)
 {
     columnindex<Ind> ci;
-    const auto& leftval = left.at(ci);
+    const auto& leftval  = left.at(ci);
     const auto& rightval = right.at(ci);
     if (leftval > rightval) {
         return true;
@@ -553,12 +565,12 @@ class base_frame_iterator
 {
 public:
     using iterator_category = std::random_access_iterator_tag;
-    using difference_type = ptrdiff_t;
-    using value_type = frame_row<Ts...>;
-    using reference = _row_proxy<IsConst, Ts...>&;
-    using pointer = _row_proxy<IsConst, Ts...>*;
-    using const_reference = const _row_proxy<IsConst, Ts...>&;
-    using const_pointer = const _row_proxy<IsConst, Ts...>*;
+    using difference_type   = ptrdiff_t;
+    using value_type        = frame_row<Ts...>;
+    using reference         = _row_proxy<IsConst, Ts...>&;
+    using pointer           = _row_proxy<IsConst, Ts...>*;
+    using const_reference   = const _row_proxy<IsConst, Ts...>&;
+    using const_pointer     = const _row_proxy<IsConst, Ts...>*;
 
     base_frame_iterator() = default;
 
@@ -567,11 +579,17 @@ public:
               const_cast<std::tuple<series<Ts>...>&>(data), off))
     {}
 
-    base_frame_iterator(std::tuple<Ts*...> ptrs) : m_row(ptrs) {}
+    base_frame_iterator(std::tuple<Ts*...> ptrs)
+        : m_row(ptrs)
+    {}
 
-    base_frame_iterator(_row_proxy<IsConst, Ts...> r) : m_row(r) {}
+    base_frame_iterator(_row_proxy<IsConst, Ts...> r)
+        : m_row(r)
+    {}
 
-    base_frame_iterator(const base_frame_iterator& other) : m_row(other.m_row) {}
+    base_frame_iterator(const base_frame_iterator& other)
+        : m_row(other.m_row)
+    {}
 
     base_frame_iterator&
     operator=(const base_frame_iterator& other)

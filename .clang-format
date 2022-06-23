@@ -1,6 +1,7 @@
 # Format Style Options - Created with Clang Power Tools
 ---
 AlignAfterOpenBracket: DontAlign
+AlignConsecutiveAssignments: Consecutive
 AllowAllArgumentsOnNextLine: true
 AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
@@ -31,7 +32,7 @@ BraceWrapping:
   BeforeWhile: false
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
-BreakConstructorInitializers: BeforeColon
+BreakConstructorInitializers: BeforeComma
 ColumnLimit: 100
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 MaxEmptyLinesToKeep: 2
