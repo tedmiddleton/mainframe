@@ -26,7 +26,7 @@ if (MSVC)
     #  C445X aren't useful checks. Scoping is a *good* thing.
     # C4702: unreachable code
     #  C4702 is broken for "if constexpr ()" in msvc 17.1.2
-    add_compile_options(/W4 /WX /wd4456 /wd4459 /wd4702)
+    add_compile_options(/W3 /WX /wd4456 /wd4459 /wd4702)
 else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
