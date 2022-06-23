@@ -4,4 +4,6 @@ __pycache__/
 .clangd/
 _build/
 .vim/
+out/
+.vs/
 *~
