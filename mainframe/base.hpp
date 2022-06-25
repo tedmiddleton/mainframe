@@ -186,6 +186,37 @@ struct unwrap_missing<mi<T>>
     }
 };
 
+template<typename T, typename Tpl>
+struct prepend;
+
+template<typename T, template<typename...> typename Tpl, typename... Ts>
+struct prepend<T, Tpl<Ts...>>
+{
+    using type = Tpl<T, Ts...>;
+};
+
+// This makes frame::columns(_0, ...) work
+template<typename Tpl, size_t... Inds>
+struct rearrange;
+
+template<size_t IndHead, size_t... IndRest, template<typename...> typename Tpl, typename... Ts>
+struct rearrange<Tpl<Ts...>, IndHead, IndRest...>
+{
+    using indexed_type    = typename pack_element<IndHead, Ts...>::type;
+    using remaining       = typename rearrange<Tpl<Ts...>, IndRest...>::type;
+    using type            = typename prepend<indexed_type, remaining>::type;
+};
+
+template<size_t IndHead, template<typename...> typename Tpl, typename... Ts>
+struct rearrange<Tpl<Ts...>, IndHead>
+{
+    using indexed_type = typename pack_element<IndHead, Ts...>::type;
+    using type         = Tpl<indexed_type>;
+};
+
+
+
+
 } // namespace detail
 
 } // namespace mf

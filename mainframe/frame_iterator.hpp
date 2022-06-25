@@ -185,6 +185,9 @@ class _row_proxy
 {
 public:
     using row_type = std::true_type;
+    using tuple_type = typename std::conditional<IsConst,
+        std::tuple<const Ts*...>,
+        std::tuple<Ts*...>>::type;
 
     template<bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true>
     _row_proxy&
@@ -296,6 +299,8 @@ public:
 private:
     template<bool IC, bool IR, typename... Us>
     friend class base_frame_iterator;
+    template<typename... Us>
+    friend class frame;
 
     template<size_t Ind = 0>
     bool
@@ -314,8 +319,44 @@ private:
         return false;
     }
 
-    // Only base_frame_iterator should be able to create one of these
-    _row_proxy(std::tuple<Ts*...> p)
+    // Only frame or base_frame_iterator should be able to create one of these
+    template<bool _IsConst = IsConst, std::enable_if_t<_IsConst, bool> = true>
+    _row_proxy(const std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
+    {
+        init<0>(data, off);
+    }
+
+    template<bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true>
+    _row_proxy(std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
+    {
+        init<0>(data, off);
+    }
+
+    template<size_t Ind>
+    void
+    init(std::tuple<series<Ts>...>& data, ptrdiff_t off)
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        series<T>& s = std::get<Ind>(data);
+        std::get<Ind>(m_ptrs) = s.data() + off;
+        if constexpr (Ind+1 < sizeof...(Ts)) {
+            init<Ind+1>(data, off);
+        }
+    }
+
+    template<size_t Ind>
+    void
+    init(const std::tuple<series<Ts>...>& data, ptrdiff_t off)
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        const series<T>& s = std::get<Ind>(data);
+        std::get<Ind>(m_ptrs) = s.data() + off;
+        if constexpr (Ind+1 < sizeof...(Ts)) {
+            init<Ind+1>(data, off);
+        }
+    }
+
+    _row_proxy(tuple_type p)
         : m_ptrs(p)
     {}
 
@@ -425,7 +466,7 @@ private:
         }
     }
 
-    std::tuple<Ts*...> m_ptrs;
+    tuple_type m_ptrs;
 };
 
 template<bool IsConst, typename... Ts>
@@ -565,8 +606,8 @@ class base_frame_iterator
 {
 public:
     using iterator_category = std::random_access_iterator_tag;
-    using difference_type   = ptrdiff_t;
     using value_type        = frame_row<Ts...>;
+    using difference_type   = ptrdiff_t;
     using reference         = _row_proxy<IsConst, Ts...>&;
     using pointer           = _row_proxy<IsConst, Ts...>*;
     using const_reference   = const _row_proxy<IsConst, Ts...>&;
@@ -574,9 +615,14 @@ public:
 
     base_frame_iterator() = default;
 
-    base_frame_iterator(const std::tuple<series<Ts>...>& data, difference_type off = 0)
-        : m_row(pointerize<std::tuple<series<Ts>...>>::op(
-              const_cast<std::tuple<series<Ts>...>&>(data), off))
+    template<bool _IsConst = IsConst, std::enable_if_t<_IsConst, bool> = true>
+    base_frame_iterator(const std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
+        : m_row(data, off)    
+    {}
+
+    template<bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true>
+    base_frame_iterator(std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
+        : m_row(data, off)    
     {}
 
     base_frame_iterator(std::tuple<Ts*...> ptrs)
@@ -735,7 +781,7 @@ public:
         }
     }
 
-    difference_type
+    ptrdiff_t
     operator-(const base_frame_iterator& other) const
     {
         if constexpr (IsReverse) {

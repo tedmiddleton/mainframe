@@ -142,34 +142,6 @@ class frame;
 namespace detail
 {
 
-template<typename T, typename Tpl>
-struct prepend;
-
-template<typename T, typename... Ts>
-struct prepend<T, frame<Ts...>>
-{
-    using type = frame<T, Ts...>;
-};
-
-// This makes frame::columns(_0, ...) work
-template<typename tpl, size_t... Inds>
-struct rearrange;
-
-template<size_t IndHead, size_t... IndRest, typename... Ts>
-struct rearrange<frame<Ts...>, IndHead, IndRest...>
-{
-    using indexed_type    = typename pack_element<IndHead, Ts...>::type;
-    using remaining_frame = typename rearrange<frame<Ts...>, IndRest...>::type;
-    using type            = typename prepend<indexed_type, remaining_frame>::type;
-};
-
-template<size_t IndHead, typename... Ts>
-struct rearrange<frame<Ts...>, IndHead>
-{
-    using indexed_type = typename pack_element<IndHead, Ts...>::type;
-    using type         = frame<indexed_type>;
-};
-
 template<typename T, typename U>
 struct join_frames;
 
