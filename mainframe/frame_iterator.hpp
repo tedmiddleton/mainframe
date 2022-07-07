@@ -13,37 +13,6 @@
 namespace mf
 {
 
-template<typename T>
-struct pointerize;
-
-template<typename... Ts>
-struct pointerize<std::tuple<series<Ts>...>>
-{
-    using series_tuple_type = std::tuple<series<Ts>...>;
-    using type              = std::tuple<Ts*...>;
-    using const_type        = std::tuple<Ts*...>;
-
-    static type
-    op(series_tuple_type& sertup, ptrdiff_t offset = 0)
-    {
-        type out;
-        assign_impl<0>(sertup, offset, out);
-        return out;
-    }
-
-    template<size_t Ind>
-    static void
-    assign_impl(series_tuple_type& sertup, ptrdiff_t offset, type& out)
-    {
-        using T               = typename detail::pack_element<Ind, Ts...>::type;
-        series<T>& sertupelem = std::get<Ind>(sertup);
-        std::get<Ind>(out)    = sertupelem.data() + offset;
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            assign_impl<Ind + 1>(sertup, offset, out);
-        }
-    }
-};
-
 template<size_t Ind>
 struct expr_column;
 

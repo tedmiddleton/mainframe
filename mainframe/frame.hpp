@@ -299,6 +299,9 @@ struct remove_all_opt<frame<>>
 template<typename... Ts>
 class frame
 {
+    template<size_t Ind, typename... Us>
+    using pack_element = detail::pack_element<Ind, Us...>;
+
 public:
     using iterator               = frame_iterator<Ts...>;
     using const_iterator         = const_frame_iterator<Ts...>;
@@ -637,17 +640,31 @@ public:
         return eq_impl<0>(other);
     }
 
+    _row_proxy<false, Ts...>
+    operator[]( size_t ind )
+    {
+        _row_proxy<false, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
+        return out;
+    }
+
+    _row_proxy<true, Ts...>
+    operator[]( size_t ind ) const
+    {
+        _row_proxy<true, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
+        return out;
+    }
+
     void
     pop_back()
     {
         pop_back_impl<0>();
     }
 
-    template<bool IsConst>
+    template<bool IsConst, typename... Us, typename... Vs> 
     void
-    push_back(const _row_proxy<IsConst, Ts...>& fr)
+    push_back(const _row_proxy<IsConst, Us...>& fr, const Vs&... args)
     {
-        push_back_impl<0>(fr);
+        push_back_multiple_row_impl<0>(fr, args...);
     }
 
     void
@@ -920,15 +937,51 @@ private:
         }
     }
 
-    template<size_t Ind, bool IsConst>
+    template<size_t Ind>
     void
-    push_back_impl(const _row_proxy<IsConst, Ts...>& fr)
+    push_back_multiple_empty_impl()
     {
-        columnindex<Ind> ci;
-        const auto& elem = fr.at(ci);
-        std::get<Ind>(m_columns).push_back(elem);
+        using T = typename pack_element<Ind, Ts...>::type;
+        // Default ctor
+        std::get<Ind>(m_columns).push_back(T{});
         if constexpr (Ind + 1 < sizeof...(Ts)) {
-            push_back_impl<Ind + 1>(fr);
+            push_back_multiple_empty_impl<Ind + 1>();
+        }
+    }
+    
+    template<size_t Ind, typename V, typename... Vs>
+    void
+    push_back_multiple_args_impl(V arg, const Vs&... args)
+    {
+        // Should really try some kind of conversion here
+        std::get<Ind>(m_columns).push_back(arg);
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            if constexpr (sizeof...(Vs) > 0) {
+                push_back_multiple_args_impl<Ind+1>(args...);
+            }
+            else {
+                push_back_multiple_empty_impl<Ind+1>();
+            }
+        }
+    }
+    
+    template<size_t Ind, bool IsConst, typename... Us, typename... Vs>
+    void
+    push_back_multiple_row_impl(const _row_proxy<IsConst, Us...>& fr, const Vs&... args)
+    {
+        // Should really try some kind of conversion here
+        columnindex<Ind> ci;
+        std::get<Ind>(m_columns).push_back(fr.at(ci));
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            if constexpr (Ind + 1 < sizeof...(Us)) {
+                push_back_multiple_row_impl<Ind+1>(fr, args...);
+            }
+            else if constexpr (sizeof...(Vs) > 0) {
+                push_back_multiple_args_impl<Ind+1>(args...);
+            }
+            else {
+                push_back_multiple_empty_impl<Ind+1>();
+            }
         }
     }
 

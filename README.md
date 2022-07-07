@@ -4,7 +4,7 @@
 
 mainframe is a C++ dataframe library. It features C++ container ergonomics like iterators, copy-on-write column data management, and a flexible expression syntax that allows for efficient row filtering and column population. 
 
-mainframe supports flexible data of nearly any type for columns - as long as they are default constructible
+mainframe supports flexible data of nearly any type for columns including user-defined types.
 
 ```
 frame<year_month_day, mi<double>, bool> f1;
