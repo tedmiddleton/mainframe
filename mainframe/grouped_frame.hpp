@@ -114,92 +114,6 @@ struct index_defn_invert<IndexDefn, Tpl<Ts...>>
     using type = typename index_defn_invert_impl<0, sizeof...(Ts), IndexDefn>::type;
 };
 
-// Note that having these pointers in the index should be safe given that 
-// grouped_frame<> actually contains the frame in indexes and that frame will 
-// have an immutable view of the series_vector's in it (as guaranteed by 
-// series<>'s mutabilty/ref semantics).
-template<typename... Ts>
-class index_key
-{
-public:
-    template<bool IsConst>
-    index_key( _row_proxy<IsConst, Ts...>& rp )
-    {
-        init<0>( rp );
-    }
-
-    template<size_t Ind, bool IsConst>
-    void
-    init( _row_proxy<IsConst, Ts...>& rp )
-    {
-        columnindex<Ind> ci;
-        std::get<Ind>( m_ptrs ) = &rp.at( ci );
-        if constexpr (Ind+1 < sizeof...(Ts)) {
-            init<Ind+1>(rp);
-        }
-    }
-
-    index_key() = default;
-    index_key(const index_key&) = default;
-    index_key(index_key&&) = default;
-    index_key& operator=(const index_key&) = default;
-    index_key& operator=(index_key&&) = default;
-
-    template<size_t Ind>
-    typename detail::pack_element<Ind, Ts&...>::type
-    at() 
-    {
-        return *std::get<Ind>(m_ptrs);
-    }
-
-    template<size_t Ind>
-    const typename detail::pack_element<Ind, Ts&...>::type
-    at() const
-    {
-        return *std::get<Ind>(m_ptrs);
-    }
-
-    template<size_t Ind=0>
-    bool operator<( const index_key<Ts...>& other ) const
-    {
-        const auto* l = std::get<Ind>( m_ptrs );
-        const auto* r = std::get<Ind>( other.m_ptrs );
-        if ( *l < *r ) {
-            return true;
-        }
-        else if ( *r < *l ) {
-            return false;
-        }
-        else {
-            if constexpr (Ind+1 < sizeof...(Ts)) {
-                return operator< <Ind+1>(other);
-            }
-            else {
-                return false;
-            }
-        }
-    }
-
-    template<size_t Ind=0>
-    bool operator==( const index_key<Ts...>& other ) const
-    {
-        const auto* l = std::get<Ind>( m_ptrs );
-        const auto* r = std::get<Ind>( other.m_ptrs );
-        if ( *l != *r ) {
-            return false;
-        }
-        else {
-            if constexpr (Ind+1 < sizeof...(Ts)) {
-                return operator==<Ind+1>(other);
-            }
-            else {
-                return true;
-            }
-        }
-    }
-private:
-    std::tuple<Ts*...> m_ptrs;
-};
 
 // A frame with only the indexed columns in it.
 // eg indexed_frame<index_defn<4, 0>, frame<short, double, double, int, year_month>>::type
@@ -277,7 +191,7 @@ class grouped_frame<index_defn<Inds...>, Ts...>
     template<typename Tpl, size_t... Is>
     using rearrange = detail::rearrange<Tpl, Is...>;
     template<typename... Us>
-    using index_key = detail::index_key<Us...>;
+    using index_key = frame_row<Us...>;
     template<size_t Ind, typename... Us>
     using pack_element = detail::pack_element<Ind, Us...>;
     template<typename IndexDefn, typename Frame>
@@ -426,6 +340,7 @@ public:
     count() const
     {
         using result_frame = typename join_frames<index_frame, frame<int>>::type;
+        using row_type = typename result_frame::row_type;
         build_index();
         result_frame out;
 
@@ -439,8 +354,9 @@ public:
             auto eit = it;
             for ( ; eit != next; ++eit, ++total );
 
-            //typename result_frame::row_type row;
-            //row.
+            row_type row;
+            //uuuh...what now?
+
 
             it = next;
         }
