@@ -667,10 +667,11 @@ public:
         push_back_multiple_row_impl<0>(fr, args...);
     }
 
+    template<typename... Us, typename... Vs> 
     void
-    push_back(const frame_row<Ts...>& fr)
+    push_back(const frame_row<Us...>& fr, const Vs&... args)
     {
-        push_back_impl<0>(fr);
+        push_back_multiple_row_impl<0>(fr, args...);
     }
 
     template<typename U, typename... Us>
@@ -965,9 +966,9 @@ private:
         }
     }
     
-    template<size_t Ind, bool IsConst, typename... Us, typename... Vs>
+    template<size_t Ind, bool IsConst, template<bool, typename...> typename Row, typename... Us, typename... Vs>
     void
-    push_back_multiple_row_impl(const _row_proxy<IsConst, Us...>& fr, const Vs&... args)
+    push_back_multiple_row_impl(const Row<IsConst, Us...>& fr, const Vs&... args)
     {
         // Should really try some kind of conversion here
         columnindex<Ind> ci;

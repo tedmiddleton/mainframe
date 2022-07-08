@@ -120,23 +120,28 @@ struct index_defn_invert<IndexDefn, Tpl<Ts...>>
 // == frame<year_month, short>
 // This is used to build the frame index
 template<typename IndexDefn, typename Frame>
-struct indexed_frame;
+struct get_index_frame;
 
 template<size_t Ind, size_t... Inds, template <typename...> typename Frame, typename... Ts>
-struct indexed_frame<index_defn<Ind, Inds...>, Frame<Ts...>>
+struct get_index_frame<index_defn<Ind, Inds...>, Frame<Ts...>>
 {
     using ind_type = typename pack_element<Ind, Ts...>::type;
-    using remaining = typename indexed_frame<index_defn<Inds...>, Frame<Ts...>>::type;
+    using remaining = typename get_index_frame<index_defn<Inds...>, Frame<Ts...>>::type;
     using type = typename prepend<ind_type, remaining>::type;
 
-    static type get( Frame<Ts...>& f )
+    static type op( Frame<Ts...>& f )
+    {
+        return f.columns(columnindex<Ind>{}, columnindex<Inds>{}...);
+    }
+
+    static const type op( const Frame<Ts...>& f )
     {
         return f.columns(columnindex<Ind>{}, columnindex<Inds>{}...);
     }
 };
 
 template<size_t Ind, template <typename...> typename Frame, typename... Ts>
-struct indexed_frame<index_defn<Ind>, Frame<Ts...>>
+struct get_index_frame<index_defn<Ind>, Frame<Ts...>>
 {
     using ind_type = typename pack_element<Ind, Ts...>::type;
     using type = frame<ind_type>;
@@ -146,7 +151,7 @@ struct indexed_frame<index_defn<Ind>, Frame<Ts...>>
 // eg unindexed_frame<index_defn<4, 0>, frame<short, double, double, int, year_month>>::type
 // is frame<double, double, int>
 template<typename IndexDefn, typename Frame>
-using unindexed_frame = indexed_frame<typename index_defn_invert<IndexDefn, Frame>::type, Frame>;
+using get_unindex_frame = get_index_frame<typename index_defn_invert<IndexDefn, Frame>::type, Frame>;
 
 // A frame derived from another frame and two index definitions.
 //   result_frame<
@@ -165,21 +170,25 @@ using unindexed_frame = indexed_frame<typename index_defn_invert<IndexDefn, Fram
 // and rf will be of type
 //  frame<month, bool, double, float>
 template<typename IndexDefn1, typename IndexDefn2, typename Frame>
-struct result_frame;
+struct get_result_frame;
 
 template<size_t... Inds1, size_t... Inds2, typename Frame>
-struct result_frame<index_defn<Inds1...>, index_defn<Inds2...>, Frame>
+struct get_result_frame<index_defn<Inds1...>, index_defn<Inds2...>, Frame>
 {
-    using indexed_cols1 = typename indexed_frame<index_defn<Inds1...>, Frame>::type;
-    using indexed_cols2 = typename indexed_frame<index_defn<Inds2...>, Frame>::type;
+    using indexed_cols1 = typename get_index_frame<index_defn<Inds1...>, Frame>::type;
+    using indexed_cols2 = typename get_index_frame<index_defn<Inds2...>, Frame>::type;
     using type = typename join_frames<indexed_cols1, indexed_cols2>::type;
 
-    static type get( Frame& f )
+    static type op( Frame& f )
+    {
+        return f.columns(columnindex<Inds1>{}..., columnindex<Inds2>{}...);
+    }
+
+    static const type op( const Frame& f )
     {
         return f.columns(columnindex<Inds1>{}..., columnindex<Inds2>{}...);
     }
 };
-
 
 } // namespace detail
  
@@ -194,15 +203,16 @@ class grouped_frame<index_defn<Inds...>, Ts...>
     using index_key = frame_row<Us...>;
     template<size_t Ind, typename... Us>
     using pack_element = detail::pack_element<Ind, Us...>;
-    template<typename IndexDefn, typename Frame>
-    using indexed_frame = detail::indexed_frame<IndexDefn, Frame>;
     template<typename T, typename U>
     using join_frames = detail::join_frames<T, U>;
 
     using index_definition = index_defn<Inds...>;
-    using index_frame = typename indexed_frame<index_definition, frame<Ts...>>::type;
-    using key_type = typename rearrange<index_key<Ts...>, Inds...>::type;
-    using map_type = std::multimap<key_type, size_t>;
+    using get_index_frame = 
+        detail::get_index_frame<index_definition, frame<Ts...>>;
+    using index_frame = typename get_index_frame::type;
+    using key_type = typename index_frame::row_type; // frame_row
+    using map_value_type = std::vector<size_t>;
+    using map_type = std::map<key_type, map_value_type>;
 public:
     grouped_frame(frame<Ts...> f)
         : m_frame(f)
@@ -340,25 +350,16 @@ public:
     count() const
     {
         using result_frame = typename join_frames<index_frame, frame<int>>::type;
-        using row_type = typename result_frame::row_type;
         build_index();
         result_frame out;
 
-        key_type pk;
         auto it = m_idx.cbegin();
         auto end = m_idx.cend();
-        for ( ; it != end;  ) {
-            auto next = m_idx.upper_bound( it->first );
-
-            int total = 0;
-            auto eit = it;
-            for ( ; eit != next; ++eit, ++total );
-
-            row_type row;
-            //uuuh...what now?
-
-
-            it = next;
+        for ( ; it != end; ++it  ) {
+            const key_type& kt = it->first;
+            const auto& rows = it->second;
+            auto count = rows.size();
+            out.push_back( kt, count );
         }
 
         return out;
@@ -377,31 +378,39 @@ public:
 private:
 
     void
-    build_index()
+    build_index() const
     {
         if (m_idx.size() == m_frame.size()) {
             return;
         }
 
-        index_frame ifr{ index_frame::get( m_frame ) };
+        const index_frame ifr{ get_index_frame::op( m_frame ) };
 
-        for ( auto i = 0U; i < m_frame.size(); ++i ) {
+        for ( size_t i = 0; i < ifr.size(); ++i ) {
             auto row = ifr[i];
             key_type key{ row };
-            m_idx.insert( std::make_pair( key, i ) );
+            auto findit = m_idx.find( key );
+            if ( findit == m_idx.end() ) {
+                map_value_type arr;
+                arr.push_back(i);
+                m_idx[key] = arr;
+            }
+            else {
+                findit->second.push_back(i);
+            }
         }
     }
 
-    map_type m_idx;
+    mutable map_type m_idx;
     frame<Ts...> m_frame;
 };
 
-//template<size_t... Idx, typename... Ts>
-//grouped_frame<index_defn<Idx...>, Ts...>
-//groupby(frame<Ts...> f, columnindex<Idx>...)
-//{
-//    return grouped_frame<index_defn<Idx...>, Ts...>{ f };
-//}
+template<size_t... Idx, typename... Ts>
+grouped_frame<index_defn<Idx...>, Ts...>
+groupby(frame<Ts...> f, columnindex<Idx>...)
+{
+    return grouped_frame<index_defn<Idx...>, Ts...>{ f };
+}
 
 
 } // namespace mf
