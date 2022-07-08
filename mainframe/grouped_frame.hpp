@@ -192,32 +192,119 @@ struct get_result_frame<index_defn<Inds1...>, index_defn<Inds2...>, Frame>
 
 } // namespace detail
  
+template<typename IndexDefn, typename Row, typename OpRow>
+struct minop;
 
-template<size_t... Inds, typename... Ts>
-class grouped_frame<index_defn<Inds...>, Ts...>
+template<size_t Ind=0, size_t... DefInds, typename... Ts>
+void
+rowop_init(frame_row<Ts...>& fr)
+{
+    using std::numeric_limits;
+    using T = typename detail::pack_element<Ind, Ts...>::type;
+    using op_index_defn = index_defn<DefInds...>;
+
+    // Don't do anything to the index columns!
+    if constexpr (!detail::index_defn_contains<Ind, op_index_defn>::value) {
+        columnindex<Ind> ci;
+        fr.at( ci ) = numeric_limits<T>::max();
+    }
+
+    if constexpr (Ind+1 < sizeof...(Ts)) {
+        rowop_init<Ind+1, DefInds...>(fr);
+    }
+}
+
+template<size_t Ind=0, size_t... DefInds, bool IsConst, typename... Ts>
+void
+rowop_do(const _row_proxy<IsConst, Ts...>& rp, frame_row<Ts...>& fr)
+{
+    using std::min;
+    using op_index_defn = index_defn<DefInds...>;
+
+    // Don't do anything to the index columns!
+    if constexpr (!detail::index_defn_contains<Ind, op_index_defn>::value) {
+        columnindex<Ind> ci;
+        fr.at( ci ) = min( fr.at( ci ), rp.at( ci ) );
+    }
+
+    if constexpr (Ind+1 < sizeof...(Ts)) {
+        rowop_do<Ind+1, DefInds...>(rp, fr);
+    }
+}
+
+template<size_t... Inds, bool IsConst, typename... Ts>
+struct minop<index_defn<Inds...>, _row_proxy<IsConst, Ts...>, frame_row<Ts...>>
+{
+    using op_index_defn = index_defn<Inds...>;
+
+    template<size_t Ind=0>
+    void
+    init(frame_row<Ts...>& fr) const
+    {
+        using std::numeric_limits;
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+
+        // Don't do anything to the index columns!
+        if constexpr (!detail::index_defn_contains<Ind, op_index_defn>::value) {
+            columnindex<Ind> ci;
+            fr.at( ci ) = numeric_limits<T>::max();
+        }
+
+        if constexpr (Ind+1 < sizeof...(Ts)) {
+            init<Ind+1>(fr);
+        }
+    }
+
+    template<size_t Ind=0>
+    void
+    op(const _row_proxy<IsConst, Ts...>& rp, frame_row<Ts...>& fr) const
+    {
+        // Don't do anything to the index columns!
+        if constexpr (!detail::index_defn_contains<Ind, op_index_defn>::value) {
+            columnindex<Ind> ci;
+            fr.at( ci ) = min( fr.at( ci ), rp.at( ci ) );
+        }
+
+        if constexpr (Ind+1 < sizeof...(Ts)) {
+            op<Ind+1>(rp, fr);
+        }
+    }
+};
+
+template<size_t... GroupInds, typename... Ts>
+class grouped_frame<index_defn<GroupInds...>, Ts...>
 {
     // Pulling types out of namespaces for convenience
-    template<typename Tpl, size_t... Is>
-    using rearrange = detail::rearrange<Tpl, Is...>;
-    template<typename... Us>
-    using index_key = frame_row<Us...>;
     template<size_t Ind, typename... Us>
     using pack_element = detail::pack_element<Ind, Us...>;
     template<typename T, typename U>
     using join_frames = detail::join_frames<T, U>;
 
-    using index_definition = index_defn<Inds...>;
+    // The index definition for this grouped_frame 
+    using group_index_defn = index_defn<GroupInds...>;
+
+    // The index frame is a frame made of the indexed columns
     using get_index_frame = 
-        detail::get_index_frame<index_definition, frame<Ts...>>;
+        detail::get_index_frame<group_index_defn, frame<Ts...>>;
     using index_frame = typename get_index_frame::type;
+
+    // The result frame for any given function invocation has the index columns 
+    // but also the grouped function columns
+    template<typename IndexDefn>
+    using get_result_frame =
+        detail::get_result_frame<group_index_defn, IndexDefn, frame<Ts...>>;
+    template<typename IndexDefn>
+    using result_frame = typename get_result_frame<IndexDefn>::type;
+
     using key_type = typename index_frame::row_type; // frame_row
     using map_value_type = std::vector<size_t>;
     using map_type = std::map<key_type, map_value_type>;
+
 public:
     grouped_frame(frame<Ts...> f)
         : m_frame(f)
     {}
-//
+
 //    template<size_t Ind>
 //    result_type<typename pack_element<Ind, Ts...>::type>
 //    max(columnindex<Ind>) const
@@ -335,16 +422,37 @@ public:
 //        }
 //    }
 //
-//    template<size_t Ind>
-//    result_type<typename pack_element<Ind, Ts...>::type>
-//    min(columnindex<Ind>) const
-//    {
-//        using R = typename pack_element<Ind, Ts...>::type;
-//        build_index();
-//        result_type<R> out;
-//        return out;
-//    }
 //
+    template<size_t... Inds>
+    result_frame<index_defn<Inds...>>
+    min(columnindex<Inds>...) const
+    {
+        build_index();
+        auto outframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
+        outframe.clear();
+        auto inframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
+
+        auto it = m_idx.cbegin();
+        auto end = m_idx.cend();
+        for ( ; it != end; ++it  ) {
+            const map_value_type& rows = it->second;
+            auto rit = rows.cbegin();
+            auto rend = rows.cend();
+            // frame_row
+            typename result_frame<index_defn<Inds...>>::row_type oprow;
+            oprow = inframe[ *rit ];
+            rowop_init<0, GroupInds...>( oprow );
+            for ( ; rit != rend; ++rit ) {
+                const auto& row = inframe[ *rit ];
+                (void)row;
+                rowop_do<0, GroupInds...>( row, oprow );
+            }
+            outframe.push_back( oprow );
+        }
+
+        return outframe;
+    }
+
 
     typename join_frames<index_frame, frame<int>>::type
     count() const
