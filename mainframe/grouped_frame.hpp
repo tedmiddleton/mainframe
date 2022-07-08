@@ -423,6 +423,22 @@ public:
 //    }
 //
 //
+
+    template<size_t Ind, typename IndexDefn, size_t Num>
+    void
+    augment_column_names(std::string opstr, std::array<std::string, Num>& names) const
+    {
+        if constexpr (detail::index_defn_contains<Ind, IndexDefn>::value) {
+            std::string& name = names[Ind];
+            std::stringstream ss;
+            ss << opstr << "(" << name << ")";
+            name = ss.str();
+        }
+        if constexpr (Ind+1 < Num) {
+            augment_column_names<Ind+1, IndexDefn>(opstr, names);
+        }
+    }
+
     template<size_t... Inds>
     result_frame<index_defn<Inds...>>
     min(columnindex<Inds>...) const
@@ -431,6 +447,9 @@ public:
         auto outframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
         outframe.clear();
         auto inframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
+        auto names = outframe.column_names();
+        augment_column_names<0, index_defn<Inds...>>("min", names);
+        outframe.set_column_names(names);
 
         auto it = m_idx.cbegin();
         auto end = m_idx.cend();
@@ -457,9 +476,11 @@ public:
     typename join_frames<index_frame, frame<int>>::type
     count() const
     {
-        using result_frame = typename join_frames<index_frame, frame<int>>::type;
         build_index();
-        result_frame out;
+
+        auto f1 = get_index_frame::op( m_frame );
+        auto outframe = f1.template new_series<int>( "count" );
+        outframe.clear();
 
         auto it = m_idx.cbegin();
         auto end = m_idx.cend();
@@ -467,10 +488,10 @@ public:
             const key_type& kt = it->first;
             const auto& rows = it->second;
             auto count = rows.size();
-            out.push_back( kt, count );
+            outframe.push_back( kt, count );
         }
 
-        return out;
+        return outframe;
     }
 
 //    template<size_t Ind>
