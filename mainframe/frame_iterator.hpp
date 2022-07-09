@@ -149,6 +149,33 @@ private:
 template<typename... Ts>
 using frame_row = _base_frame_row<false, Ts...>;
 
+template<size_t Ind=0, typename... Ts>
+std::ostream&
+operator<<( std::ostream& o, const frame_row<Ts...>& fr )
+{
+    columnindex<Ind> ci;
+
+    if constexpr (sizeof...(Ts) == 0) {
+        o << "[]";
+        return o;
+    }
+
+    if constexpr (Ind == 0) {
+        o << "[ ";
+    }
+
+    detail::stringify( o, fr.at( ci ), true );
+
+    if constexpr (Ind+1 < sizeof...(Ts)) {
+        o << ", ";
+        operator<< <Ind+1>(o, fr);
+    }
+    else {
+        o << " ]";
+    }
+    return o;
+}
+
 template<bool IsConst, typename... Ts>
 class _row_proxy
 {
