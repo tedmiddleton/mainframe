@@ -275,6 +275,15 @@ public:
         return group_op<numeric_zero, row_sum, mean_finalize>( "mean", ci... ); 
     }
 
+    template<size_t... Inds>
+    result_frame<index_defn<Inds...>>
+    stddev(columnindex<Inds>... ci) const
+    {
+        // (x1+x2+...+xn)/n => m (mean)
+        // sqrt( ( (m-x1)^2 + (m-x1)^2 + ... + (m-xn)^2 )/n ) => stddev 
+        return stddev_group_op( ci... ); 
+    }
+
 private:
     template<size_t Ind, typename IndexDefn, size_t Num>
     void
@@ -356,6 +365,16 @@ private:
     };
 
     template<typename T>
+    struct row_sqdist
+    {
+        T
+        operator()( const T& row, const T& mean, const T& dist )
+        {
+            return dist + ((row - mean) * (row - mean));
+        }
+    };
+
+    template<typename T>
     struct empty_finalize
     {
         T
@@ -372,6 +391,16 @@ private:
         operator()( size_t num, const T& t )
         {
             return static_cast<T>(t / num);
+        }
+    };
+
+    template<typename T>
+    struct sqdist_finalize
+    {
+        T
+        operator()( size_t num, const T& t )
+        {
+            return static_cast<T>(sqrt(t / num));
         }
     };
 
@@ -401,11 +430,28 @@ private:
         // Don't do anything to the index columns!
         if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
             columnindex<Ind> ci;
-            fr.at( ci ) = Op<T>()(fr.at( ci ), rp.at( ci ));
+            fr.at( ci ) = Op<T>()(rp.at( ci ), fr.at( ci ));
         }
 
         if constexpr (Ind+1 < sizeof...(Us)) {
             group_row_op<Ind+1, Op>(rp, fr);
+        }
+    }
+
+    template<size_t Ind=0, template<typename>typename Op, bool IsConst, typename... Us>
+    void
+    group_row_op_3(const _row_proxy<IsConst, Us...>& rp, frame_row<Us...>& fr1, frame_row<Us...>& fr2) const
+    {
+        using T = typename detail::pack_element<Ind, Us...>::type;
+
+        // Don't do anything to the index columns!
+        if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
+            columnindex<Ind> ci;
+            fr2.at( ci ) = Op<T>()(rp.at( ci ), fr1.at( ci ), fr2.at( ci ));
+        }
+
+        if constexpr (Ind+1 < sizeof...(Us)) {
+            group_row_op_3<Ind+1, Op>(rp, fr1, fr2);
         }
     }
 
@@ -436,8 +482,12 @@ private:
     {
         build_index();
         auto inframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
+
+        // get the column names
         auto outframe = inframe;
         outframe.clear();
+
+        // modify the non-index column names
         auto names = outframe.column_names();
         augment_column_names<0, index_defn<Inds...>>(name, names);
         outframe.set_column_names(names);
@@ -446,19 +496,75 @@ private:
         auto end = m_idx.cend();
         for ( ; it != end; ++it  ) {
             const map_value_type& rows = it->second;
+            typename result_frame<index_defn<Inds...>>::row_type oprow;
+
             auto rit = rows.cbegin();
             auto rend = rows.cend();
-            // frame_row
-            typename result_frame<index_defn<Inds...>>::row_type oprow;
-            oprow = inframe[ *rit ];
-            group_row_init<0, Init>( oprow );
             size_t num = rend - rit;
+
+            oprow = inframe[ *rit ]; // This is mostly to get the index columns
+            group_row_init<0, Init>( oprow );
             for ( ; rit != rend; ++rit ) {
                 const auto& row = inframe[ *rit ];
                 group_row_op<0, RowOp>( row, oprow );
             }
             group_row_finalize<0, Finalize>( num, oprow );
             outframe.push_back( oprow );
+        }
+
+        return outframe;
+    }
+
+    // stddev requires multiple passes 
+    template<size_t... Inds>
+    result_frame<index_defn<Inds...>>
+    stddev_group_op(columnindex<Inds>...) const
+    {
+        build_index();
+        auto inframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
+
+        // get the column names
+        auto outframe = inframe;
+        outframe.clear(); 
+                          
+        // modify the non-index column names
+        auto names = outframe.column_names();
+        augment_column_names<0, index_defn<Inds...>>("stddev", names);
+        outframe.set_column_names(names);
+
+        auto it = m_idx.cbegin();
+        auto end = m_idx.cend();
+        for ( ; it != end; ++it  ) {
+            const map_value_type& rows = it->second;
+            typename result_frame<index_defn<Inds...>>::row_type meanrow;
+            typename result_frame<index_defn<Inds...>>::row_type sqdistrow;
+
+            // Generate the mean
+            auto rit = rows.cbegin();
+            auto rend = rows.cend();
+            meanrow = inframe[ *rit ]; // mostly for the index values
+                                       
+            group_row_init<0, numeric_zero>( meanrow );
+            size_t num = rend - rit;
+            for ( ; rit != rend; ++rit ) {
+                const auto& row = inframe[ *rit ];
+                group_row_op<0, row_sum>( row, meanrow );
+            }
+            group_row_finalize<0, mean_finalize>( num, meanrow );
+
+            // Generate the squared distances
+            rit = rows.cbegin();
+            sqdistrow = inframe[ *rit ]; // mostly for the index values
+
+            group_row_init<0, numeric_zero>( sqdistrow );
+            for ( ; rit != rend; ++rit ) {
+                const auto& row = inframe[ *rit ];
+                group_row_op_3<0, row_sqdist>( row, meanrow, sqdistrow );
+            }
+            group_row_finalize<0, sqdist_finalize>( num, sqdistrow );
+
+
+            outframe.push_back( sqdistrow );
         }
 
         return outframe;

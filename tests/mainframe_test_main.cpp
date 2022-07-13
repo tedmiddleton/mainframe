@@ -6,10 +6,12 @@
 
 #include <iostream>
 #include <ostream>
+#include <map>
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
+#include <mainframe/base.hpp>
 #include <mainframe/frame.hpp>
 #include <mainframe/grouped_frame.hpp>
 #include "date.h"
@@ -1442,13 +1444,289 @@ TEST_CASE( "std::sort", "[frame]" )
 
 TEST_CASE( "groupby", "[frame]" )
 {
-    group_index<0, 1, 3> gi;
-    (void)gi;
+    frame<year_month_day, double, float, float> f1;
+    f1.set_column_names( "date", "temperature", "rain", "humidity" );
+    f1.push_back( 2022_y/January/1, 1.0, 0.0, -5.0 );
 
-    frame< date::year_month, int, double > f;
-    auto gf = groupby( f, _1, _2 );
-    (void)gf;
-    //TD<decltype(gf)> fff;
+    f1.push_back( 2022_y/January/2, 2.0, 1.0, -4.5 );
+    f1.push_back( 2022_y/January/2, 2.0, 2.0, -5.5 );
+
+    f1.push_back( 2022_y/January/3, 3.0, 2.0, -4.0 );
+    f1.push_back( 2022_y/January/3, 3.0, 3.0, -5.0 );
+    f1.push_back( 2022_y/January/3, 3.0, 4.0, -6.0 );
+
+    f1.push_back( 2022_y/January/4, 4.0, 3.0, -4.0 );
+    f1.push_back( 2022_y/January/4, 4.0, 4.0, -5.0 );
+    f1.push_back( 2022_y/January/4, 4.0, 5.0, -6.0 );
+
+    f1.push_back( 2022_y/January/5, 5.0, 4.0, -4.0 );
+    f1.push_back( 2022_y/January/5, 5.0, 5.0, -5.0 );
+    f1.push_back( 2022_y/January/5, 5.0, 6.0, -6.0 );
+
+    f1.push_back( 2022_y/January/6, 6.0, 5.0, -4.0 );
+    f1.push_back( 2022_y/January/6, 6.0, 6.0, -5.0 );
+    f1.push_back( 2022_y/January/6, 6.0, 7.0, -6.0 );
+
+    f1.push_back( 2022_y/January/7, 7.0, 6.0, -4.0 );
+    f1.push_back( 2022_y/January/7, 7.0, 7.0, -5.0 );
+    f1.push_back( 2022_y/January/7, 7.0, 8.0, -6.0 );
+
+    f1.push_back( 2022_y/January/8, 8.0, 7.0, -4.5 );
+    f1.push_back( 2022_y/January/8, 8.0, 8.0, -5.5 );
+
+    f1.push_back( 2022_y/January/9, 9.0, 9.0, -5.0 );
+    dout << f1;
+
+    auto gf = groupby( f1, _0, _1 );
+    auto fcount = gf.count();
+    dout << fcount;
+
+    auto fmin = gf.min( _2, _3 );
+    dout << fmin;
+
+    auto fmax = gf.max( _3, _2 );
+    dout << fmax;
+
+    auto fsum = gf.sum( _2, _3 );
+    dout << fsum;
+
+    auto fmean = gf.mean( _2, _3 );
+    dout << fmean;
+
+    auto fstddev = gf.stddev( _2, _3 );
+    dout << fstddev;
+
+    {
+        //   |       date | temperature | count
+        // __|____________|_____________|_______
+        //  0| 2022-01-01 |           1 |     1
+        //  1| 2022-01-02 |           2 |     2
+        //  2| 2022-01-03 |           3 |     3
+        //  3| 2022-01-04 |           4 |     3
+        //  4| 2022-01-05 |           5 |     3
+        //  5| 2022-01-06 |           6 |     3
+        //  6| 2022-01-07 |           7 |     3
+        //  7| 2022-01-08 |           8 |     2
+        //  8| 2022-01-09 |           9 |     1
+        auto it = fcount.cbegin();
+        REQUIRE( (it + 0)->at( _2 ) == 1 );
+        REQUIRE( (it + 1)->at( _2 ) == 2 );
+        REQUIRE( (it + 2)->at( _2 ) == 3 );
+        REQUIRE( (it + 3)->at( _2 ) == 3 );
+        REQUIRE( (it + 4)->at( _2 ) == 3 );
+        REQUIRE( (it + 5)->at( _2 ) == 3 );
+        REQUIRE( (it + 6)->at( _2 ) == 3 );
+        REQUIRE( (it + 7)->at( _2 ) == 2 );
+        REQUIRE( (it + 8)->at( _2 ) == 1 );
+    }
+
+    {
+        //   |       date | temperature | min(rain) | min(humidity)
+        // __|____________|_____________|___________|_______________
+        //  0| 2022-01-01 |           1 |         0 |            -5
+        //  1| 2022-01-02 |           2 |         1 |          -5.5
+        //  2| 2022-01-03 |           3 |         2 |            -6
+        //  3| 2022-01-04 |           4 |         3 |            -6
+        //  4| 2022-01-05 |           5 |         4 |            -6
+        //  5| 2022-01-06 |           6 |         5 |            -6
+        //  6| 2022-01-07 |           7 |         6 |            -6
+        //  7| 2022-01-08 |           8 |         7 |          -5.5
+        //  8| 2022-01-09 |           9 |         9 |            -5
+        auto it = fmin.cbegin();
+        REQUIRE( (it + 0)->at( _0 ) == 2022_y/1/1 );
+        REQUIRE( (it + 1)->at( _0 ) == 2022_y/1/2 );
+        REQUIRE( (it + 2)->at( _0 ) == 2022_y/1/3 );
+        REQUIRE( (it + 3)->at( _0 ) == 2022_y/1/4 );
+        REQUIRE( (it + 4)->at( _0 ) == 2022_y/1/5 );
+        REQUIRE( (it + 5)->at( _0 ) == 2022_y/1/6 );
+        REQUIRE( (it + 6)->at( _0 ) == 2022_y/1/7 );
+        REQUIRE( (it + 7)->at( _0 ) == 2022_y/1/8 );
+        REQUIRE( (it + 8)->at( _0 ) == 2022_y/1/9 );
+        REQUIRE( (it + 0)->at( _2 ) == 0 );
+        REQUIRE( (it + 1)->at( _2 ) == 1 );
+        REQUIRE( (it + 2)->at( _2 ) == 2 );
+        REQUIRE( (it + 3)->at( _2 ) == 3 );
+        REQUIRE( (it + 4)->at( _2 ) == 4 );
+        REQUIRE( (it + 5)->at( _2 ) == 5 );
+        REQUIRE( (it + 6)->at( _2 ) == 6 );
+        REQUIRE( (it + 7)->at( _2 ) == 7 );
+        REQUIRE( (it + 8)->at( _2 ) == 9 );
+        REQUIRE( (it + 0)->at( _3 ) ==   -5 );
+        REQUIRE( (it + 1)->at( _3 ) == -5.5 );
+        REQUIRE( (it + 2)->at( _3 ) ==   -6 );
+        REQUIRE( (it + 3)->at( _3 ) ==   -6 );
+        REQUIRE( (it + 4)->at( _3 ) ==   -6 );
+        REQUIRE( (it + 5)->at( _3 ) ==   -6 );
+        REQUIRE( (it + 6)->at( _3 ) ==   -6 );
+        REQUIRE( (it + 7)->at( _3 ) == -5.5 );
+        REQUIRE( (it + 8)->at( _3 ) ==   -5 );
+    }
+
+    {
+        //   |       date | temperature | max(humidity) | max(rain)
+        // __|____________|_____________|_______________|___________
+        //  0| 2022-01-01 |           1 |            -5 |         0
+        //  1| 2022-01-02 |           2 |          -4.5 |         2
+        //  2| 2022-01-03 |           3 |            -4 |         4
+        //  3| 2022-01-04 |           4 |            -4 |         5
+        //  4| 2022-01-05 |           5 |            -4 |         6
+        //  5| 2022-01-06 |           6 |            -4 |         7
+        //  6| 2022-01-07 |           7 |            -4 |         8
+        //  7| 2022-01-08 |           8 |          -4.5 |         8
+        //  8| 2022-01-09 |           9 |            -5 |         9
+        auto it = fmax.cbegin();
+        REQUIRE( (it + 0)->at( _1 ) == 1 );
+        REQUIRE( (it + 1)->at( _1 ) == 2 );
+        REQUIRE( (it + 2)->at( _1 ) == 3 );
+        REQUIRE( (it + 3)->at( _1 ) == 4 );
+        REQUIRE( (it + 4)->at( _1 ) == 5 );
+        REQUIRE( (it + 5)->at( _1 ) == 6 );
+        REQUIRE( (it + 6)->at( _1 ) == 7 );
+        REQUIRE( (it + 7)->at( _1 ) == 8 );
+        REQUIRE( (it + 8)->at( _1 ) == 9 );
+        REQUIRE( (it + 0)->at( _2 ) ==   -5 );
+        REQUIRE( (it + 1)->at( _2 ) == -4.5 );
+        REQUIRE( (it + 2)->at( _2 ) ==   -4 );
+        REQUIRE( (it + 3)->at( _2 ) ==   -4 );
+        REQUIRE( (it + 4)->at( _2 ) ==   -4 );
+        REQUIRE( (it + 5)->at( _2 ) ==   -4 );
+        REQUIRE( (it + 6)->at( _2 ) ==   -4 );
+        REQUIRE( (it + 7)->at( _2 ) == -4.5 );
+        REQUIRE( (it + 8)->at( _2 ) ==   -5 );
+        REQUIRE( (it + 0)->at( _3 ) == 0 );
+        REQUIRE( (it + 1)->at( _3 ) == 2 );
+        REQUIRE( (it + 2)->at( _3 ) == 4 );
+        REQUIRE( (it + 3)->at( _3 ) == 5 );
+        REQUIRE( (it + 4)->at( _3 ) == 6 );
+        REQUIRE( (it + 5)->at( _3 ) == 7 );
+        REQUIRE( (it + 6)->at( _3 ) == 8 );
+        REQUIRE( (it + 7)->at( _3 ) == 8 );
+        REQUIRE( (it + 8)->at( _3 ) == 9 );
+    }
+
+    {
+	//   |       date | temperature | sum(rain) | sum(humidity)
+	// __|____________|_____________|___________|_______________
+	//  0| 2022-01-01 |           1 |         0 |            -5
+	//  1| 2022-01-02 |           2 |         3 |           -10
+	//  2| 2022-01-03 |           3 |         9 |           -15
+	//  3| 2022-01-04 |           4 |        12 |           -15
+	//  4| 2022-01-05 |           5 |        15 |           -15
+	//  5| 2022-01-06 |           6 |        18 |           -15
+	//  6| 2022-01-07 |           7 |        21 |           -15
+	//  7| 2022-01-08 |           8 |        15 |           -10
+	//  8| 2022-01-09 |           9 |         9 |            -5
+        auto it = fsum.cbegin();
+        REQUIRE( (it + 0)->at( _0 ) == 2022_y/1/1 );
+        REQUIRE( (it + 1)->at( _0 ) == 2022_y/1/2 );
+        REQUIRE( (it + 2)->at( _0 ) == 2022_y/1/3 );
+        REQUIRE( (it + 3)->at( _0 ) == 2022_y/1/4 );
+        REQUIRE( (it + 4)->at( _0 ) == 2022_y/1/5 );
+        REQUIRE( (it + 5)->at( _0 ) == 2022_y/1/6 );
+        REQUIRE( (it + 6)->at( _0 ) == 2022_y/1/7 );
+        REQUIRE( (it + 7)->at( _0 ) == 2022_y/1/8 );
+        REQUIRE( (it + 8)->at( _0 ) == 2022_y/1/9 );
+        REQUIRE( (it + 0)->at( _2 ) ==  0 );
+        REQUIRE( (it + 1)->at( _2 ) ==  3 );
+        REQUIRE( (it + 2)->at( _2 ) ==  9 );
+        REQUIRE( (it + 3)->at( _2 ) == 12 );
+        REQUIRE( (it + 4)->at( _2 ) == 15 );
+        REQUIRE( (it + 5)->at( _2 ) == 18 );
+        REQUIRE( (it + 6)->at( _2 ) == 21 );
+        REQUIRE( (it + 7)->at( _2 ) == 15 );
+        REQUIRE( (it + 8)->at( _2 ) ==  9 );
+        REQUIRE( (it + 0)->at( _3 ) ==  -5 );
+        REQUIRE( (it + 1)->at( _3 ) == -10 );
+        REQUIRE( (it + 2)->at( _3 ) == -15 );
+        REQUIRE( (it + 3)->at( _3 ) == -15 );
+        REQUIRE( (it + 4)->at( _3 ) == -15 );
+        REQUIRE( (it + 5)->at( _3 ) == -15 );
+        REQUIRE( (it + 6)->at( _3 ) == -15 );
+        REQUIRE( (it + 7)->at( _3 ) == -10 );
+        REQUIRE( (it + 8)->at( _3 ) ==  -5 );
+    }
+    {
+	//   |       date | temperature | mean(rain) | mean(humidity)
+	// __|____________|_____________|____________|________________
+	//  0| 2022-01-01 |           1 |          0 |             -5
+	//  1| 2022-01-02 |           2 |        1.5 |             -5
+	//  2| 2022-01-03 |           3 |          3 |             -5
+	//  3| 2022-01-04 |           4 |          4 |             -5
+	//  4| 2022-01-05 |           5 |          5 |             -5
+	//  5| 2022-01-06 |           6 |          6 |             -5
+	//  6| 2022-01-07 |           7 |          7 |             -5
+	//  7| 2022-01-08 |           8 |        7.5 |             -5
+	//  8| 2022-01-09 |           9 |          9 |             -5
+        auto it = fmean.cbegin();
+        REQUIRE( (it + 0)->at( _1 ) == 1 );
+        REQUIRE( (it + 1)->at( _1 ) == 2 );
+        REQUIRE( (it + 2)->at( _1 ) == 3 );
+        REQUIRE( (it + 3)->at( _1 ) == 4 );
+        REQUIRE( (it + 4)->at( _1 ) == 5 );
+        REQUIRE( (it + 5)->at( _1 ) == 6 );
+        REQUIRE( (it + 6)->at( _1 ) == 7 );
+        REQUIRE( (it + 7)->at( _1 ) == 8 );
+        REQUIRE( (it + 8)->at( _1 ) == 9 );
+        REQUIRE( (it + 0)->at( _2 ) ==   0 );
+        REQUIRE( (it + 1)->at( _2 ) == 1.5 );
+        REQUIRE( (it + 2)->at( _2 ) ==   3 );
+        REQUIRE( (it + 3)->at( _2 ) ==   4 );
+        REQUIRE( (it + 4)->at( _2 ) ==   5 );
+        REQUIRE( (it + 5)->at( _2 ) ==   6 );
+        REQUIRE( (it + 6)->at( _2 ) ==   7 );
+        REQUIRE( (it + 7)->at( _2 ) == 7.5 );
+        REQUIRE( (it + 8)->at( _2 ) ==   9 );
+        REQUIRE( (it + 0)->at( _3 ) == -5 );
+        REQUIRE( (it + 1)->at( _3 ) == -5 );
+        REQUIRE( (it + 2)->at( _3 ) == -5 );
+        REQUIRE( (it + 3)->at( _3 ) == -5 );
+        REQUIRE( (it + 4)->at( _3 ) == -5 );
+        REQUIRE( (it + 5)->at( _3 ) == -5 );
+        REQUIRE( (it + 6)->at( _3 ) == -5 );
+        REQUIRE( (it + 7)->at( _3 ) == -5 );
+        REQUIRE( (it + 8)->at( _3 ) == -5 );
+    }
+    {
+	//   |       date | temperature | stddev(rain) | stddev(humidity)
+	// __|____________|_____________|______________|__________________
+	//  0| 2022-01-01 |           1 |            0 |                0
+	//  1| 2022-01-02 |           2 |          0.5 |              0.5
+	//  2| 2022-01-03 |           3 |     0.816497 |         0.816497
+	//  3| 2022-01-04 |           4 |     0.816497 |         0.816497
+	//  4| 2022-01-05 |           5 |     0.816497 |         0.816497
+	//  5| 2022-01-06 |           6 |     0.816497 |         0.816497
+	//  6| 2022-01-07 |           7 |     0.816497 |         0.816497
+	//  7| 2022-01-08 |           8 |          0.5 |              0.5
+	//  8| 2022-01-09 |           9 |            0 |                0
+        auto it = fstddev.cbegin();
+        REQUIRE( (it + 0)->at( _0 ) == 2022_y/1/1 );
+        REQUIRE( (it + 1)->at( _0 ) == 2022_y/1/2 );
+        REQUIRE( (it + 2)->at( _0 ) == 2022_y/1/3 );
+        REQUIRE( (it + 3)->at( _0 ) == 2022_y/1/4 );
+        REQUIRE( (it + 4)->at( _0 ) == 2022_y/1/5 );
+        REQUIRE( (it + 5)->at( _0 ) == 2022_y/1/6 );
+        REQUIRE( (it + 6)->at( _0 ) == 2022_y/1/7 );
+        REQUIRE( (it + 7)->at( _0 ) == 2022_y/1/8 );
+        REQUIRE( (it + 8)->at( _0 ) == 2022_y/1/9 );
+        REQUIRE( (it + 0)->at( _2 ) == Approx(       0) );
+        REQUIRE( (it + 1)->at( _2 ) == Approx(     0.5) );
+        REQUIRE( (it + 2)->at( _2 ) == Approx(0.816497) );
+        REQUIRE( (it + 3)->at( _2 ) == Approx(0.816497) );
+        REQUIRE( (it + 4)->at( _2 ) == Approx(0.816497) );
+        REQUIRE( (it + 5)->at( _2 ) == Approx(0.816497) );
+        REQUIRE( (it + 6)->at( _2 ) == Approx(0.816497) );
+        REQUIRE( (it + 7)->at( _2 ) == Approx(     0.5) );
+        REQUIRE( (it + 8)->at( _2 ) == Approx(       0) );
+        REQUIRE( (it + 0)->at( _3 ) == Approx(       0) );
+        REQUIRE( (it + 1)->at( _3 ) == Approx(     0.5) );
+        REQUIRE( (it + 2)->at( _3 ) == Approx(0.816497) );
+        REQUIRE( (it + 3)->at( _3 ) == Approx(0.816497) );
+        REQUIRE( (it + 4)->at( _3 ) == Approx(0.816497) );
+        REQUIRE( (it + 5)->at( _3 ) == Approx(0.816497) );
+        REQUIRE( (it + 6)->at( _3 ) == Approx(0.816497) );
+        REQUIRE( (it + 7)->at( _3 ) == Approx(     0.5) );
+        REQUIRE( (it + 8)->at( _3 ) == Approx(       0) );
+    }
 }
 
 
