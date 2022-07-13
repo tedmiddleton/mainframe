@@ -149,6 +149,18 @@ struct get_index_frame<index_defn<Ind>, Frame<Ts...>>
 {
     using ind_type = typename pack_element<Ind, Ts...>::type;
     using type     = frame<ind_type>;
+
+    static type
+    op(Frame<Ts...>& f)
+    {
+        return f.columns(columnindex<Ind>{});
+    }
+
+    static const type
+    op(const Frame<Ts...>& f)
+    {
+        return f.columns(columnindex<Ind>{});
+    }
 };
 
 // A frame with all of the indexed columns removed

@@ -721,6 +721,12 @@ public:
     }
 
     void
+    set_column_names(const std::vector<std::string>& names)
+    {
+        set_column_names_impl<0>(names);
+    }
+
+    void
     set_column_names(const name_array& names)
     {
         set_column_names_impl<0>(names);
@@ -1019,6 +1025,19 @@ private:
         s.resize(newsize);
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             resize_impl<Ind + 1>(newsize);
+        }
+    }
+
+    template<size_t Ind>
+    void
+    set_column_names_impl(const std::vector<std::string>& names)
+    {
+        if (Ind < names.size()) {
+            auto& s = std::get<Ind>(m_columns);
+            s.set_name(names.at(Ind));
+        }
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            set_column_names_impl<Ind + 1>(names);
         }
     }
 
