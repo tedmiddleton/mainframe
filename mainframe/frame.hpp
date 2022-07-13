@@ -296,6 +296,12 @@ struct remove_all_opt<frame<>>
 
 } // namespace detail
 
+template<size_t... Inds>
+struct index_defn;
+
+template<typename IndexDefn, typename... Ts>
+class grouped_frame;
+
 template<typename... Ts>
 class frame
 {
@@ -551,6 +557,13 @@ public:
         std::tuple<Ts*...> ptrs;
         erase_impl<0>(ptrs, pos);
         return iterator{ ptrs };
+    }
+
+    template<size_t... Idx>
+    grouped_frame<index_defn<Idx...>, Ts...>
+    groupby(columnindex<Idx>...) const
+    {
+        return grouped_frame<index_defn<Idx...>, Ts...>{ *this };
     }
 
     iterator

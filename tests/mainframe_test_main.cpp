@@ -1490,7 +1490,7 @@ TEST_CASE("groupby", "[frame]")
     f1.push_back(2022_y / January / 9, 9.0, 9.0, -5.0);
     dout << f1;
 
-    auto gf     = groupby(f1, _0, _1);
+    auto gf     = f1.groupby(_0, _1);
     auto fcount = gf.count();
     dout << fcount;
 

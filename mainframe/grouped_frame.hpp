@@ -1,3 +1,4 @@
+
 //          Copyright Ted Middleton 2022.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -283,8 +284,6 @@ public:
     result_frame<index_defn<Inds...>>
     stddev(columnindex<Inds>... ci) const
     {
-        // (x1+x2+...+xn)/n => m (mean)
-        // sqrt( ( (m-x1)^2 + (m-x1)^2 + ... + (m-xn)^2 )/n ) => stddev
         return stddev_group_op(ci...);
     }
 
@@ -617,13 +616,6 @@ private:
     mutable map_type m_idx;
     frame<Ts...> m_frame;
 };
-
-template<size_t... Idx, typename... Ts>
-grouped_frame<index_defn<Idx...>, Ts...>
-groupby(frame<Ts...> f, columnindex<Idx>...)
-{
-    return grouped_frame<index_defn<Idx...>, Ts...>{ f };
-}
 
 
 } // namespace mf
