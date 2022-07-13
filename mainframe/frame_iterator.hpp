@@ -149,9 +149,9 @@ private:
 template<typename... Ts>
 using frame_row = _base_frame_row<false, Ts...>;
 
-template<size_t Ind=0, typename... Ts>
+template<size_t Ind = 0, typename... Ts>
 std::ostream&
-operator<<( std::ostream& o, const frame_row<Ts...>& fr )
+operator<<(std::ostream& o, const frame_row<Ts...>& fr)
 {
     columnindex<Ind> ci;
 
@@ -164,11 +164,11 @@ operator<<( std::ostream& o, const frame_row<Ts...>& fr )
         o << "[ ";
     }
 
-    detail::stringify( o, fr.at( ci ), true );
+    detail::stringify(o, fr.at(ci), true);
 
-    if constexpr (Ind+1 < sizeof...(Ts)) {
+    if constexpr (Ind + 1 < sizeof...(Ts)) {
         o << ", ";
-        operator<< <Ind+1>(o, fr);
+        operator<< <Ind + 1>(o, fr);
     }
     else {
         o << " ]";
@@ -181,9 +181,8 @@ class _row_proxy
 {
 public:
     using row_type = std::true_type;
-    using tuple_type = typename std::conditional<IsConst,
-        std::tuple<const Ts*...>,
-        std::tuple<Ts*...>>::type;
+    using tuple_type =
+        typename std::conditional<IsConst, std::tuple<const Ts*...>, std::tuple<Ts*...>>::type;
 
     template<bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true>
     _row_proxy&
@@ -332,11 +331,11 @@ private:
     void
     init(std::tuple<series<Ts>...>& data, ptrdiff_t off)
     {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
-        series<T>& s = std::get<Ind>(data);
+        using T               = typename detail::pack_element<Ind, Ts...>::type;
+        series<T>& s          = std::get<Ind>(data);
         std::get<Ind>(m_ptrs) = s.data() + off;
-        if constexpr (Ind+1 < sizeof...(Ts)) {
-            init<Ind+1>(data, off);
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            init<Ind + 1>(data, off);
         }
     }
 
@@ -344,11 +343,11 @@ private:
     void
     init(const std::tuple<series<Ts>...>& data, ptrdiff_t off)
     {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
-        const series<T>& s = std::get<Ind>(data);
+        using T               = typename detail::pack_element<Ind, Ts...>::type;
+        const series<T>& s    = std::get<Ind>(data);
         std::get<Ind>(m_ptrs) = s.data() + off;
-        if constexpr (Ind+1 < sizeof...(Ts)) {
-            init<Ind+1>(data, off);
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            init<Ind + 1>(data, off);
         }
     }
 
@@ -613,12 +612,12 @@ public:
 
     template<bool _IsConst = IsConst, std::enable_if_t<_IsConst, bool> = true>
     base_frame_iterator(const std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
-        : m_row(data, off)    
+        : m_row(data, off)
     {}
 
     template<bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true>
     base_frame_iterator(std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
-        : m_row(data, off)    
+        : m_row(data, off)
     {}
 
     base_frame_iterator(std::tuple<Ts*...> ptrs)

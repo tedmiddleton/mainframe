@@ -19,7 +19,8 @@ struct index_defn
 template<typename IndexDefn, typename... Ts>
 class grouped_frame;
 
-namespace detail {
+namespace detail
+{
 
 // Does the index def contain that column index?
 // index_defn_contains<3, index_defn<0, 2, 1>>::value == false
@@ -33,7 +34,8 @@ struct index_defn_contains<ColNum, index_defn<ColNum, Inds...>> : std::true_type
 {};
 
 template<size_t ColNum, size_t Ind, size_t... Inds>
-struct index_defn_contains<ColNum, index_defn<Ind, Inds...>> : index_defn_contains<ColNum, index_defn<Inds...>>
+struct index_defn_contains<ColNum, index_defn<Ind, Inds...>>
+    : index_defn_contains<ColNum, index_defn<Inds...>>
 {};
 
 // Get the ColNum'th index
@@ -45,7 +47,7 @@ struct index_defn_deref;
 template<size_t ColNum, size_t Ind, size_t... Inds>
 struct index_defn_deref<ColNum, index_defn<Ind, Inds...>>
 {
-    static const size_t value = index_defn_deref<ColNum-1, index_defn<Inds...>>::value;
+    static const size_t value = index_defn_deref<ColNum - 1, index_defn<Inds...>>::value;
 };
 
 template<size_t Ind, size_t... Inds>
@@ -56,23 +58,24 @@ struct index_defn_deref<0, index_defn<Ind, Inds...>>
 
 // Make a Tpl with the index defn's columns/items
 // index_defn_select<index_defn<0, 4>, tuple<char, short, int, long>>::type == tuple<char, long>
-// index_defn_select<index_defn<2, 0>, frame<year_month, double, float>>::type == frame<float, year_month>
+// index_defn_select<index_defn<2, 0>, frame<year_month, double, float>>::type == frame<float,
+// year_month>
 template<typename IndexDefn, typename Tpl>
 struct index_defn_select;
 
 template<size_t Ind, size_t... Inds, template<typename...> typename Tpl, typename... Ts>
 struct index_defn_select<index_defn<Ind, Inds...>, Tpl<Ts...>>
 {
-    using ind_type = typename pack_element<Ind, Ts...>::type;
+    using ind_type  = typename pack_element<Ind, Ts...>::type;
     using remaining = typename index_defn_select<index_defn<Inds...>, Tpl<Ts...>>::type;
-    using type = typename prepend<ind_type, remaining>::type;
+    using type      = typename prepend<ind_type, remaining>::type;
 };
 
 template<size_t Ind, template<typename...> typename Tpl, typename... Ts>
 struct index_defn_select<index_defn<Ind>, Tpl<Ts...>>
 {
     using ind_type = typename pack_element<Ind, Ts...>::type;
-    using type = Tpl<ind_type>;
+    using type     = Tpl<ind_type>;
 };
 
 // Prepend an index to an index defn
@@ -89,11 +92,9 @@ struct index_defn_prepend<Ind, index_defn<Inds...>>
 template<size_t CurrInd, size_t Num, typename IndexDefn>
 struct index_defn_invert_impl
 {
-    using remaining = typename index_defn_invert_impl<CurrInd+1, Num, IndexDefn>::type;
-    using type = typename std::conditional<
-        index_defn_contains<CurrInd, IndexDefn>::value,
-        remaining,
-        typename index_defn_prepend<CurrInd, remaining>::type>::type;
+    using remaining = typename index_defn_invert_impl<CurrInd + 1, Num, IndexDefn>::type;
+    using type      = typename std::conditional<index_defn_contains<CurrInd, IndexDefn>::value,
+        remaining, typename index_defn_prepend<CurrInd, remaining>::type>::type;
 };
 
 template<size_t CurrInd, typename IndexDefn>
@@ -108,7 +109,7 @@ struct index_defn_invert_impl<CurrInd, CurrInd, IndexDefn>
 template<typename IndexDefn, typename Tpl>
 struct index_defn_invert;
 
-template<typename IndexDefn, template <typename...> typename Tpl, typename... Ts>
+template<typename IndexDefn, template<typename...> typename Tpl, typename... Ts>
 struct index_defn_invert<IndexDefn, Tpl<Ts...>>
 {
     using type = typename index_defn_invert_impl<0, sizeof...(Ts), IndexDefn>::type;
@@ -122,45 +123,48 @@ struct index_defn_invert<IndexDefn, Tpl<Ts...>>
 template<typename IndexDefn, typename Frame>
 struct get_index_frame;
 
-template<size_t Ind, size_t... Inds, template <typename...> typename Frame, typename... Ts>
+template<size_t Ind, size_t... Inds, template<typename...> typename Frame, typename... Ts>
 struct get_index_frame<index_defn<Ind, Inds...>, Frame<Ts...>>
 {
-    using ind_type = typename pack_element<Ind, Ts...>::type;
+    using ind_type  = typename pack_element<Ind, Ts...>::type;
     using remaining = typename get_index_frame<index_defn<Inds...>, Frame<Ts...>>::type;
-    using type = typename prepend<ind_type, remaining>::type;
+    using type      = typename prepend<ind_type, remaining>::type;
 
-    static type op( Frame<Ts...>& f )
+    static type
+    op(Frame<Ts...>& f)
     {
         return f.columns(columnindex<Ind>{}, columnindex<Inds>{}...);
     }
 
-    static const type op( const Frame<Ts...>& f )
+    static const type
+    op(const Frame<Ts...>& f)
     {
         return f.columns(columnindex<Ind>{}, columnindex<Inds>{}...);
     }
 };
 
-template<size_t Ind, template <typename...> typename Frame, typename... Ts>
+template<size_t Ind, template<typename...> typename Frame, typename... Ts>
 struct get_index_frame<index_defn<Ind>, Frame<Ts...>>
 {
     using ind_type = typename pack_element<Ind, Ts...>::type;
-    using type = frame<ind_type>;
+    using type     = frame<ind_type>;
 };
 
 // A frame with all of the indexed columns removed
 // eg unindexed_frame<index_defn<4, 0>, frame<short, double, double, int, year_month>>::type
 // is frame<double, double, int>
 template<typename IndexDefn, typename Frame>
-using get_unindex_frame = get_index_frame<typename index_defn_invert<IndexDefn, Frame>::type, Frame>;
+using get_unindex_frame =
+    get_index_frame<typename index_defn_invert<IndexDefn, Frame>::type, Frame>;
 
 // A frame derived from another frame and two index definitions.
 //   result_frame<
-//     index_defn<4, 0>, 
-//     index_defn<2, 3>, 
+//     index_defn<4, 0>,
+//     index_defn<2, 3>,
 //     frame<short, double, float, int, year_month>>::type
 //   == frame<year_month, short, float, int>
-// This is used to execute grouped functions like max() - the functions specify columns, 
-// which is what the second index_defn is for. The first index_defn is for the 
+// This is used to execute grouped functions like max() - the functions specify columns,
+// which is what the second index_defn is for. The first index_defn is for the
 // indexed/group'd-by columns. So for example, if we had
 //   frame<year, month, double, int, float, bool> f;
 //   auto gf = f.groupby( _1, _5 ); // month and bool
@@ -177,14 +181,16 @@ struct get_result_frame<index_defn<Inds1...>, index_defn<Inds2...>, Frame>
 {
     using indexed_cols1 = typename get_index_frame<index_defn<Inds1...>, Frame>::type;
     using indexed_cols2 = typename get_index_frame<index_defn<Inds2...>, Frame>::type;
-    using type = typename join_frames<indexed_cols1, indexed_cols2>::type;
+    using type          = typename join_frames<indexed_cols1, indexed_cols2>::type;
 
-    static type op( Frame& f )
+    static type
+    op(Frame& f)
     {
         return f.columns(columnindex<Inds1>{}..., columnindex<Inds2>{}...);
     }
 
-    static const type op( const Frame& f )
+    static const type
+    op(const Frame& f)
     {
         return f.columns(columnindex<Inds1>{}..., columnindex<Inds2>{}...);
     }
@@ -201,25 +207,23 @@ class grouped_frame<index_defn<GroupInds...>, Ts...>
     template<typename T, typename U>
     using join_frames = detail::join_frames<T, U>;
 
-    // The index definition for this grouped_frame 
+    // The index definition for this grouped_frame
     using group_index_defn = index_defn<GroupInds...>;
 
     // The index frame is a frame made of the indexed columns
-    using get_index_frame = 
-        detail::get_index_frame<group_index_defn, frame<Ts...>>;
-    using index_frame = typename get_index_frame::type;
+    using get_index_frame = detail::get_index_frame<group_index_defn, frame<Ts...>>;
+    using index_frame     = typename get_index_frame::type;
 
-    // The result frame for any given function invocation has the index columns 
+    // The result frame for any given function invocation has the index columns
     // but also the grouped function columns
     template<typename IndexDefn>
-    using get_result_frame =
-        detail::get_result_frame<group_index_defn, IndexDefn, frame<Ts...>>;
+    using get_result_frame = detail::get_result_frame<group_index_defn, IndexDefn, frame<Ts...>>;
     template<typename IndexDefn>
     using result_frame = typename get_result_frame<IndexDefn>::type;
 
-    using key_type = typename index_frame::row_type; // frame_row
+    using key_type       = typename index_frame::row_type; // frame_row
     using map_value_type = std::vector<size_t>;
-    using map_type = std::map<key_type, map_value_type>;
+    using map_type       = std::map<key_type, map_value_type>;
 
 public:
     grouped_frame(frame<Ts...> f)
@@ -230,14 +234,14 @@ public:
     result_frame<index_defn<Inds...>>
     min(columnindex<Inds>... ci) const
     {
-        return group_op<numeric_max, row_min, empty_finalize>( "min", ci... ); 
+        return group_op<numeric_max, row_min, empty_finalize>("min", ci...);
     }
 
     template<size_t... Inds>
     result_frame<index_defn<Inds...>>
     max(columnindex<Inds>... ci) const
     {
-        return group_op<numeric_min, row_max, empty_finalize>( "max", ci... ); 
+        return group_op<numeric_min, row_max, empty_finalize>("max", ci...);
     }
 
     typename join_frames<index_frame, frame<size_t>>::type
@@ -245,17 +249,17 @@ public:
     {
         build_index();
 
-        auto f1 = get_index_frame::op( m_frame );
-        auto outframe = f1.template new_series<size_t>( "count" );
+        auto f1       = get_index_frame::op(m_frame);
+        auto outframe = f1.template new_series<size_t>("count");
         outframe.clear();
 
-        auto it = m_idx.cbegin();
+        auto it  = m_idx.cbegin();
         auto end = m_idx.cend();
-        for ( ; it != end; ++it  ) {
+        for (; it != end; ++it) {
             const key_type& kt = it->first;
-            const auto& rows = it->second;
-            auto count = rows.size();
-            outframe.push_back( kt, count );
+            const auto& rows   = it->second;
+            auto count         = rows.size();
+            outframe.push_back(kt, count);
         }
 
         return outframe;
@@ -265,14 +269,14 @@ public:
     result_frame<index_defn<Inds...>>
     sum(columnindex<Inds>... ci) const
     {
-        return group_op<numeric_zero, row_sum, empty_finalize>( "sum", ci... ); 
+        return group_op<numeric_zero, row_sum, empty_finalize>("sum", ci...);
     }
 
     template<size_t... Inds>
     result_frame<index_defn<Inds...>>
     mean(columnindex<Inds>... ci) const
     {
-        return group_op<numeric_zero, row_sum, mean_finalize>( "mean", ci... ); 
+        return group_op<numeric_zero, row_sum, mean_finalize>("mean", ci...);
     }
 
     template<size_t... Inds>
@@ -280,8 +284,8 @@ public:
     stddev(columnindex<Inds>... ci) const
     {
         // (x1+x2+...+xn)/n => m (mean)
-        // sqrt( ( (m-x1)^2 + (m-x1)^2 + ... + (m-xn)^2 )/n ) => stddev 
-        return stddev_group_op( ci... ); 
+        // sqrt( ( (m-x1)^2 + (m-x1)^2 + ... + (m-xn)^2 )/n ) => stddev
+        return stddev_group_op(ci...);
     }
 
 private:
@@ -295,8 +299,8 @@ private:
             ss << opstr << "(" << name << ")";
             name = ss.str();
         }
-        if constexpr (Ind+1 < Num) {
-            augment_column_names<Ind+1, IndexDefn>(opstr, names);
+        if constexpr (Ind + 1 < Num) {
+            augment_column_names<Ind + 1, IndexDefn>(opstr, names);
         }
     }
 
@@ -317,7 +321,7 @@ private:
         operator()()
         {
             using std::numeric_limits;
-            return numeric_limits<T>::max(); 
+            return numeric_limits<T>::max();
         }
     };
 
@@ -328,7 +332,7 @@ private:
         operator()()
         {
             using std::numeric_limits;
-            return numeric_limits<T>::lowest(); 
+            return numeric_limits<T>::lowest();
         }
     };
 
@@ -336,9 +340,9 @@ private:
     struct row_sum
     {
         T
-        operator()( const T& t1, const T& t2 )
+        operator()(const T& t1, const T& t2)
         {
-            return t1 + t2; 
+            return t1 + t2;
         }
     };
 
@@ -346,10 +350,10 @@ private:
     struct row_min
     {
         T
-        operator()( const T& t1, const T& t2 )
+        operator()(const T& t1, const T& t2)
         {
             using std::min;
-            return min(t1, t2); 
+            return min(t1, t2);
         }
     };
 
@@ -357,10 +361,10 @@ private:
     struct row_max
     {
         T
-        operator()( const T& t1, const T& t2 )
+        operator()(const T& t1, const T& t2)
         {
             using std::max;
-            return max(t1, t2); 
+            return max(t1, t2);
         }
     };
 
@@ -368,7 +372,7 @@ private:
     struct row_sqdist
     {
         T
-        operator()( const T& row, const T& mean, const T& dist )
+        operator()(const T& row, const T& mean, const T& dist)
         {
             return dist + ((row - mean) * (row - mean));
         }
@@ -378,7 +382,7 @@ private:
     struct empty_finalize
     {
         T
-        operator()( size_t, const T& t )
+        operator()(size_t, const T& t)
         {
             return t;
         }
@@ -388,7 +392,7 @@ private:
     struct mean_finalize
     {
         T
-        operator()( size_t num, const T& t )
+        operator()(size_t num, const T& t)
         {
             return static_cast<T>(t / num);
         }
@@ -398,13 +402,13 @@ private:
     struct sqdist_finalize
     {
         T
-        operator()( size_t num, const T& t )
+        operator()(size_t num, const T& t)
         {
             return static_cast<T>(sqrt(t / num));
         }
     };
 
-    template<size_t Ind=0, template<typename>typename Op, typename... Us>
+    template<size_t Ind = 0, template<typename> typename Op, typename... Us>
     void
     group_row_init(frame_row<Us...>& fr) const
     {
@@ -413,15 +417,15 @@ private:
         // Don't do anything to the index columns!
         if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
             columnindex<Ind> ci;
-            fr.at( ci ) = Op<T>()();
+            fr.at(ci) = Op<T>()();
         }
 
-        if constexpr (Ind+1 < sizeof...(Us)) {
-            group_row_init<Ind+1, Op>(fr);
+        if constexpr (Ind + 1 < sizeof...(Us)) {
+            group_row_init<Ind + 1, Op>(fr);
         }
     }
 
-    template<size_t Ind=0, template<typename>typename Op, bool IsConst, typename... Us>
+    template<size_t Ind = 0, template<typename> typename Op, bool IsConst, typename... Us>
     void
     group_row_op(const _row_proxy<IsConst, Us...>& rp, frame_row<Us...>& fr) const
     {
@@ -430,32 +434,33 @@ private:
         // Don't do anything to the index columns!
         if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
             columnindex<Ind> ci;
-            fr.at( ci ) = Op<T>()(rp.at( ci ), fr.at( ci ));
+            fr.at(ci) = Op<T>()(rp.at(ci), fr.at(ci));
         }
 
-        if constexpr (Ind+1 < sizeof...(Us)) {
-            group_row_op<Ind+1, Op>(rp, fr);
+        if constexpr (Ind + 1 < sizeof...(Us)) {
+            group_row_op<Ind + 1, Op>(rp, fr);
         }
     }
 
-    template<size_t Ind=0, template<typename>typename Op, bool IsConst, typename... Us>
+    template<size_t Ind = 0, template<typename> typename Op, bool IsConst, typename... Us>
     void
-    group_row_op_3(const _row_proxy<IsConst, Us...>& rp, frame_row<Us...>& fr1, frame_row<Us...>& fr2) const
+    group_row_op_3(
+        const _row_proxy<IsConst, Us...>& rp, frame_row<Us...>& fr1, frame_row<Us...>& fr2) const
     {
         using T = typename detail::pack_element<Ind, Us...>::type;
 
         // Don't do anything to the index columns!
         if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
             columnindex<Ind> ci;
-            fr2.at( ci ) = Op<T>()(rp.at( ci ), fr1.at( ci ), fr2.at( ci ));
+            fr2.at(ci) = Op<T>()(rp.at(ci), fr1.at(ci), fr2.at(ci));
         }
 
-        if constexpr (Ind+1 < sizeof...(Us)) {
-            group_row_op_3<Ind+1, Op>(rp, fr1, fr2);
+        if constexpr (Ind + 1 < sizeof...(Us)) {
+            group_row_op_3<Ind + 1, Op>(rp, fr1, fr2);
         }
     }
 
-    template<size_t Ind=0, template<typename>typename Op, typename... Us>
+    template<size_t Ind = 0, template<typename> typename Op, typename... Us>
     void
     group_row_finalize(size_t num, frame_row<Us...>& fr) const
     {
@@ -464,24 +469,21 @@ private:
         // Don't do anything to the index columns!
         if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
             columnindex<Ind> ci;
-            fr.at( ci ) = Op<T>()(num, fr.at( ci ));
+            fr.at(ci) = Op<T>()(num, fr.at(ci));
         }
 
-        if constexpr (Ind+1 < sizeof...(Us)) {
-            group_row_finalize<Ind+1, Op>(num, fr);
+        if constexpr (Ind + 1 < sizeof...(Us)) {
+            group_row_finalize<Ind + 1, Op>(num, fr);
         }
     }
 
-    template<
-        template<typename>typename Init, 
-        template<typename>typename RowOp, 
-        template<typename>typename Finalize, 
-        size_t... Inds>
+    template<template<typename> typename Init, template<typename> typename RowOp,
+        template<typename> typename Finalize, size_t... Inds>
     result_frame<index_defn<Inds...>>
     group_op(std::string name, columnindex<Inds>...) const
     {
         build_index();
-        auto inframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
+        auto inframe = get_result_frame<index_defn<Inds...>>::op(m_frame);
 
         // get the column names
         auto outframe = inframe;
@@ -492,79 +494,79 @@ private:
         augment_column_names<0, index_defn<Inds...>>(name, names);
         outframe.set_column_names(names);
 
-        auto it = m_idx.cbegin();
+        auto it  = m_idx.cbegin();
         auto end = m_idx.cend();
-        for ( ; it != end; ++it  ) {
+        for (; it != end; ++it) {
             const map_value_type& rows = it->second;
             typename result_frame<index_defn<Inds...>>::row_type oprow;
 
-            auto rit = rows.cbegin();
-            auto rend = rows.cend();
+            auto rit   = rows.cbegin();
+            auto rend  = rows.cend();
             size_t num = rend - rit;
 
-            oprow = inframe[ *rit ]; // This is mostly to get the index columns
-            group_row_init<0, Init>( oprow );
-            for ( ; rit != rend; ++rit ) {
-                const auto& row = inframe[ *rit ];
-                group_row_op<0, RowOp>( row, oprow );
+            oprow = inframe[*rit]; // This is mostly to get the index columns
+            group_row_init<0, Init>(oprow);
+            for (; rit != rend; ++rit) {
+                const auto& row = inframe[*rit];
+                group_row_op<0, RowOp>(row, oprow);
             }
-            group_row_finalize<0, Finalize>( num, oprow );
-            outframe.push_back( oprow );
+            group_row_finalize<0, Finalize>(num, oprow);
+            outframe.push_back(oprow);
         }
 
         return outframe;
     }
 
-    // stddev requires multiple passes 
+    // stddev requires multiple passes
     template<size_t... Inds>
     result_frame<index_defn<Inds...>>
     stddev_group_op(columnindex<Inds>...) const
     {
         build_index();
-        auto inframe = get_result_frame<index_defn<Inds...>>::op( m_frame );
+        auto inframe = get_result_frame<index_defn<Inds...>>::op(m_frame);
 
         // get the column names
         auto outframe = inframe;
-        outframe.clear(); 
-                          
+        outframe.clear();
+
         // modify the non-index column names
         auto names = outframe.column_names();
         augment_column_names<0, index_defn<Inds...>>("stddev", names);
         outframe.set_column_names(names);
 
-        auto it = m_idx.cbegin();
+        auto it  = m_idx.cbegin();
         auto end = m_idx.cend();
-        for ( ; it != end; ++it  ) {
+        for (; it != end; ++it) {
             const map_value_type& rows = it->second;
             typename result_frame<index_defn<Inds...>>::row_type meanrow;
             typename result_frame<index_defn<Inds...>>::row_type sqdistrow;
 
             // Generate the mean
-            auto rit = rows.cbegin();
+            auto rit  = rows.cbegin();
             auto rend = rows.cend();
-            meanrow = inframe[ *rit ]; // mostly for the index values
-                                       
-            group_row_init<0, numeric_zero>( meanrow );
+            meanrow   = inframe[*rit]; // mostly for the index values
+
+            group_row_init<0, numeric_zero>(meanrow);
             size_t num = rend - rit;
-            for ( ; rit != rend; ++rit ) {
-                const auto& row = inframe[ *rit ];
-                group_row_op<0, row_sum>( row, meanrow );
+            for (; rit != rend; ++rit) {
+                const auto& row = inframe[*rit];
+                group_row_op<0, row_sum>(row, meanrow);
             }
-            group_row_finalize<0, mean_finalize>( num, meanrow );
+            group_row_finalize<0, mean_finalize>(num, meanrow);
 
             // Generate the squared distances
-            rit = rows.cbegin();
-            sqdistrow = inframe[ *rit ]; // mostly for the index values
+            rit       = rows.cbegin();
+            sqdistrow = inframe[*rit]; // mostly for the index values
 
-            group_row_init<0, numeric_zero>( sqdistrow );
-            for ( ; rit != rend; ++rit ) {
-                const auto& row = inframe[ *rit ];
-                group_row_op_3<0, row_sqdist>( row, meanrow, sqdistrow );
+            group_row_init<0, numeric_zero>(sqdistrow);
+            for (; rit != rend; ++rit) {
+                const auto& row = inframe[*rit];
+                group_row_op_3<0, row_sqdist>(row, meanrow, sqdistrow);
             }
-            group_row_finalize<0, sqdist_finalize>( num, sqdistrow );
+            group_row_finalize<0, sqdist_finalize>(num, sqdistrow);
 
 
-            outframe.push_back( sqdistrow );
+            outframe.push_back(sqdistrow);
         }
 
         return outframe;
@@ -577,13 +579,13 @@ private:
             return;
         }
 
-        const index_frame ifr{ get_index_frame::op( m_frame ) };
+        const index_frame ifr{ get_index_frame::op(m_frame) };
 
-        for ( size_t i = 0; i < ifr.size(); ++i ) {
+        for (size_t i = 0; i < ifr.size(); ++i) {
             auto row = ifr[i];
             key_type key{ row };
-            auto findit = m_idx.find( key );
-            if ( findit == m_idx.end() ) {
+            auto findit = m_idx.find(key);
+            if (findit == m_idx.end()) {
                 map_value_type arr;
                 arr.push_back(i);
                 m_idx[key] = arr;
@@ -593,17 +595,19 @@ private:
             }
         }
     }
- 
-    void 
+
+    void
     debug_index() const
     {
         std::cout << "Index:\n";
-        for ( auto& [key, val] : m_idx ) {
+        for (auto& [key, val] : m_idx) {
             std::cout << "key " << key << ": ";
             std::cout << "[ ";
             int i = 0;
-            for ( auto& ind : val ) {
-                if (i++ != 0) { std::cout << ", "; }
+            for (auto& ind : val) {
+                if (i++ != 0) {
+                    std::cout << ", ";
+                }
                 std::cout << ind;
             }
             std::cout << " ]\n";

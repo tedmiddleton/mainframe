@@ -641,14 +641,14 @@ public:
     }
 
     _row_proxy<false, Ts...>
-    operator[]( size_t ind )
+    operator[](size_t ind)
     {
         _row_proxy<false, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
         return out;
     }
 
     _row_proxy<true, Ts...>
-    operator[]( size_t ind ) const
+    operator[](size_t ind) const
     {
         _row_proxy<true, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
         return out;
@@ -660,14 +660,14 @@ public:
         pop_back_impl<0>();
     }
 
-    template<bool IsConst, typename... Us, typename... Vs> 
+    template<bool IsConst, typename... Us, typename... Vs>
     void
     push_back(const _row_proxy<IsConst, Us...>& fr, const Vs&... args)
     {
         push_back_multiple_row_impl<0>(fr, args...);
     }
 
-    template<typename... Us, typename... Vs> 
+    template<typename... Us, typename... Vs>
     void
     push_back(const frame_row<Us...>& fr, const Vs&... args)
     {
@@ -949,7 +949,7 @@ private:
             push_back_multiple_empty_impl<Ind + 1>();
         }
     }
-    
+
     template<size_t Ind, typename V, typename... Vs>
     void
     push_back_multiple_args_impl(V arg, const Vs&... args)
@@ -958,15 +958,16 @@ private:
         std::get<Ind>(m_columns).push_back(arg);
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             if constexpr (sizeof...(Vs) > 0) {
-                push_back_multiple_args_impl<Ind+1>(args...);
+                push_back_multiple_args_impl<Ind + 1>(args...);
             }
             else {
-                push_back_multiple_empty_impl<Ind+1>();
+                push_back_multiple_empty_impl<Ind + 1>();
             }
         }
     }
-    
-    template<size_t Ind, bool IsConst, template<bool, typename...> typename Row, typename... Us, typename... Vs>
+
+    template<size_t Ind, bool IsConst, template<bool, typename...> typename Row, typename... Us,
+        typename... Vs>
     void
     push_back_multiple_row_impl(const Row<IsConst, Us...>& fr, const Vs&... args)
     {
@@ -975,13 +976,13 @@ private:
         std::get<Ind>(m_columns).push_back(fr.at(ci));
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             if constexpr (Ind + 1 < sizeof...(Us)) {
-                push_back_multiple_row_impl<Ind+1>(fr, args...);
+                push_back_multiple_row_impl<Ind + 1>(fr, args...);
             }
             else if constexpr (sizeof...(Vs) > 0) {
-                push_back_multiple_args_impl<Ind+1>(args...);
+                push_back_multiple_args_impl<Ind + 1>(args...);
             }
             else {
-                push_back_multiple_empty_impl<Ind+1>();
+                push_back_multiple_empty_impl<Ind + 1>();
             }
         }
     }
