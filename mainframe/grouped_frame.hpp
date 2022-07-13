@@ -230,14 +230,14 @@ public:
     result_frame<index_defn<Inds...>>
     min(columnindex<Inds>... ci) const
     {
-        return group_op<numeric_max, row_min>( "min", ci... ); 
+        return group_op<numeric_max, row_min, empty_finalize>( "min", ci... ); 
     }
 
     template<size_t... Inds>
     result_frame<index_defn<Inds...>>
     max(columnindex<Inds>... ci) const
     {
-        return group_op<numeric_min, row_max>( "max", ci... ); 
+        return group_op<numeric_min, row_max, empty_finalize>( "max", ci... ); 
     }
 
     typename join_frames<index_frame, frame<int>>::type
@@ -265,7 +265,14 @@ public:
     result_frame<index_defn<Inds...>>
     sum(columnindex<Inds>... ci) const
     {
-        return group_op<numeric_zero, row_sum>( "sum", ci... ); 
+        return group_op<numeric_zero, row_sum, empty_finalize>( "sum", ci... ); 
+    }
+
+    template<size_t... Inds>
+    result_frame<index_defn<Inds...>>
+    mean(columnindex<Inds>... ci) const
+    {
+        return group_op<numeric_zero, row_sum, mean_finalize>( "mean", ci... ); 
     }
 
 private:
@@ -312,7 +319,7 @@ private:
         operator()()
         {
             using std::numeric_limits;
-            return numeric_limits<T>::min(); 
+            return numeric_limits<T>::lowest(); 
         }
     };
 
@@ -345,6 +352,26 @@ private:
         {
             using std::max;
             return max(t1, t2); 
+        }
+    };
+
+    template<typename T>
+    struct empty_finalize
+    {
+        T
+        operator()( size_t, const T& t )
+        {
+            return t;
+        }
+    };
+
+    template<typename T>
+    struct mean_finalize
+    {
+        T
+        operator()( size_t num, const T& t )
+        {
+            return static_cast<T>(t / num);
         }
     };
 
@@ -382,7 +409,28 @@ private:
         }
     }
 
-    template<template<typename>typename Init, template<typename>typename RowOp, size_t... Inds>
+    template<size_t Ind=0, template<typename>typename Op, typename... Us>
+    void
+    group_row_finalize(size_t num, frame_row<Us...>& fr) const
+    {
+        using T = typename detail::pack_element<Ind, Us...>::type;
+
+        // Don't do anything to the index columns!
+        if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
+            columnindex<Ind> ci;
+            fr.at( ci ) = Op<T>()(num, fr.at( ci ));
+        }
+
+        if constexpr (Ind+1 < sizeof...(Us)) {
+            group_row_finalize<Ind+1, Op>(num, fr);
+        }
+    }
+
+    template<
+        template<typename>typename Init, 
+        template<typename>typename RowOp, 
+        template<typename>typename Finalize, 
+        size_t... Inds>
     result_frame<index_defn<Inds...>>
     group_op(std::string name, columnindex<Inds>...) const
     {
@@ -404,10 +452,12 @@ private:
             typename result_frame<index_defn<Inds...>>::row_type oprow;
             oprow = inframe[ *rit ];
             group_row_init<0, Init>( oprow );
+            size_t num = rend - rit;
             for ( ; rit != rend; ++rit ) {
                 const auto& row = inframe[ *rit ];
                 group_row_op<0, RowOp>( row, oprow );
             }
+            group_row_finalize<0, Finalize>( num, oprow );
             outframe.push_back( oprow );
         }
 
