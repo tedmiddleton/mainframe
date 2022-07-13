@@ -988,9 +988,10 @@ private:
 
     template<size_t Ind, typename U, typename... Us>
     void
-    push_back_impl(const U& t, const Us&... us)
+    push_back_impl(const U& u, const Us&... us)
     {
-        std::get<Ind>(m_columns).push_back(t);
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        std::get<Ind>(m_columns).push_back(static_cast<T>(u));
         if constexpr (sizeof...(Us) > 0) {
             push_back_impl<Ind + 1>(us...);
         }

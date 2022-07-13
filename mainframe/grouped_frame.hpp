@@ -240,13 +240,13 @@ public:
         return group_op<numeric_min, row_max, empty_finalize>( "max", ci... ); 
     }
 
-    typename join_frames<index_frame, frame<int>>::type
+    typename join_frames<index_frame, frame<size_t>>::type
     count() const
     {
         build_index();
 
         auto f1 = get_index_frame::op( m_frame );
-        auto outframe = f1.template new_series<int>( "count" );
+        auto outframe = f1.template new_series<size_t>( "count" );
         outframe.clear();
 
         auto it = m_idx.cbegin();
