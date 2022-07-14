@@ -315,6 +315,8 @@ public:
     using const_reverse_iterator = const_reverse_frame_iterator<Ts...>;
     using name_array             = std::array<std::string, sizeof...(Ts)>;
     using row_type               = frame_row<Ts...>;
+    using value_type             = _row_proxy<false, Ts...>;
+    using const_value_type       = _row_proxy<true, Ts...>;
 
     frame()                        = default;
     frame(const frame&)            = default;
@@ -418,7 +420,6 @@ public:
     void
     clear()
     {
-        unref();
         clear_impl<0>();
     }
 
@@ -692,6 +693,12 @@ public:
     push_back(U first_arg, Us... args)
     {
         push_back_impl<0, U, Us...>(first_arg, args...);
+    }
+
+    void
+    reserve(size_t newsize)
+    {
+        reserve_impl<0>(newsize);
     }
 
     void
@@ -1014,6 +1021,17 @@ private:
         std::get<Ind>(m_columns).push_back(static_cast<T>(u));
         if constexpr (sizeof...(Us) > 0) {
             push_back_impl<Ind + 1>(us...);
+        }
+    }
+
+    template<size_t Ind>
+    void
+    reserve_impl(size_t newsize)
+    {
+        auto& s = std::get<Ind>(m_columns);
+        s.reserve(newsize);
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            reserve_impl<Ind + 1>(newsize);
         }
     }
 

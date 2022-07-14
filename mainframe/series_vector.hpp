@@ -256,6 +256,9 @@ using const_reverse_sv_iterator = base_sv_iterator<T, true, true>;
 template<typename T>
 class series_vector : public iseries_vector
 {
+    static constexpr bool is_move_constructible = std::is_move_constructible<T>::value;
+    static constexpr bool is_move_assignable = std::is_move_assignable<T>::value;
+
 public:
     static const size_t DEFAULT_SIZE = 32;
     using value_type                 = T;
@@ -562,7 +565,7 @@ public:
         if (newsize > capacity()) {
             size_t n  = pow_2(newsize);
             T* nbegin = static_cast<T*>(malloc(n * sizeof(T)));
-            T* nend   = placement_copy(m_begin, m_end, nbegin);
+            T* nend   = placement_move(m_begin, m_end, nbegin);
             clear();
             m_begin = nbegin;
             m_end   = nend;
@@ -802,13 +805,25 @@ private:
     }
 
     template<typename Iter>
-    Iter
-    placement_copy(Iter inbegin, Iter inend, Iter outbegin) const
+    typename std::enable_if<!is_move_constructible, Iter>::type
+    placement_move(Iter inbegin, Iter inend, Iter outbegin) const
     {
         auto incurr  = inbegin;
         auto outcurr = outbegin;
         for (; incurr != inend; ++incurr, ++outcurr) {
             new (outcurr) T{ *incurr };
+        }
+        return outcurr;
+    }
+
+    template<typename Iter>
+    typename std::enable_if<is_move_constructible, Iter>::type
+    placement_move(Iter inbegin, Iter inend, Iter outbegin) const
+    {
+        auto incurr  = inbegin;
+        auto outcurr = outbegin;
+        for (; incurr != inend; ++incurr, ++outcurr) {
+            new (outcurr) T{ std::move(*incurr) };
         }
         return outcurr;
     }

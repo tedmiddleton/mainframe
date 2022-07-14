@@ -392,8 +392,7 @@ public:
     void
     clear()
     {
-        unref();
-        m_sharedvec->clear();
+        m_sharedvec = std::make_shared<series_vector<T>>();
     }
 
     // insert & emplace

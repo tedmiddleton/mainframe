@@ -43,6 +43,7 @@ add_library( mainframe STATIC
     mainframe/simd.hpp 
     mainframe/missing.hpp 
     mainframe/frame.hpp 
+    mainframe/frame_iterator.hpp 
     mainframe/grouped_frame.hpp 
     mainframe/expression.hpp 
     )

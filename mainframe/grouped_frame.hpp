@@ -234,9 +234,9 @@ class grouped_frame<index_defn<GroupInds...>, Ts...>
     template<typename IndexDefn>
     using result_frame = typename get_result_frame<IndexDefn>::type;
 
-    using key_type       = typename index_frame::row_type; // frame_row
+    using key_type       = typename index_frame::const_value_type; // _row_proxy
     using map_value_type = std::vector<size_t>;
-    using map_type       = std::map<key_type, map_value_type>;
+    using map_type       = std::unordered_map<key_type, map_value_type>;
 
 public:
     grouped_frame(frame<Ts...> f)
@@ -265,6 +265,7 @@ public:
         auto f1       = get_index_frame::op(m_frame);
         auto outframe = f1.template new_series<size_t>("count");
         outframe.clear();
+        outframe.reserve(m_frame.size());
 
         auto it  = m_idx.cbegin();
         auto end = m_idx.cend();
@@ -499,6 +500,7 @@ private:
         // get the column names
         auto outframe = inframe;
         outframe.clear();
+        outframe.reserve(inframe.size());
 
         // modify the non-index column names
         auto names = outframe.column_names();
@@ -515,7 +517,9 @@ private:
             auto rend  = rows.cend();
             size_t num = rend - rit;
 
-            oprow = inframe[*rit]; // This is mostly to get the index columns
+            auto rowind = *rit;
+            auto rproxy = inframe[rowind];
+            oprow = rproxy; // This is mostly to get the index columns
             group_row_init<0, Init>(oprow);
             for (; rit != rend; ++rit) {
                 const auto& row = inframe[*rit];
@@ -583,6 +587,7 @@ private:
         return outframe;
     }
 
+public:
     void
     build_index() const
     {
@@ -591,15 +596,15 @@ private:
         }
 
         const index_frame ifr{ get_index_frame::op(m_frame) };
+        m_idx.reserve(ifr.size());
 
         for (size_t i = 0; i < ifr.size(); ++i) {
             auto row = ifr[i];
-            key_type key{ row };
-            auto findit = m_idx.find(key);
+            auto findit = m_idx.find(row);
             if (findit == m_idx.end()) {
                 map_value_type arr;
                 arr.push_back(i);
-                m_idx[key] = arr;
+                m_idx[row] = arr;
             }
             else {
                 findit->second.push_back(i);
@@ -624,6 +629,8 @@ private:
             std::cout << " ]\n";
         }
     }
+
+private:
 
     mutable map_type m_idx;
     frame<Ts...> m_frame;

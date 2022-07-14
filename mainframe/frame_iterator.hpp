@@ -184,6 +184,10 @@ public:
     using tuple_type =
         typename std::conditional<IsConst, std::tuple<const Ts*...>, std::tuple<Ts*...>>::type;
 
+    _row_proxy(const _row_proxy& other)
+        : m_ptrs(other.m_ptrs)
+    {}
+
     template<bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true>
     _row_proxy&
     operator=(_row_proxy&& row)
@@ -353,10 +357,6 @@ private:
 
     _row_proxy(tuple_type p)
         : m_ptrs(p)
-    {}
-
-    _row_proxy(const _row_proxy& other)
-        : m_ptrs(other.m_ptrs)
     {}
 
     void
@@ -826,5 +826,44 @@ template<typename... Ts>
 using const_reverse_frame_iterator = base_frame_iterator<true, true, Ts...>;
 
 } // namespace mf
+
+namespace std
+{
+    template<bool IsConst, typename... Ts>
+    struct hash<mf::_base_frame_row<IsConst, Ts...>>
+    {
+        template<size_t Ind=0>
+        size_t
+        operator()(const mf::_base_frame_row<IsConst, Ts...>& fr) const
+        {
+            using T = typename mf::detail::pack_element<Ind, Ts...>::type;
+            std::hash<T> hasher;
+            columnindex<Ind> ci;
+            size_t out = hasher(fr.at( ci ));
+            if constexpr (Ind + 1 < sizeof...(Ts)) {
+                out ^= operator()<Ind + 1>(fr);
+            }
+            return out;
+        }
+    };
+
+    template<bool IsConst, typename... Ts>
+    struct hash<mf::_row_proxy<IsConst, Ts...>>
+    {
+        template<size_t Ind=0>
+        size_t
+        operator()(const mf::_row_proxy<IsConst, Ts...>& fr) const
+        {
+            using T = typename mf::detail::pack_element<Ind, Ts...>::type;
+            std::hash<T> hasher;
+            columnindex<Ind> ci;
+            size_t out = hasher(fr.at( ci ));
+            if constexpr (Ind + 1 < sizeof...(Ts)) {
+                out ^= operator()<Ind + 1>(fr);
+            }
+            return out;
+        }
+    };
+} // namespace std
 
 #endif // INCLUDED_mainframe_frame_iterator_h

@@ -1488,26 +1488,40 @@ TEST_CASE("groupby", "[frame]")
     f1.push_back(2022_y / January / 8, 8.0, 8.0, -5.5);
 
     f1.push_back(2022_y / January / 9, 9.0, 9.0, -5.0);
+    dout << "f1:\n";
     dout << f1;
 
     auto gf     = f1.groupby(_0, _1);
     auto fcount = gf.count();
+    dout << "fcount:\n";
     dout << fcount;
 
     auto fmin = gf.min(_2, _3);
+    dout << "fmin:\n";
     dout << fmin;
 
     auto fmax = gf.max(_3, _2);
+    dout << "fmax:\n";
     dout << fmax;
 
     auto fsum = gf.sum(_2, _3);
+    dout << "fsum:\n";
     dout << fsum;
 
     auto fmean = gf.mean(_2, _3);
+    dout << "fmean:\n";
     dout << fmean;
 
     auto fstddev = gf.stddev(_2, _3);
+    dout << "fstddev:\n";
     dout << fstddev;
+
+    std::sort(fcount.begin(), fcount.end());
+    std::sort(fmin.begin(), fmin.end());
+    std::sort(fmax.begin(), fmax.end());
+    std::sort(fsum.begin(), fsum.end());
+    std::sort(fmean.begin(), fmean.end());
+    std::sort(fstddev.begin(), fstddev.end());
 
     {
         //   |       date | temperature | count
