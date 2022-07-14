@@ -838,7 +838,7 @@ namespace std
         {
             using T = typename mf::detail::pack_element<Ind, Ts...>::type;
             std::hash<T> hasher;
-            columnindex<Ind> ci;
+            mf::columnindex<Ind> ci;
             size_t out = hasher(fr.at( ci ));
             if constexpr (Ind + 1 < sizeof...(Ts)) {
                 out ^= operator()<Ind + 1>(fr);
@@ -856,7 +856,7 @@ namespace std
         {
             using T = typename mf::detail::pack_element<Ind, Ts...>::type;
             std::hash<T> hasher;
-            columnindex<Ind> ci;
+            mf::columnindex<Ind> ci;
             size_t out = hasher(fr.at( ci ));
             if constexpr (Ind + 1 < sizeof...(Ts)) {
                 out ^= operator()<Ind + 1>(fr);
