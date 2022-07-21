@@ -452,7 +452,7 @@ public:
 
     template<size_t Ind>
     const series<typename detail::pack_element<Ind, Ts...>::type>&
-    column(terminal<expr_column<Ind>>) const
+    column(columnindex<Ind>) const
     {
         return std::get<Ind>(m_columns);
     }
@@ -460,6 +460,13 @@ public:
     template<size_t Ind>
     std::string
     column_name() const
+    {
+        return std::get<Ind>(m_columns).name();
+    }
+
+    template<size_t Ind>
+    std::string
+    column_name(columnindex<Ind>) const
     {
         return std::get<Ind>(m_columns).name();
     }
