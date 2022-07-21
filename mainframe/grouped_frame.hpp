@@ -423,6 +423,34 @@ public:
         : m_frame(f)
     {}
 
+    template<typename... Ops>
+    typename get_aggregate_frame<Ops...>::type
+    aggregate(Ops...) const
+    {
+        build_index();
+
+        typename detail::get_result_columns_from_args<frame<Ts...>, Ops...>::type 
+            result_columns;
+        aggregate_rename_result_columns<0, Ops...>( result_columns );
+        auto ifr = get_index_frame::op( m_frame );
+        ifr.clear(); // this is mostly to get the column names
+
+        for ( const auto& [key, rowinds] : m_idx ) {
+
+            // key is a _row_proxy into the original frame
+            // rowinds is a vector<size_t> of row indices into the original frame
+
+            // now we iterate the frame columns, performing all operations 
+            aggregate_column<0, Ops...>( rowinds, result_columns );
+            aggregate_count<Ops...>( rowinds, result_columns );
+            ifr.push_back( key );
+        }
+
+        auto result = add_result_series<0>( ifr, result_columns );
+        return result;
+    }
+
+private:
     template<size_t ColInd, typename... Ops, typename... Us>
     void
     aggregate_rename_result_columns( std::tuple<series<Us>...>& result_columns ) const
@@ -487,31 +515,6 @@ public:
             aggregate_rename_result_columns_args<ArgInd+1, ColInd, Ops...>( 
                 result_columns );
         }
-    }
-
-    template<typename... Ops>
-    typename get_aggregate_frame<Ops...>::type
-    aggregate(Ops...) const
-    {
-        typename detail::get_result_columns_from_args<frame<Ts...>, Ops...>::type 
-            result_columns;
-        aggregate_rename_result_columns<0, Ops...>( result_columns );
-        auto ifr = get_index_frame::op( m_frame );
-        ifr.clear(); // this is mostly to get the column names
-
-        for ( const auto& [key, rowinds] : m_idx ) {
-
-            // key is a _row_proxy into the original frame
-            // rowinds is a vector<size_t> of row indices into the original frame
-
-            // now we iterate the frame columns, performing all operations 
-            aggregate_column<0, Ops...>( rowinds, result_columns );
-            aggregate_count<Ops...>( rowinds, result_columns );
-            ifr.push_back( key );
-        }
-
-        auto result = add_result_series<0>( ifr, result_columns );
-        return result;
     }
 
     template<typename... Ops, typename... Us, typename... ColInds>
@@ -685,350 +688,6 @@ public:
         if constexpr (Ind+1 < sizeof...(Us)) {
             vectorize_result_columns<Ind+1>( result_columns, us );
         }
-    }
-
-    template<size_t... Inds>
-    result_frame<index_defn<Inds...>>
-    min(columnindex<Inds>... ci) const
-    {
-        return group_op<numeric_max, row_min, empty_finalize>("min", ci...);
-    }
-
-    template<size_t... Inds>
-    result_frame<index_defn<Inds...>>
-    max(columnindex<Inds>... ci) const
-    {
-        return group_op<numeric_min, row_max, empty_finalize>("max", ci...);
-    }
-
-    typename join_frames<index_frame, frame<size_t>>::type
-    count() const
-    {
-        build_index();
-
-        auto f1       = get_index_frame::op(m_frame);
-        auto outframe = f1.template new_series<size_t>("count");
-        outframe.clear();
-        outframe.reserve(m_frame.size());
-
-        auto it  = m_idx.cbegin();
-        auto end = m_idx.cend();
-        for (; it != end; ++it) {
-            const key_type& kt = it->first;
-            const auto& rows   = it->second;
-            auto count         = rows.size();
-            outframe.push_back(kt, count);
-        }
-
-        return outframe;
-    }
-
-    template<size_t... Inds>
-    result_frame<index_defn<Inds...>>
-    sum(columnindex<Inds>... ci) const
-    {
-        return group_op<numeric_zero, row_sum, empty_finalize>("sum", ci...);
-    }
-
-    template<size_t... Inds>
-    result_frame<index_defn<Inds...>>
-    mean(columnindex<Inds>... ci) const
-    {
-        return group_op<numeric_zero, row_sum, mean_finalize>("mean", ci...);
-    }
-
-    template<size_t... Inds>
-    result_frame<index_defn<Inds...>>
-    stddev(columnindex<Inds>... ci) const
-    {
-        return stddev_group_op(ci...);
-    }
-
-private:
-    template<size_t Ind, typename IndexDefn, size_t Num>
-    void
-    augment_column_names(std::string opstr, std::array<std::string, Num>& names) const
-    {
-        if constexpr (detail::index_defn_contains<Ind, IndexDefn>::value) {
-            std::string& name = names[Ind];
-            std::stringstream ss;
-            ss << opstr << "(" << name << ")";
-            name = ss.str();
-        }
-        if constexpr (Ind + 1 < Num) {
-            augment_column_names<Ind + 1, IndexDefn>(opstr, names);
-        }
-    }
-
-    template<typename T>
-    struct numeric_zero
-    {
-        T
-        operator()()
-        {
-            return static_cast<T>(0);
-        }
-    };
-
-    template<typename T>
-    struct numeric_max
-    {
-        T
-        operator()()
-        {
-            using std::numeric_limits;
-            return numeric_limits<T>::max();
-        }
-    };
-
-    template<typename T>
-    struct numeric_min
-    {
-        T
-        operator()()
-        {
-            using std::numeric_limits;
-            return numeric_limits<T>::lowest();
-        }
-    };
-
-    template<typename T>
-    struct row_sum
-    {
-        T
-        operator()(const T& t1, const T& t2)
-        {
-            return t1 + t2;
-        }
-    };
-
-    template<typename T>
-    struct row_min
-    {
-        T
-        operator()(const T& t1, const T& t2)
-        {
-            using std::min;
-            return min(t1, t2);
-        }
-    };
-
-    template<typename T>
-    struct row_max
-    {
-        T
-        operator()(const T& t1, const T& t2)
-        {
-            using std::max;
-            return max(t1, t2);
-        }
-    };
-
-    template<typename T>
-    struct row_sqdist
-    {
-        T
-        operator()(const T& row, const T& mean, const T& dist)
-        {
-            return dist + ((row - mean) * (row - mean));
-        }
-    };
-
-    template<typename T>
-    struct empty_finalize
-    {
-        T
-        operator()(size_t, const T& t)
-        {
-            return t;
-        }
-    };
-
-    template<typename T>
-    struct mean_finalize
-    {
-        T
-        operator()(size_t num, const T& t)
-        {
-            return static_cast<T>(t / num);
-        }
-    };
-
-    template<typename T>
-    struct sqdist_finalize
-    {
-        T
-        operator()(size_t num, const T& t)
-        {
-            return static_cast<T>(sqrt(t / num));
-        }
-    };
-
-    template<size_t Ind = 0, template<typename> typename Op, typename... Us>
-    void
-    group_row_init(frame_row<Us...>& fr) const
-    {
-        using T = typename detail::pack_element<Ind, Us...>::type;
-
-        // Don't do anything to the index columns!
-        if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
-            columnindex<Ind> ci;
-            fr.at(ci) = Op<T>()();
-        }
-
-        if constexpr (Ind + 1 < sizeof...(Us)) {
-            group_row_init<Ind + 1, Op>(fr);
-        }
-    }
-
-    template<size_t Ind = 0, template<typename> typename Op, bool IsConst, typename... Us>
-    void
-    group_row_op(const _row_proxy<IsConst, Us...>& rp, frame_row<Us...>& fr) const
-    {
-        using T = typename detail::pack_element<Ind, Us...>::type;
-
-        // Don't do anything to the index columns!
-        if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
-            columnindex<Ind> ci;
-            fr.at(ci) = Op<T>()(rp.at(ci), fr.at(ci));
-        }
-
-        if constexpr (Ind + 1 < sizeof...(Us)) {
-            group_row_op<Ind + 1, Op>(rp, fr);
-        }
-    }
-
-    template<size_t Ind = 0, template<typename> typename Op, bool IsConst, typename... Us>
-    void
-    group_row_op_3(
-        const _row_proxy<IsConst, Us...>& rp, frame_row<Us...>& fr1, frame_row<Us...>& fr2) const
-    {
-        using T = typename detail::pack_element<Ind, Us...>::type;
-
-        // Don't do anything to the index columns!
-        if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
-            columnindex<Ind> ci;
-            fr2.at(ci) = Op<T>()(rp.at(ci), fr1.at(ci), fr2.at(ci));
-        }
-
-        if constexpr (Ind + 1 < sizeof...(Us)) {
-            group_row_op_3<Ind + 1, Op>(rp, fr1, fr2);
-        }
-    }
-
-    template<size_t Ind = 0, template<typename> typename Op, typename... Us>
-    void
-    group_row_finalize(size_t num, frame_row<Us...>& fr) const
-    {
-        using T = typename detail::pack_element<Ind, Us...>::type;
-
-        // Don't do anything to the index columns!
-        if constexpr (!detail::index_defn_contains<Ind, group_index_defn>::value) {
-            columnindex<Ind> ci;
-            fr.at(ci) = Op<T>()(num, fr.at(ci));
-        }
-
-        if constexpr (Ind + 1 < sizeof...(Us)) {
-            group_row_finalize<Ind + 1, Op>(num, fr);
-        }
-    }
-
-    template<template<typename> typename Init, template<typename> typename RowOp,
-        template<typename> typename Finalize, size_t... Inds>
-    result_frame<index_defn<Inds...>>
-    group_op(std::string name, columnindex<Inds>...) const
-    {
-        build_index();
-        auto inframe = get_result_frame<index_defn<Inds...>>::op(m_frame);
-
-        // get the column names
-        auto outframe = inframe;
-        outframe.clear();
-        outframe.reserve(inframe.size());
-
-        // modify the non-index column names
-        auto names = outframe.column_names();
-        augment_column_names<0, index_defn<Inds...>>(name, names);
-        outframe.set_column_names(names);
-
-        auto it  = m_idx.cbegin();
-        auto end = m_idx.cend();
-        for (; it != end; ++it) {
-            const map_value_type& rows = it->second;
-            typename result_frame<index_defn<Inds...>>::row_type oprow;
-
-            auto rit   = rows.cbegin();
-            auto rend  = rows.cend();
-            size_t num = rend - rit;
-
-            auto rowind = *rit;
-            auto rproxy = inframe[rowind];
-            oprow = rproxy; // This is mostly to get the index columns
-            group_row_init<0, Init>(oprow);
-            for (; rit != rend; ++rit) {
-                const auto& row = inframe[*rit];
-                group_row_op<0, RowOp>(row, oprow);
-            }
-            group_row_finalize<0, Finalize>(num, oprow);
-            outframe.push_back(oprow);
-        }
-
-        return outframe;
-    }
-
-    // stddev requires multiple passes
-    template<size_t... Inds>
-    result_frame<index_defn<Inds...>>
-    stddev_group_op(columnindex<Inds>...) const
-    {
-        build_index();
-        auto inframe = get_result_frame<index_defn<Inds...>>::op(m_frame);
-
-        // get the column names
-        auto outframe = inframe;
-        outframe.clear();
-
-        // modify the non-index column names
-        auto names = outframe.column_names();
-        augment_column_names<0, index_defn<Inds...>>("stddev", names);
-        outframe.set_column_names(names);
-
-        auto it  = m_idx.cbegin();
-        auto end = m_idx.cend();
-        for (; it != end; ++it) {
-            const map_value_type& rows = it->second;
-            typename result_frame<index_defn<Inds...>>::row_type meanrow;
-            typename result_frame<index_defn<Inds...>>::row_type sqdistrow;
-
-            // Generate the mean
-            auto rit  = rows.cbegin();
-            auto rend = rows.cend();
-            meanrow   = inframe[*rit]; // mostly for the index values
-
-            group_row_init<0, numeric_zero>(meanrow);
-            size_t num = rend - rit;
-            for (; rit != rend; ++rit) {
-                const auto& row = inframe[*rit];
-                group_row_op<0, row_sum>(row, meanrow);
-            }
-            group_row_finalize<0, mean_finalize>(num, meanrow);
-
-            // Generate the squared distances
-            rit       = rows.cbegin();
-            sqdistrow = inframe[*rit]; // mostly for the index values
-
-            group_row_init<0, numeric_zero>(sqdistrow);
-            for (; rit != rend; ++rit) {
-                const auto& row = inframe[*rit];
-                group_row_op_3<0, row_sqdist>(row, meanrow, sqdistrow);
-            }
-            group_row_finalize<0, sqdist_finalize>(num, sqdistrow);
-
-
-            outframe.push_back(sqdistrow);
-        }
-
-        return outframe;
     }
 
 public:
