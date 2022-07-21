@@ -620,6 +620,50 @@ public:
         result_column.push_back(temp);
     }
 
+    template<size_t ColInd, typename T>
+    void
+    aggregate_column_arg_op( detail::mean_op<ColInd>, 
+                             const std::vector<size_t>& rowinds, 
+                             series<T>& result_column ) const
+    {
+        T temp = static_cast<T>(0);
+        columnindex<ColInd+1> ci;
+        for ( size_t rowind : rowinds ) {
+            const auto& row = m_frame[rowind]; 
+            const T& t = row.at( ci );
+            temp += t;
+        }
+        temp /= rowinds.size();
+        result_column.push_back(temp);
+    }
+
+    template<size_t ColInd, typename T>
+    void
+    aggregate_column_arg_op( detail::stddev_op<ColInd>, 
+                             const std::vector<size_t>& rowinds, 
+                             series<T>& result_column ) const
+    {
+        T sum = static_cast<T>(0);
+        columnindex<ColInd+1> ci;
+        for ( size_t rowind : rowinds ) {
+            const auto& row = m_frame[rowind]; 
+            const T& t = row.at( ci );
+            sum += t;
+        }
+        T mean = sum / rowinds.size();
+
+        T sqdist = static_cast<T>(0);
+        for ( size_t rowind : rowinds ) {
+            const auto& row = m_frame[rowind]; 
+            const T& t = row.at( ci );
+            T dist = t-mean;
+            sqdist += (dist * dist);
+        }
+        
+        T stddev = static_cast<T>(sqrt( sqdist / rowinds.size() ));
+        result_column.push_back(stddev);
+    }
+
     template<size_t Ind, typename... Us>
     uframe
     add_result_series( typename get_index_frame::type ifr, std::tuple<series<Us>...>& result_columns ) const
