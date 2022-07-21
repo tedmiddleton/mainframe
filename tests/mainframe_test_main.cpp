@@ -1493,38 +1493,38 @@ TEST_CASE("aggregate", "[frame]")
     // start with groupby( _5, _6 ).aggregate( sum( _1 ), sum( _2 ), count(), min( _4 ), sum( _3 ), sum( _1 ), max( _1 ) )
     using F = frame<char, short, int, long, float, double>;
     using RCFA = typename mf::detail::get_result_columns_from_args<F, 
+          decltype(mf::agg::sum(_0)),
           decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::sum(_2)),
           decltype(mf::agg::count()),
-          decltype(mf::agg::min(_4)),
-          decltype(mf::agg::sum(_3)),
-          decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::max(_1))
+          decltype(mf::agg::min(_3)),
+          decltype(mf::agg::sum(_2)),
+          decltype(mf::agg::sum(_0)),
+          decltype(mf::agg::max(_0))
           >::type;
     RCFA rcfa;
     (void)rcfa;
     //TD<RCFA> foo;
 
     using AF = typename mf::detail::get_aggregate_frame<F, index_defn<4, 5>,
+          decltype(mf::agg::sum(_0)),
           decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::sum(_2)),
           decltype(mf::agg::count()),
-          decltype(mf::agg::min(_4)),
-          decltype(mf::agg::sum(_3)),
-          decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::max(_1))
+          decltype(mf::agg::min(_3)),
+          decltype(mf::agg::sum(_2)),
+          decltype(mf::agg::sum(_0)),
+          decltype(mf::agg::max(_0))
           >::type;
     AF af;
     (void)af;
     //TD<AF> foo4;
     using TUP = tuple<
+          decltype(mf::agg::sum(_0)),
           decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::sum(_2)),
           decltype(mf::agg::count()),
-          decltype(mf::agg::min(_4)),
-          decltype(mf::agg::sum(_3)),
-          decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::max(_1))
+          decltype(mf::agg::min(_3)),
+          decltype(mf::agg::sum(_2)),
+          decltype(mf::agg::sum(_0)),
+          decltype(mf::agg::max(_0))
               >;
     TUP tup;
     (void)tup;

@@ -342,38 +342,38 @@ struct get_aggregate_frame<frame<Ts...>, index_defn<Inds...>, Ops...>
 namespace agg
 {
 template<size_t Ind>
-detail::sum_op<Ind-1>
+detail::sum_op<Ind>
 sum( columnindex<Ind> ) 
 {
-    return detail::sum_op<Ind-1>{};
+    return detail::sum_op<Ind>{};
 }
 
 template<size_t Ind>
-detail::min_op<Ind-1>
+detail::min_op<Ind>
 min( columnindex<Ind> ) 
 {
-    return detail::min_op<Ind-1>{};
+    return detail::min_op<Ind>{};
 }
 
 template<size_t Ind>
-detail::max_op<Ind-1>
+detail::max_op<Ind>
 max( columnindex<Ind> ) 
 {
-    return detail::max_op<Ind-1>{};
+    return detail::max_op<Ind>{};
 }
 
 template<size_t Ind>
-detail::mean_op<Ind-1>
+detail::mean_op<Ind>
 mean( columnindex<Ind> ) 
 {
-    return detail::mean_op<Ind-1>{};
+    return detail::mean_op<Ind>{};
 }
 
 template<size_t Ind>
-detail::stddev_op<Ind-1>
+detail::stddev_op<Ind>
 stddev( columnindex<Ind> ) 
 {
-    return detail::stddev_op<Ind-1>{};
+    return detail::stddev_op<Ind>{};
 }
 
 detail::count_op
@@ -451,16 +451,6 @@ public:
     }
 
 private:
-    template<size_t ColInd, typename... Ops, typename... Us>
-    void
-    aggregate_rename_result_columns( std::tuple<series<Us>...>& result_columns ) const
-    {
-        aggregate_rename_result_columns_args<0, ColInd, Ops...>( result_columns );
-        if constexpr (ColInd+1 < sizeof...(Ts)) {
-            aggregate_rename_result_columns<ColInd+1, Ops...>( result_columns );
-        }
-    }
-
     template<size_t ColInd>
     std::string
     get_op_name( detail::sum_op<ColInd> ) const
@@ -496,13 +486,23 @@ private:
         return "stddev";
     }
 
+    template<size_t ColInd, typename... Ops, typename... Us>
+    void
+    aggregate_rename_result_columns( std::tuple<series<Us>...>& result_columns ) const
+    {
+        aggregate_rename_result_columns_args<0, ColInd, Ops...>( result_columns );
+        if constexpr (ColInd+1 < sizeof...(Ts)) {
+            aggregate_rename_result_columns<ColInd+1, Ops...>( result_columns );
+        }
+    }
+
     template<size_t ArgInd, size_t ColInd, typename... Ops, typename... Us>
     void
     aggregate_rename_result_columns_args( std::tuple<series<Us>...>& result_columns ) const
     {
         using OpsTup = std::tuple<Ops...>;
         if constexpr (detail::is_colind_at_argind<ColInd, ArgInd, OpsTup>::value) {
-            columnindex<ColInd+1> ci;
+            columnindex<ColInd> ci;
             auto name = m_frame.column_name(ci);
             auto& s = std::get<ArgInd>(result_columns);
             using Op = typename detail::pack_element<ArgInd, Ops...>::type;
@@ -578,7 +578,7 @@ private:
                              series<T>& result_column ) const
     {
         T temp = static_cast<T>(0);
-        columnindex<ColInd+1> ci;
+        columnindex<ColInd> ci;
         for ( size_t rowind : rowinds ) {
             const auto& row = m_frame[rowind]; 
             const T& t = row.at( ci );
@@ -596,7 +596,7 @@ private:
         using std::max;
         using std::numeric_limits;
         T temp = numeric_limits<T>::lowest();
-        columnindex<ColInd+1> ci;
+        columnindex<ColInd> ci;
         for ( size_t rowind : rowinds ) {
             const auto& row = m_frame[rowind]; 
             const T& t = row.at( ci );
@@ -614,7 +614,7 @@ private:
         using std::min;
         using std::numeric_limits;
         T temp = numeric_limits<T>::max();
-        columnindex<ColInd+1> ci;
+        columnindex<ColInd> ci;
         for ( size_t rowind : rowinds ) {
             const auto& row = m_frame[rowind]; 
             const T& t = row.at( ci );
@@ -630,7 +630,7 @@ private:
                              series<T>& result_column ) const
     {
         T temp = static_cast<T>(0);
-        columnindex<ColInd+1> ci;
+        columnindex<ColInd> ci;
         for ( size_t rowind : rowinds ) {
             const auto& row = m_frame[rowind]; 
             const T& t = row.at( ci );
@@ -647,7 +647,7 @@ private:
                              series<T>& result_column ) const
     {
         T sum = static_cast<T>(0);
-        columnindex<ColInd+1> ci;
+        columnindex<ColInd> ci;
         for ( size_t rowind : rowinds ) {
             const auto& row = m_frame[rowind]; 
             const T& t = row.at( ci );
