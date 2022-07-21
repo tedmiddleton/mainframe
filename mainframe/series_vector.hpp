@@ -1,4 +1,3 @@
-
 //          Copyright Ted Middleton 2022.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -257,7 +256,7 @@ template<typename T>
 class series_vector : public iseries_vector
 {
     static constexpr bool is_move_constructible = std::is_move_constructible<T>::value;
-    static constexpr bool is_move_assignable = std::is_move_assignable<T>::value;
+    static constexpr bool is_move_assignable    = std::is_move_assignable<T>::value;
 
 public:
     static const size_t DEFAULT_SIZE = 32;

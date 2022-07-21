@@ -1,4 +1,3 @@
-
 //          Copyright Ted Middleton 2022.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -829,41 +828,41 @@ using const_reverse_frame_iterator = base_frame_iterator<true, true, Ts...>;
 
 namespace std
 {
-    template<bool IsConst, typename... Ts>
-    struct hash<mf::_base_frame_row<IsConst, Ts...>>
+template<bool IsConst, typename... Ts>
+struct hash<mf::_base_frame_row<IsConst, Ts...>>
+{
+    template<size_t Ind = 0>
+    size_t
+    operator()(const mf::_base_frame_row<IsConst, Ts...>& fr) const
     {
-        template<size_t Ind=0>
-        size_t
-        operator()(const mf::_base_frame_row<IsConst, Ts...>& fr) const
-        {
-            using T = typename mf::detail::pack_element<Ind, Ts...>::type;
-            std::hash<T> hasher;
-            mf::columnindex<Ind> ci;
-            size_t out = hasher(fr.at( ci ));
-            if constexpr (Ind + 1 < sizeof...(Ts)) {
-                out ^= operator()<Ind + 1>(fr);
-            }
-            return out;
+        using T = typename mf::detail::pack_element<Ind, Ts...>::type;
+        std::hash<T> hasher;
+        mf::columnindex<Ind> ci;
+        size_t out = hasher(fr.at(ci));
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            out ^= operator()<Ind + 1>(fr);
         }
-    };
+        return out;
+    }
+};
 
-    template<bool IsConst, typename... Ts>
-    struct hash<mf::_row_proxy<IsConst, Ts...>>
+template<bool IsConst, typename... Ts>
+struct hash<mf::_row_proxy<IsConst, Ts...>>
+{
+    template<size_t Ind = 0>
+    size_t
+    operator()(const mf::_row_proxy<IsConst, Ts...>& fr) const
     {
-        template<size_t Ind=0>
-        size_t
-        operator()(const mf::_row_proxy<IsConst, Ts...>& fr) const
-        {
-            using T = typename mf::detail::pack_element<Ind, Ts...>::type;
-            std::hash<T> hasher;
-            mf::columnindex<Ind> ci;
-            size_t out = hasher(fr.at( ci ));
-            if constexpr (Ind + 1 < sizeof...(Ts)) {
-                out ^= operator()<Ind + 1>(fr);
-            }
-            return out;
+        using T = typename mf::detail::pack_element<Ind, Ts...>::type;
+        std::hash<T> hasher;
+        mf::columnindex<Ind> ci;
+        size_t out = hasher(fr.at(ci));
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            out ^= operator()<Ind + 1>(fr);
         }
-    };
+        return out;
+    }
+};
 } // namespace std
 
 #endif // INCLUDED_mainframe_frame_iterator_h

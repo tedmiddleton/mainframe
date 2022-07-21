@@ -1,4 +1,3 @@
-
 //          Copyright Ted Middleton 2022.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -1488,47 +1487,31 @@ TEST_CASE("aggregate", "[frame]")
     dout << "f1:\n";
     dout << f1;
 
-    auto gf     = f1.groupby(_0, _1);
+    auto gf = f1.groupby(_0, _1);
 
-    // start with groupby( _5, _6 ).aggregate( sum( _1 ), sum( _2 ), count(), min( _4 ), sum( _3 ), sum( _1 ), max( _1 ) )
-    using F = frame<char, short, int, long, float, double>;
-    using RCFA = typename mf::detail::get_result_columns_from_args<F, 
-          decltype(mf::agg::sum(_0)),
-          decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::count()),
-          decltype(mf::agg::min(_3)),
-          decltype(mf::agg::sum(_2)),
-          decltype(mf::agg::sum(_0)),
-          decltype(mf::agg::max(_0))
-          >::type;
+    // start with groupby( _5, _6 ).aggregate( sum( _1 ), sum( _2 ), count(), min( _4 ), sum( _3 ),
+    // sum( _1 ), max( _1 ) )
+    using F    = frame<char, short, int, long, float, double>;
+    using RCFA = typename mf::detail::get_result_columns_from_args<F, decltype(mf::agg::sum(_0)),
+        decltype(mf::agg::sum(_1)), decltype(mf::agg::count()), decltype(mf::agg::min(_3)),
+        decltype(mf::agg::sum(_2)), decltype(mf::agg::sum(_0)), decltype(mf::agg::max(_0))>::type;
     RCFA rcfa;
     (void)rcfa;
-    //TD<RCFA> foo;
+    // TD<RCFA> foo;
 
     using AF = typename mf::detail::get_aggregate_frame<F, index_defn<4, 5>,
-          decltype(mf::agg::sum(_0)),
-          decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::count()),
-          decltype(mf::agg::min(_3)),
-          decltype(mf::agg::sum(_2)),
-          decltype(mf::agg::sum(_0)),
-          decltype(mf::agg::max(_0))
-          >::type;
+        decltype(mf::agg::sum(_0)), decltype(mf::agg::sum(_1)), decltype(mf::agg::count()),
+        decltype(mf::agg::min(_3)), decltype(mf::agg::sum(_2)), decltype(mf::agg::sum(_0)),
+        decltype(mf::agg::max(_0))>::type;
     AF af;
     (void)af;
-    //TD<AF> foo4;
-    using TUP = tuple<
-          decltype(mf::agg::sum(_0)),
-          decltype(mf::agg::sum(_1)),
-          decltype(mf::agg::count()),
-          decltype(mf::agg::min(_3)),
-          decltype(mf::agg::sum(_2)),
-          decltype(mf::agg::sum(_0)),
-          decltype(mf::agg::max(_0))
-              >;
+    // TD<AF> foo4;
+    using TUP = tuple<decltype(mf::agg::sum(_0)), decltype(mf::agg::sum(_1)),
+        decltype(mf::agg::count()), decltype(mf::agg::min(_3)), decltype(mf::agg::sum(_2)),
+        decltype(mf::agg::sum(_0)), decltype(mf::agg::max(_0))>;
     TUP tup;
     (void)tup;
-    //TD<TUP> foo6;
+    // TD<TUP> foo6;
     REQUIRE(mf::detail::is_colind_at_argind<0, 0, TUP>::value == true);
     REQUIRE(mf::detail::is_colind_at_argind<1, 1, TUP>::value == true);
     REQUIRE(mf::detail::is_colind_at_argind<3, 3, TUP>::value == true);
@@ -1552,25 +1535,31 @@ TEST_CASE("aggregate", "[frame]")
     REQUIRE(mf::detail::is_colind_at_argind<6, 2, TUP>::value == false);
 
     gf.build_index();
-    auto f2 = gf.aggregate( 
-        agg::sum( _2 ), 
-        agg::min( _2 ), 
-        agg::max( _2 ), 
-        agg::mean( _2 ), 
-        agg::stddev( _2 ) );
+    auto f2 = gf.aggregate(
+        agg::sum(_2), agg::min(_2), agg::max(_2), agg::mean(_2), agg::stddev(_2), agg::count());
     dout << f2;
-    auto f3 = gf.aggregate( 
-        agg::sum( _3 ), 
-        agg::min( _3 ), 
-        agg::max( _3 ), 
-        agg::mean( _3 ), 
-        agg::stddev( _3 ) );
+    auto f3 = gf.aggregate(
+        agg::sum(_3), agg::min(_3), agg::max(_3), agg::mean(_3), agg::stddev(_3), agg::count());
     dout << f3;
-    std::sort( f2.begin(), f2.end() );
-    std::sort( f3.begin(), f3.end() );
+    std::sort(f2.begin(), f2.end());
+    std::sort(f3.begin(), f3.end());
 
     // rain
     {
+        //   |       date | temperature | sum( rain ) | min( rain ) | max( rain ) | mean( rain ) |
+        //   stddev( rain ) | count(*)
+        // __|____________|_____________|_____________|_____________|_____________|______________|________________|__________
+        //  0| 2022-01-01 |           1 |           0 |           0 |           0 |            0 |
+        //  0 |        1 1| 2022-01-02 |           2 |           3 |           1 |           2 | 1.5
+        //  |            0.5 |        2 2| 2022-01-03 |           3 |           9 |           2 | 4
+        //  |            3 |       0.816497 |        3 3| 2022-01-04 |           4 |          12 |
+        //  3 |           5 |            4 |       0.816497 |        3 4| 2022-01-05 |           5 |
+        //  15 |           4 |           6 |            5 |       0.816497 |        3 5| 2022-01-06
+        //  |           6 |          18 |           5 |           7 |            6 |       0.816497
+        //  |        3 6| 2022-01-07 |           7 |          21 |           6 |           8 | 7 |
+        //  0.816497 |        3 7| 2022-01-08 |           8 |          15 |           7 | 8 | 7.5 |
+        //  0.5 |        2 8| 2022-01-09 |           9 |           9 |           9 |           9 |
+        //  9 |              0 |        1
         auto it = f2.cbegin();
         // date
         REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
@@ -1604,7 +1593,7 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_2) == 21);
         REQUIRE((it + 7)->at(_2) == 15);
         REQUIRE((it + 8)->at(_2) == 9);
- 
+
         // min( rain )
         REQUIRE((it + 0)->at(_3) == 0);
         REQUIRE((it + 1)->at(_3) == 1);
@@ -1626,7 +1615,7 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_4) == 8);
         REQUIRE((it + 7)->at(_4) == 8);
         REQUIRE((it + 8)->at(_4) == 9);
-        
+
         // mean( rain )
         REQUIRE((it + 0)->at(_5) == 0);
         REQUIRE((it + 1)->at(_5) == 1.5);
@@ -1637,7 +1626,7 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_5) == 7);
         REQUIRE((it + 7)->at(_5) == 7.5);
         REQUIRE((it + 8)->at(_5) == 9);
-        
+
         // stddev( rain )
         REQUIRE((it + 0)->at(_6) == Approx(0));
         REQUIRE((it + 1)->at(_6) == Approx(0.5));
@@ -1648,11 +1637,36 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_6) == Approx(0.816497));
         REQUIRE((it + 7)->at(_6) == Approx(0.5));
         REQUIRE((it + 8)->at(_6) == Approx(0));
-    }
 
+        // count()
+        REQUIRE((it + 0)->at(_7) == 1);
+        REQUIRE((it + 1)->at(_7) == 2);
+        REQUIRE((it + 2)->at(_7) == 3);
+        REQUIRE((it + 3)->at(_7) == 3);
+        REQUIRE((it + 4)->at(_7) == 3);
+        REQUIRE((it + 5)->at(_7) == 3);
+        REQUIRE((it + 6)->at(_7) == 3);
+        REQUIRE((it + 7)->at(_7) == 2);
+        REQUIRE((it + 8)->at(_7) == 1);
+    }
 
     // humidity
     {
+        //   |       date | temperature | sum( humidity ) | min( humidity ) | max( humidity ) |
+        //   mean( humidity ) | stddev( humidity ) | count(*)
+        // __|____________|_____________|_________________|_________________|_________________|__________________|____________________|__________
+        //  0| 2022-01-01 |           1 |              -5 |              -5 |              -5 | -5 |
+        //  0 |        1 1| 2022-01-02 |           2 |             -10 |            -5.5 | -4.5 | -5
+        //  |                0.5 |        2 2| 2022-01-03 |           3 |             -15 | -6 | -4
+        //  |               -5 |           0.816497 |        3 3| 2022-01-04 |           4 | -15 |
+        //  -6 |              -4 |               -5 |           0.816497 |        3 4| 2022-01-05 |
+        //  5 |             -15 |              -6 |              -4 |               -5 | 0.816497 |
+        //  3 5| 2022-01-06 |           6 |             -15 |              -6 |              -4 | -5
+        //  |           0.816497 |        3 6| 2022-01-07 |           7 |             -15 | -6 | -4
+        //  |               -5 |           0.816497 |        3 7| 2022-01-08 |           8 | -10 |
+        //  -5.5 |            -4.5 |               -5 |                0.5 |        2 8| 2022-01-09
+        //  |           9 |              -5 |              -5 |              -5 |               -5 |
+        //  0 |        1
         auto it = f3.cbegin();
         // date
         REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
@@ -1686,7 +1700,7 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_2) == -15);
         REQUIRE((it + 7)->at(_2) == -10);
         REQUIRE((it + 8)->at(_2) == -5);
- 
+
         // min( humidity )
         REQUIRE((it + 0)->at(_3) == -5);
         REQUIRE((it + 1)->at(_3) == -5.5);
@@ -1708,7 +1722,7 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_4) == -4);
         REQUIRE((it + 7)->at(_4) == -4.5);
         REQUIRE((it + 8)->at(_4) == -5);
-        
+
         // mean( humidity )
         REQUIRE((it + 0)->at(_5) == -5);
         REQUIRE((it + 1)->at(_5) == -5);
@@ -1719,7 +1733,7 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_5) == -5);
         REQUIRE((it + 7)->at(_5) == -5);
         REQUIRE((it + 8)->at(_5) == -5);
-        
+
         // stddev( humidity )
         REQUIRE((it + 0)->at(_6) == Approx(0));
         REQUIRE((it + 1)->at(_6) == Approx(0.5));
@@ -1730,6 +1744,16 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 6)->at(_6) == Approx(0.816497));
         REQUIRE((it + 7)->at(_6) == Approx(0.5));
         REQUIRE((it + 8)->at(_6) == Approx(0));
-    }
 
+        // count()
+        REQUIRE((it + 0)->at(_7) == 1);
+        REQUIRE((it + 1)->at(_7) == 2);
+        REQUIRE((it + 2)->at(_7) == 3);
+        REQUIRE((it + 3)->at(_7) == 3);
+        REQUIRE((it + 4)->at(_7) == 3);
+        REQUIRE((it + 5)->at(_7) == 3);
+        REQUIRE((it + 6)->at(_7) == 3);
+        REQUIRE((it + 7)->at(_7) == 2);
+        REQUIRE((it + 8)->at(_7) == 1);
+    }
 }
