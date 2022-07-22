@@ -514,7 +514,7 @@ private:
         }
     }
 
-    template<typename... Ops, typename... Us, typename... ColInds>
+    template<typename... Ops, typename... Us>
     void
     aggregate_count(
         const std::vector<size_t>& rowinds, std::tuple<series<Us>...>& result_columns) const
@@ -522,7 +522,7 @@ private:
         aggregate_count_arg<0, Ops...>(rowinds, result_columns);
     }
 
-    template<size_t ArgInd, typename... Ops, typename... Us, typename... ColInds>
+    template<size_t ArgInd, typename... Ops, typename... Us>
     void
     aggregate_count_arg(
         const std::vector<size_t>& rowinds, std::tuple<series<Us>...>& result_columns) const
@@ -537,7 +537,7 @@ private:
         }
     }
 
-    template<size_t ColInd, typename... Ops, typename... Us, typename... ColInds>
+    template<size_t ColInd, typename... Ops, typename... Us>
     void
     aggregate_column(
         const std::vector<size_t>& rowinds, std::tuple<series<Us>...>& result_columns) const
@@ -548,7 +548,7 @@ private:
         }
     }
 
-    template<size_t ColInd, size_t ArgInd, typename... Ops, typename... Us, typename... ColInds>
+    template<size_t ColInd, size_t ArgInd, typename... Ops, typename... Us>
     void
     aggregate_column_arg(
         const std::vector<size_t>& rowinds, std::tuple<series<Us>...>& result_columns) const
