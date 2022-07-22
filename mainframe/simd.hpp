@@ -14,6 +14,10 @@
 
 #include "mainframe/base.hpp"
 
+#if !defined(__AVX__) && !defined(__ARM_NEON)
+#pragma message "SIMD has been disabled"
+#endif
+
 namespace mf
 {
 namespace detail
@@ -30,7 +34,7 @@ mean(const T* t, size_t num)
     return static_cast<T>(m / num);
 }
 
-#ifdef __AVX__
+#if defined(__AVX__)
 float
 mean(const float* t, size_t num)
 {
@@ -66,6 +70,7 @@ mean(const double* t, size_t num)
     }
     return m / num;
 }
+#elif defined(__ARM_NEON)
 #endif
 
 template<typename A, typename B>
@@ -98,7 +103,7 @@ correlate_pearson(const A* a, const B* b, size_t num) -> decltype(a[0] * b[0])
     return corr;
 }
 
-#ifdef __AVX__
+#if !defined(__AVX__)
 double
 correlate_pearson(const double* a, const double* b, size_t num)
 {
@@ -202,6 +207,7 @@ correlate_pearson(const float* a, const float* b, size_t num)
     return corr;
 }
 
+#elif defined(__ARM_NEON)
 #endif
 
 }
