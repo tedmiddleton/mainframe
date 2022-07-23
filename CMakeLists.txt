@@ -75,8 +75,11 @@ install(
         mainframe/base.hpp 
         mainframe/series.hpp 
         mainframe/series_vector.hpp 
+        mainframe/simd.hpp 
         mainframe/missing.hpp 
         mainframe/frame.hpp 
+        mainframe/frame_iterator.hpp 
+        mainframe/grouped_frame.hpp 
         mainframe/expression.hpp 
     DESTINATION include/mainframe 
     )
@@ -94,6 +97,11 @@ set_property( TARGET mainframe PROPERTY
 set_property( TARGET mainframe PROPERTY 
     COMPATIBLE_INTERFACE_STRING mainframe_MAJOR_VERSION )
 
+# generate the export targets for the build tree
+export(EXPORT mainframe-targets
+       FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/mainframe-targets.cmake"
+)
+
 # generate the version file for the config file
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -101,11 +109,6 @@ write_basic_package_version_file(
     VERSION "${version}"
     COMPATIBILITY AnyNewerVersion
     )
-
-# generate the export targets for the build tree
-export(EXPORT mainframe-targets
-       FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/mainframe-targets.cmake"
-)
 
 # create config file
 configure_package_config_file(
