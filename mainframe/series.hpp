@@ -129,7 +129,7 @@ public:
         other.m_sharedvec = std::make_shared<series_vector<T>>();
     }
 
-    series(std::initializer_list<T> init)
+    explicit series(std::initializer_list<T> init)
         : m_sharedvec(std::make_shared<series_vector<T>>(init))
     {}
 

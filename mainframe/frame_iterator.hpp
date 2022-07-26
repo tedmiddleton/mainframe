@@ -33,11 +33,11 @@ public:
 
     _base_frame_row() = default;
 
-    _base_frame_row(const std::tuple<Ts...>& args)
+    explicit _base_frame_row(const std::tuple<Ts...>& args)
         : data(args)
     {}
 
-    _base_frame_row(std::tuple<Ts...>&& args)
+    explicit _base_frame_row(std::tuple<Ts...>&& args)
         : data(std::move(args))
     {}
 
@@ -610,16 +610,16 @@ public:
     base_frame_iterator() = default;
 
     template<bool _IsConst = IsConst, std::enable_if_t<_IsConst, bool> = true>
-    base_frame_iterator(const std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
+    explicit base_frame_iterator(const std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
         : m_row(data, off)
     {}
 
     template<bool _IsConst = IsConst, std::enable_if_t<!_IsConst, bool> = true>
-    base_frame_iterator(std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
+    explicit base_frame_iterator(std::tuple<series<Ts>...>& data, ptrdiff_t off = 0)
         : m_row(data, off)
     {}
 
-    base_frame_iterator(std::tuple<Ts*...> ptrs)
+    explicit base_frame_iterator(std::tuple<Ts*...> ptrs)
         : m_row(ptrs)
     {}
 

@@ -209,7 +209,7 @@ struct indexed_expr_column
     static const size_t index = Ind;
 
     indexed_expr_column() = default;
-    indexed_expr_column(ptrdiff_t o)
+    explicit indexed_expr_column(ptrdiff_t o)
         : offset(o)
     {}
     indexed_expr_column(const indexed_expr_column&)            = default;
@@ -247,7 +247,7 @@ struct terminal
 {
     using is_expr = void;
 
-    terminal(T _t)
+    explicit terminal(T _t)
         : t(_t)
     {}
 
@@ -270,7 +270,7 @@ struct terminal<indexed_expr_column<Ind>>
     static const size_t index = Ind;
 
     terminal() = default;
-    terminal(indexed_expr_column<Ind> _t)
+    explicit terminal(indexed_expr_column<Ind> _t)
         : t(_t)
     {}
 
@@ -294,7 +294,7 @@ struct terminal<expr_column<Ind>>
     static const size_t index = Ind;
 
     terminal() = default;
-    terminal(expr_column<Ind> _t)
+    explicit terminal(expr_column<Ind> _t)
         : t(_t)
     {}
 
@@ -356,7 +356,7 @@ struct unary_expr
     using is_expr = void;
     static_assert(is_expression<T>::value, "unary expression must contain expression");
 
-    unary_expr(T _t)
+    explicit unary_expr(T _t)
         : t(_t)
     {}
 
