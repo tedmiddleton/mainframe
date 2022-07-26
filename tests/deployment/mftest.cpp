@@ -8,6 +8,7 @@ int main(void)
 {
     cout << "Hello mftest!\n";
     frame<int, double, short> fr;
+    fr.set_column_names( "int", "double", "short" );
     fr.push_back(1, 1.10, 11);
     fr.push_back(2, 1.20, 12);
     fr.push_back(3, 1.30, 13);
