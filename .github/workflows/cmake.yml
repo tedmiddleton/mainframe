@@ -2,13 +2,13 @@ name: CMake
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, workflow ]
   pull_request:
     branches: [ main ]
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: RelWithDebInfo
+#env:
+#  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+#  BUILD_TYPE: RelWithDebInfo
 
 jobs:
   build:
@@ -41,3 +41,6 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{ matrix.build-config }}
       
+    - name: Install
+      run: cmake --install ${{github.workspace}}/build
+
