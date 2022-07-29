@@ -7,6 +7,7 @@
 #define INCLUDED_mainframe_simd_h
 
 #include <iostream>
+#include <cmath>
 
 #if __AVX__
 #include <immintrin.h>
@@ -103,7 +104,7 @@ correlate_pearson(const A* a, const B* b, size_t num) -> decltype(a[0] * b[0])
     return corr;
 }
 
-#if !defined(__AVX__)
+#if defined(__AVX__)
 double
 correlate_pearson(const double* a, const double* b, size_t num)
 {
