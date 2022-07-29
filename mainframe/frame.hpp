@@ -354,7 +354,6 @@ public:
     ///
     ///     auto fr3 = fr1 + fr2;
     ///
-    ///
     frame<Ts...>
     operator+(const frame<Ts...>& other) const
     {
@@ -480,7 +479,7 @@ public:
     ///
     template<size_t... Inds>
     typename detail::add_opt<frame<Ts...>, 0, Inds...>::type
-    allow_missing(terminal<expr_column<Inds>>... cols) const
+    allow_missing(columnindex<Inds>... cols) const
     {
         uframe u(*this);
         allow_missing_impl<0, Inds...>(u, cols...);
@@ -498,12 +497,16 @@ public:
         return u;
     }
 
+    /// Remove all rows/data from the dataframe
+    ///
     void
     clear()
     {
         clear_impl<0>();
     }
 
+    /// Return the @ref series with colname
+    ///
     useries
     column(const std::string& colname) const
     {
@@ -526,7 +529,7 @@ public:
 
     template<size_t Ind>
     series<typename detail::pack_element<Ind, Ts...>::type>&
-    column(terminal<expr_column<Ind>>)
+    column(columnindex<Ind>)
     {
         return std::get<Ind>(m_columns);
     }
@@ -562,7 +565,7 @@ public:
 
     template<size_t... Inds>
     typename detail::rearrange<frame<Ts...>, Inds...>::type
-    columns(terminal<expr_column<Inds>>... cols) const
+    columns(columnindex<Inds>... cols) const
     {
         uframe f;
         columns_impl(f, cols...);
@@ -604,13 +607,16 @@ public:
     ///
     template<size_t... Inds>
     typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type
-    disallow_missing(terminal<expr_column<Inds>>... cols) const
+    disallow_missing(columnindex<Inds>... cols) const
     {
         uframe u(*this);
         disallow_missing_impl<0, Inds...>(u, cols...);
         return u;
     }
 
+    /// convert all columns to NOT use the missing class mi<> to represent 
+    /// missing elements
+    ///
     typename detail::remove_all_opt<frame<Ts...>>::type
     disallow_missing() const
     {
@@ -692,7 +698,7 @@ public:
 
     template<size_t Ind>
     double
-    mean(terminal<expr_column<Ind>>) const
+    mean(columnindex<Ind>) const
     {
         using T            = typename detail::pack_element<Ind, Ts...>::type;
         const series<T>& s = std::get<Ind>(m_columns);
@@ -884,7 +890,7 @@ public:
 private:
     template<size_t Ind, size_t... Inds>
     void
-    allow_missing_impl(uframe& uf, terminal<expr_column<Inds>>... cols) const
+    allow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
     {
         if constexpr (detail::contains<Ind, Inds...>::value) {
             auto& s  = column<Ind>();
@@ -958,7 +964,7 @@ private:
 
     template<size_t Ind, size_t... Inds>
     void
-    disallow_missing_impl(uframe& uf, terminal<expr_column<Inds>>... cols) const
+    disallow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
     {
         if constexpr (detail::contains<Ind, Inds...>::value) {
             auto& s  = column<Ind>();
