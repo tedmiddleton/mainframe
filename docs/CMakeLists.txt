@@ -3,40 +3,43 @@ find_program(SPHINX_EXECUTABLE
              NAMES sphinx-build
              DOC "Path to sphinx-build executable")
 
-find_package(Doxygen REQUIRED)
+find_package(Doxygen)
 
-# Find all the public headers
-get_target_property(MAINFRAME_PUBLIC_HEADER_DIR mainframe INTERFACE_INCLUDE_DIRECTORIES)
-file(GLOB_RECURSE MAINFRAME_PUBLIC_HEADERS ${MAINFRAME_PUBLIC_HEADER_DIR}/*.h)
+if( Doxygen_FOUND )
 
-set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/mainframe)
-set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/docs/doxygen)
-set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)
-set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
-set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    # Find all the public headers
+    get_target_property(MAINFRAME_PUBLIC_HEADER_DIR mainframe INTERFACE_INCLUDE_DIRECTORIES)
+    file(GLOB_RECURSE MAINFRAME_PUBLIC_HEADERS ${MAINFRAME_PUBLIC_HEADER_DIR}/*.h)
 
-#Replace variables inside @@ with the current values
-configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
+    set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/mainframe)
+    set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/docs/doxygen)
+    set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)
+    set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
-add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
-                   DEPENDS ${MAINFRAME_PUBLIC_HEADERS}
-                   COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
-                   MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
-                   COMMENT "Generating docs")
+    #Replace variables inside @@ with the current values
+    configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
 
-add_custom_target(Doxygen DEPENDS ${DOXYGEN_INDEX_FILE})
+    file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
+    add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
+                       DEPENDS ${MAINFRAME_PUBLIC_HEADERS}
+                       COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+                       MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
+                       COMMENT "Generating docs")
 
-#find_package(Sphinx REQUIRED)
+    add_custom_target(Doxygen DEPENDS ${DOXYGEN_INDEX_FILE})
 
-set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
-set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)
+    #find_package(Sphinx REQUIRED)
 
-add_custom_target(Sphinx 
-                  COMMAND
-                  ${SPHINX_EXECUTABLE} -b html
-                  ${SPHINX_SOURCE} ${SPHINX_BUILD}
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                  COMMENT "Generating documentation with Sphinx")
+    set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
+    set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)
+
+    add_custom_target(Sphinx 
+                      COMMAND
+                      ${SPHINX_EXECUTABLE} -b html
+                      ${SPHINX_SOURCE} ${SPHINX_BUILD}
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                      COMMENT "Generating documentation with Sphinx")
+endif()
 
 
