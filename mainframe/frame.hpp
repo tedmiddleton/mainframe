@@ -467,6 +467,17 @@ public:
         return const_reverse_iterator{ m_columns, -1 };
     }
 
+    /// convert a column to use the missing class mi<> to represent missing 
+    /// elements
+    ///
+    ///     frame_row<year_month, int, double> fr1; 
+    ///
+    ///     // fr2 is frame_row<year_month, int, mi<double>>
+    ///     auto fr2 = fr1.allow_missing(_2);
+    ///     fr1.push_back(2022_y/10, 1, 3.14);
+    ///     fr2.push_back(2022_y/11, 2, missing);
+    ///     fr2.push_back(2022_y/12, 3, 0.007297);
+    ///
     template<size_t... Inds>
     typename detail::add_opt<frame<Ts...>, 0, Inds...>::type
     allow_missing(terminal<expr_column<Inds>>... cols) const
@@ -476,6 +487,9 @@ public:
         return u;
     }
 
+    /// convert all columns to use the missing class mi<> to represent missing 
+    /// elements
+    ///
     typename detail::add_all_opt<frame<Ts...>>::type
     allow_missing() const
     {
@@ -577,6 +591,17 @@ public:
         return c;
     }
 
+    /// convert a column to NOT use the missing class mi<> to represent missing 
+    /// elements
+    ///
+    ///     frame_row<year_month, int, mi<double>> fr1; 
+    ///
+    ///     // fr2 is frame_row<year_month, int, double>
+    ///     auto fr2 = fr1.disallow_missing(_2);
+    ///     fr1.push_back(2022_y/10, 1, 3.14);
+    ///     //fr2.push_back(2022_y/11, 2, missing); this won't compile
+    ///     fr2.push_back(2022_y/12, 3, 0.007297);
+    ///
     template<size_t... Inds>
     typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type
     disallow_missing(terminal<expr_column<Inds>>... cols) const
