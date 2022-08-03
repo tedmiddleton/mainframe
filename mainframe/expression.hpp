@@ -180,6 +180,11 @@ struct row_number
     _empty_byte _eb;
 };
 
+struct frame_length
+{
+    _empty_byte _eb;
+};
+
 template<size_t Ind>
 struct expr_column
 {
@@ -337,6 +342,24 @@ struct terminal<row_number>
         const Iter<IsConst, IsReverse, Ts...>& /*end*/) const
     {
         return curr - begin;
+    }
+};
+
+template<>
+struct terminal<frame_length>
+{
+    using is_expr             = void;
+
+    terminal() = default;
+
+    template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
+        typename... Ts>
+    ptrdiff_t 
+    operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
+        const Iter<IsConst, IsReverse, Ts...>& /*curr*/,
+        const Iter<IsConst, IsReverse, Ts...>& end) const
+    {
+        return end - begin;
     }
 };
 
@@ -607,6 +630,7 @@ col()
 namespace placeholders
 {
 inline constexpr terminal<row_number> rownum;
+inline constexpr terminal<frame_length> framelen;
 inline constexpr terminal<expr_column<0>> _0;
 inline constexpr terminal<expr_column<1>> _1;
 inline constexpr terminal<expr_column<2>> _2;

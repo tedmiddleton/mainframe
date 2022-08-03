@@ -718,12 +718,15 @@ TEST_CASE("rows()", "[frame]")
         (_1 >= 13 && _2 == true) || _0 == 2022_y / January / 2 || _0 == 2022_y / January / 3);
     auto feven = f1.rows( rownum % 2 == 0 );
     auto ffirsthalf = f1.rows( rownum < 3 );
+    auto flasthalf = f1.rows( (framelen - rownum) <= 3 );
     dout << "f1:\n";
     dout << f1;
     dout << "even:\n";
     dout << feven;
     dout << "first half:\n";
     dout << ffirsthalf;
+    dout << "last half:\n";
+    dout << flasthalf;
 
     REQUIRE(frain.size() == 2);
     REQUIRE(fnorain.size() == 4);
@@ -733,6 +736,7 @@ TEST_CASE("rows()", "[frame]")
     REQUIRE(f2or3orhotandrain.size() == 3);
     REQUIRE(feven.size() == 3);
     REQUIRE(ffirsthalf.size() == 3);
+    REQUIRE(flasthalf.size() == 3);
 
     REQUIRE((frain.begin() + 0)->at(_0) == 2022_y / January / 3);
     REQUIRE((frain.begin() + 0)->at(_1) == 11.1);
@@ -794,6 +798,16 @@ TEST_CASE("rows()", "[frame]")
     REQUIRE((ffirsthalf.begin() + 2)->at(_0) == 2022_y / January / 4);
     REQUIRE((ffirsthalf.begin() + 2)->at(_1) == 12.2);
     REQUIRE((ffirsthalf.begin() + 2)->at(_2) == false);
+
+    REQUIRE((flasthalf.begin() + 0)->at(_0) == 2022_y / January / 5);
+    REQUIRE((flasthalf.begin() + 0)->at(_1) == 13.3);
+    REQUIRE((flasthalf.begin() + 0)->at(_2) == false);
+    REQUIRE((flasthalf.begin() + 1)->at(_0) == 2022_y / January / 6);
+    REQUIRE((flasthalf.begin() + 1)->at(_1) == 14.4);
+    REQUIRE((flasthalf.begin() + 1)->at(_2) == true);
+    REQUIRE((flasthalf.begin() + 2)->at(_0) == 2022_y / January / 7);
+    REQUIRE((flasthalf.begin() + 2)->at(_1) == 15.5);
+    REQUIRE((flasthalf.begin() + 2)->at(_2) == false);
 }
 
 TEST_CASE("operator+", "[frame]")
