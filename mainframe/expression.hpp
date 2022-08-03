@@ -175,6 +175,11 @@ struct indexed_expr_column;
 struct _empty_byte
 {};
 
+struct row_number
+{
+    _empty_byte _eb;
+};
+
 template<size_t Ind>
 struct expr_column
 {
@@ -315,6 +320,24 @@ struct terminal<expr_column<Ind>>
     }
 
     expr_column<Ind> t;
+};
+
+template<>
+struct terminal<row_number>
+{
+    using is_expr             = void;
+
+    terminal() = default;
+
+    template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
+        typename... Ts>
+    ptrdiff_t 
+    operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
+        const Iter<IsConst, IsReverse, Ts...>& curr,
+        const Iter<IsConst, IsReverse, Ts...>& /*end*/) const
+    {
+        return curr - begin;
+    }
 };
 
 template<typename Op, typename L, typename R>
@@ -583,6 +606,7 @@ col()
 
 namespace placeholders
 {
+inline constexpr terminal<row_number> rownum;
 inline constexpr terminal<expr_column<0>> _0;
 inline constexpr terminal<expr_column<1>> _1;
 inline constexpr terminal<expr_column<2>> _2;

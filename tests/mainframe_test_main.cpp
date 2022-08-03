@@ -716,6 +716,14 @@ TEST_CASE("rows()", "[frame]")
     auto fcoldandrain      = f1.rows(_1 <= 12 && _2 == true && _0 > 2022_y / January / 4);
     auto f2or3orhotandrain = f1.rows(
         (_1 >= 13 && _2 == true) || _0 == 2022_y / January / 2 || _0 == 2022_y / January / 3);
+    auto feven = f1.rows( rownum % 2 == 0 );
+    auto ffirsthalf = f1.rows( rownum < 3 );
+    dout << "f1:\n";
+    dout << f1;
+    dout << "even:\n";
+    dout << feven;
+    dout << "first half:\n";
+    dout << ffirsthalf;
 
     REQUIRE(frain.size() == 2);
     REQUIRE(fnorain.size() == 4);
@@ -723,6 +731,8 @@ TEST_CASE("rows()", "[frame]")
     REQUIRE(fhotandrain.size() == 1);
     REQUIRE(fcoldandrain.empty());
     REQUIRE(f2or3orhotandrain.size() == 3);
+    REQUIRE(feven.size() == 3);
+    REQUIRE(ffirsthalf.size() == 3);
 
     REQUIRE((frain.begin() + 0)->at(_0) == 2022_y / January / 3);
     REQUIRE((frain.begin() + 0)->at(_1) == 11.1);
@@ -764,6 +774,26 @@ TEST_CASE("rows()", "[frame]")
     REQUIRE((f2or3orhotandrain.begin() + 2)->at(_0) == 2022_y / January / 6);
     REQUIRE((f2or3orhotandrain.begin() + 2)->at(_1) == 14.4);
     REQUIRE((f2or3orhotandrain.begin() + 2)->at(_2) == true);
+
+    REQUIRE((feven.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((feven.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((feven.begin() + 0)->at(_2) == false);
+    REQUIRE((feven.begin() + 1)->at(_0) == 2022_y / January / 4);
+    REQUIRE((feven.begin() + 1)->at(_1) == 12.2);
+    REQUIRE((feven.begin() + 1)->at(_2) == false);
+    REQUIRE((feven.begin() + 2)->at(_0) == 2022_y / January / 6);
+    REQUIRE((feven.begin() + 2)->at(_1) == 14.4);
+    REQUIRE((feven.begin() + 2)->at(_2) == true);
+
+    REQUIRE((ffirsthalf.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((ffirsthalf.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((ffirsthalf.begin() + 0)->at(_2) == false);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_0) == 2022_y / January / 3);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_1) == 11.1);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_2) == true);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_0) == 2022_y / January / 4);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_1) == 12.2);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_2) == false);
 }
 
 TEST_CASE("operator+", "[frame]")
