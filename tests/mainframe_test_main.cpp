@@ -1585,7 +1585,9 @@ TEST_CASE("aggregate", "[frame]")
         agg::sum(_3), agg::min(_3), agg::max(_3), agg::mean(_3), agg::stddev(_3), agg::count());
     std::sort(f2.begin(), f2.end());
     std::sort(f3.begin(), f3.end());
+    dout << "SELECT SUM(rain), MIN(rain), MAX(rain), MEAN(rain), STDDEV(rain), COUNT(*)\n";
     dout << f2;
+    dout << "SELECT SUM(humidity), MIN(humidity), MAX(humidity), MEAN(humidity), STDDEV(humidity), COUNT(*)\n";
     dout << f3;
 
     // rain
