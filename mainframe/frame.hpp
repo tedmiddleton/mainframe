@@ -290,6 +290,64 @@ struct remove_all_opt<frame<>>
     using type = frame<>;
 };
 
+template<typename Row, size_t... Inds>
+struct build_lt;
+
+template<typename Row, size_t Ind, size_t... Inds>
+struct build_lt<Row, Ind, Inds...>
+{
+    bool operator()(const Row& rowl, const Row& rowr) const 
+    {
+        columnindex<Ind> ci;
+        if (rowl.at( ci ) == rowr.at( ci )) {
+            build_lt<Row, Inds...> remaining;
+            return remaining(rowl, rowr);
+        }
+        else {
+            return rowl.at( ci ) < rowr.at( ci );
+        }
+    };
+};
+
+template<typename Row, size_t Ind>
+struct build_lt<Row, Ind>
+{
+    bool operator()(const Row& rowl, const Row& rowr) const
+    {
+        columnindex<Ind> ci;
+        return rowl.at( ci ) < rowr.at( ci );
+    };
+};
+
+template<typename Row, size_t... Inds>
+struct build_gt;
+
+template<typename Row, size_t Ind, size_t... Inds>
+struct build_gt<Row, Ind, Inds...>
+{
+    bool operator()(const Row& rowl, const Row& rowr) const 
+    {
+        columnindex<Ind> ci;
+        if (rowl.at( ci ) == rowr.at( ci )) {
+            build_gt<Row, Inds...> remaining;
+            return remaining(rowl, rowr);
+        }
+        else {
+            return rowl.at( ci ) > rowr.at( ci );
+        }
+    };
+};
+
+template<typename Row, size_t Ind>
+struct build_gt<Row, Ind>
+{
+    bool operator()(const Row& rowl, const Row& rowr) const
+    {
+        columnindex<Ind> ci;
+        return rowl.at( ci ) > rowr.at( ci );
+    };
+};
+
 } // namespace detail
 
 template<size_t... Inds>
@@ -834,6 +892,23 @@ public:
         resize_impl<0>(newsize);
     }
 
+    template<size_t... Inds>
+    void
+    reverse_sort(columnindex<Inds>...)
+    {
+        detail::build_gt<row_type, Inds...> op;
+        std::sort(this->begin(), this->end(), op);
+    }
+
+    template<size_t... Inds>
+    frame<Ts...>
+    reverse_sorted(columnindex<Inds>... ci)
+    {
+        frame<Ts...> out(*this);
+        out.reverse_sort(ci...);
+        return out;
+    }
+
     template<typename Ex>
     frame<Ts...>
     rows(Ex ex) const
@@ -879,41 +954,21 @@ public:
         return size_impl_with_check<0, Ts...>();
     }
 
-    template<typename Row, size_t... Inds>
-    struct build_less;
-
-    template<typename Row, size_t Ind, size_t... Inds>
-    struct build_less<Row, Ind, Inds...>
-    {
-        bool operator()(const Row& rowl, const Row& rowr) const 
-        {
-            columnindex<Ind> ci;
-            if (rowl.at( ci ) == rowr.at( ci )) {
-                build_less<Row, Inds...> remaining;
-                return remaining(rowl, rowr);
-            }
-            else {
-                return rowl.at( ci ) < rowr.at( ci );
-            }
-        };
-    };
-
-    template<typename Row, size_t Ind>
-    struct build_less<Row, Ind>
-    {
-        bool operator()(const Row& rowl, const Row& rowr) const
-        {
-            columnindex<Ind> ci;
-            return rowl.at( ci ) < rowr.at( ci );
-        };
-    };
-
     template<size_t... Inds>
     void
     sort(columnindex<Inds>...)
     {
-        build_less<row_type, Inds...> op;
+        detail::build_lt<row_type, Inds...> op;
         std::sort(this->begin(), this->end(), op);
+    }
+
+    template<size_t... Inds>
+    frame<Ts...>
+    sorted(columnindex<Inds>... ci)
+    {
+        frame<Ts...> out(*this);
+        out.sort(ci...);
+        return out;
     }
 
     std::vector<std::vector<std::string>>
