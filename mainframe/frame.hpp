@@ -879,6 +879,43 @@ public:
         return size_impl_with_check<0, Ts...>();
     }
 
+    template<typename Row, size_t... Inds>
+    struct build_less;
+
+    template<typename Row, size_t Ind, size_t... Inds>
+    struct build_less<Row, Ind, Inds...>
+    {
+        bool operator()(const Row& rowl, const Row& rowr) const 
+        {
+            columnindex<Ind> ci;
+            if (rowl.at( ci ) == rowr.at( ci )) {
+                build_less<Row, Inds...> remaining;
+                return remaining(rowl, rowr);
+            }
+            else {
+                return rowl.at( ci ) < rowr.at( ci );
+            }
+        };
+    };
+
+    template<typename Row, size_t Ind>
+    struct build_less<Row, Ind>
+    {
+        bool operator()(const Row& rowl, const Row& rowr) const
+        {
+            columnindex<Ind> ci;
+            return rowl.at( ci ) < rowr.at( ci );
+        };
+    };
+
+    template<size_t... Inds>
+    void
+    sort(columnindex<Inds>...)
+    {
+        build_less<row_type, Inds...> op;
+        std::sort(this->begin(), this->end(), op);
+    }
+
     std::vector<std::vector<std::string>>
     to_string() const
     {
