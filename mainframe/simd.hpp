@@ -15,7 +15,11 @@
 #include "mainframe/base.hpp"
 
 #if !defined(__AVX__) && !defined(__ARM_NEON)
+#ifdef _MSC_VER
+#pragma message("SIMD has been disabled")
+#else
 #pragma message "SIMD has been disabled"
+#endif
 #endif
 
 namespace mf
@@ -103,7 +107,7 @@ correlate_pearson(const A* a, const B* b, size_t num) -> decltype(a[0] * b[0])
     return corr;
 }
 
-#if !defined(__AVX__)
+#if defined(__AVX__)
 double
 correlate_pearson(const double* a, const double* b, size_t num)
 {
