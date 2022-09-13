@@ -375,6 +375,13 @@ detail::count_op inline count()
 template<typename T>
 class TD;
 
+///
+/// Intermediate class for GROUP BY aggregate operations
+///
+/// grouped_frame is a container for a class frame along with a column index. It 
+/// can be created explicitly, but it makes more sense to create one with 
+/// frame::group_by().
+/// 
 template<size_t... GroupInds, typename... Ts>
 class grouped_frame<index_defn<GroupInds...>, Ts...>
 {

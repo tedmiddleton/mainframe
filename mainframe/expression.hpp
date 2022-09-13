@@ -175,6 +175,16 @@ struct indexed_expr_column;
 struct _empty_byte
 {};
 
+struct row_number
+{
+    _empty_byte _eb;
+};
+
+struct frame_length
+{
+    _empty_byte _eb;
+};
+
 template<size_t Ind>
 struct expr_column
 {
@@ -209,7 +219,7 @@ struct indexed_expr_column
     static const size_t index = Ind;
 
     indexed_expr_column() = default;
-    indexed_expr_column(ptrdiff_t o)
+    explicit indexed_expr_column(ptrdiff_t o)
         : offset(o)
     {}
     indexed_expr_column(const indexed_expr_column&)            = default;
@@ -247,7 +257,7 @@ struct terminal
 {
     using is_expr = void;
 
-    terminal(T _t)
+    explicit terminal(T _t)
         : t(_t)
     {}
 
@@ -270,7 +280,7 @@ struct terminal<indexed_expr_column<Ind>>
     static const size_t index = Ind;
 
     terminal() = default;
-    terminal(indexed_expr_column<Ind> _t)
+    explicit terminal(indexed_expr_column<Ind> _t)
         : t(_t)
     {}
 
@@ -294,7 +304,7 @@ struct terminal<expr_column<Ind>>
     static const size_t index = Ind;
 
     terminal() = default;
-    terminal(expr_column<Ind> _t)
+    explicit terminal(expr_column<Ind> _t)
         : t(_t)
     {}
 
@@ -315,6 +325,42 @@ struct terminal<expr_column<Ind>>
     }
 
     expr_column<Ind> t;
+};
+
+template<>
+struct terminal<row_number>
+{
+    using is_expr             = void;
+
+    terminal() = default;
+
+    template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
+        typename... Ts>
+    ptrdiff_t 
+    operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
+        const Iter<IsConst, IsReverse, Ts...>& curr,
+        const Iter<IsConst, IsReverse, Ts...>& /*end*/) const
+    {
+        return curr - begin;
+    }
+};
+
+template<>
+struct terminal<frame_length>
+{
+    using is_expr             = void;
+
+    terminal() = default;
+
+    template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
+        typename... Ts>
+    ptrdiff_t 
+    operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
+        const Iter<IsConst, IsReverse, Ts...>& /*curr*/,
+        const Iter<IsConst, IsReverse, Ts...>& end) const
+    {
+        return end - begin;
+    }
 };
 
 template<typename Op, typename L, typename R>
@@ -356,7 +402,7 @@ struct unary_expr
     using is_expr = void;
     static_assert(is_expression<T>::value, "unary expression must contain expression");
 
-    unary_expr(T _t)
+    explicit unary_expr(T _t)
         : t(_t)
     {}
 
@@ -583,6 +629,8 @@ col()
 
 namespace placeholders
 {
+inline constexpr terminal<row_number> rownum;
+inline constexpr terminal<frame_length> framelen;
 inline constexpr terminal<expr_column<0>> _0;
 inline constexpr terminal<expr_column<1>> _1;
 inline constexpr terminal<expr_column<2>> _2;

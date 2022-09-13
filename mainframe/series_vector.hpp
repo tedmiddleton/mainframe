@@ -326,7 +326,7 @@ public:
         std::swap(m_end, other.m_end);
         std::swap(m_max, other.m_max);
     }
-    series_vector(std::initializer_list<T> _init)
+    explicit series_vector(std::initializer_list<T> _init)
         : series_vector(_init.begin(), _init.end())
     {}
 

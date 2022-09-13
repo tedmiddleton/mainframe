@@ -7,6 +7,7 @@
 #define INCLUDED_mainframe_simd_h
 
 #include <iostream>
+#include <cmath>
 
 #if __AVX__
 #include <immintrin.h>
@@ -39,7 +40,7 @@ mean(const T* t, size_t num)
 }
 
 #if defined(__AVX__)
-float
+inline float
 mean(const float* t, size_t num)
 {
     size_t i     = 0;
@@ -57,7 +58,7 @@ mean(const float* t, size_t num)
     return m / num;
 }
 
-double
+inline double
 mean(const double* t, size_t num)
 {
     size_t i      = 0;
@@ -108,7 +109,8 @@ correlate_pearson(const A* a, const B* b, size_t num) -> decltype(a[0] * b[0])
 }
 
 #if defined(__AVX__)
-double
+
+inline double
 correlate_pearson(const double* a, const double* b, size_t num)
 {
     double samean  = mean(a, num);
@@ -158,7 +160,7 @@ correlate_pearson(const double* a, const double* b, size_t num)
     return corr;
 }
 
-float
+inline float
 correlate_pearson(const float* a, const float* b, size_t num)
 {
     float samean  = mean(a, num);

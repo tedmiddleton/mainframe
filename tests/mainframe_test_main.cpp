@@ -716,6 +716,17 @@ TEST_CASE("rows()", "[frame]")
     auto fcoldandrain      = f1.rows(_1 <= 12 && _2 == true && _0 > 2022_y / January / 4);
     auto f2or3orhotandrain = f1.rows(
         (_1 >= 13 && _2 == true) || _0 == 2022_y / January / 2 || _0 == 2022_y / January / 3);
+    auto feven = f1.rows( rownum % 2 == 0 );
+    auto ffirsthalf = f1.rows( rownum < 3 );
+    auto flasthalf = f1.rows( (framelen - rownum) <= 3 );
+    dout << "f1:\n";
+    dout << f1;
+    dout << "even:\n";
+    dout << feven;
+    dout << "first half:\n";
+    dout << ffirsthalf;
+    dout << "last half:\n";
+    dout << flasthalf;
 
     REQUIRE(frain.size() == 2);
     REQUIRE(fnorain.size() == 4);
@@ -723,6 +734,9 @@ TEST_CASE("rows()", "[frame]")
     REQUIRE(fhotandrain.size() == 1);
     REQUIRE(fcoldandrain.empty());
     REQUIRE(f2or3orhotandrain.size() == 3);
+    REQUIRE(feven.size() == 3);
+    REQUIRE(ffirsthalf.size() == 3);
+    REQUIRE(flasthalf.size() == 3);
 
     REQUIRE((frain.begin() + 0)->at(_0) == 2022_y / January / 3);
     REQUIRE((frain.begin() + 0)->at(_1) == 11.1);
@@ -764,6 +778,36 @@ TEST_CASE("rows()", "[frame]")
     REQUIRE((f2or3orhotandrain.begin() + 2)->at(_0) == 2022_y / January / 6);
     REQUIRE((f2or3orhotandrain.begin() + 2)->at(_1) == 14.4);
     REQUIRE((f2or3orhotandrain.begin() + 2)->at(_2) == true);
+
+    REQUIRE((feven.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((feven.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((feven.begin() + 0)->at(_2) == false);
+    REQUIRE((feven.begin() + 1)->at(_0) == 2022_y / January / 4);
+    REQUIRE((feven.begin() + 1)->at(_1) == 12.2);
+    REQUIRE((feven.begin() + 1)->at(_2) == false);
+    REQUIRE((feven.begin() + 2)->at(_0) == 2022_y / January / 6);
+    REQUIRE((feven.begin() + 2)->at(_1) == 14.4);
+    REQUIRE((feven.begin() + 2)->at(_2) == true);
+
+    REQUIRE((ffirsthalf.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((ffirsthalf.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((ffirsthalf.begin() + 0)->at(_2) == false);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_0) == 2022_y / January / 3);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_1) == 11.1);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_2) == true);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_0) == 2022_y / January / 4);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_1) == 12.2);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_2) == false);
+
+    REQUIRE((flasthalf.begin() + 0)->at(_0) == 2022_y / January / 5);
+    REQUIRE((flasthalf.begin() + 0)->at(_1) == 13.3);
+    REQUIRE((flasthalf.begin() + 0)->at(_2) == false);
+    REQUIRE((flasthalf.begin() + 1)->at(_0) == 2022_y / January / 6);
+    REQUIRE((flasthalf.begin() + 1)->at(_1) == 14.4);
+    REQUIRE((flasthalf.begin() + 1)->at(_2) == true);
+    REQUIRE((flasthalf.begin() + 2)->at(_0) == 2022_y / January / 7);
+    REQUIRE((flasthalf.begin() + 2)->at(_1) == 15.5);
+    REQUIRE((flasthalf.begin() + 2)->at(_2) == false);
 }
 
 TEST_CASE("operator+", "[frame]")
@@ -1449,6 +1493,56 @@ TEST_CASE("std::sort", "[frame]")
         REQUIRE((it + 7)->at(_2) == 2022_y / January / 5);
         REQUIRE((it + 8)->at(_2) == 2022_y / January / 7);
     }
+
+    SECTION("method")
+    {
+        frame<year_month_day, double, int> f1;
+        f1.set_column_names("date", "temperature", "rain");
+        f1.push_back(2022_y / January / 8, 9.1, 7);
+        f1.push_back(2022_y / January / 9, 9.3, 10);
+        f1.push_back(2022_y / January / 5, 13.3, 10);
+        f1.push_back(2022_y / January / 6, 14.4, 7);
+        f1.push_back(2022_y / January / 3, 11.1, 7);
+        f1.push_back(2022_y / January / 4, 12.2, 10);
+        f1.push_back(2022_y / January / 7, 15.5, 10);
+        f1.push_back(2022_y / January / 1, 8.9, 10);
+        f1.push_back(2022_y / January / 2, 10.0, 10);
+
+        dout << f1;
+        f1.sort(_2, _1);
+        dout << f1;
+
+        auto it = f1.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / January / 8);
+        REQUIRE((it + 1)->at(_0) == 2022_y / January / 3);
+        REQUIRE((it + 2)->at(_0) == 2022_y / January / 6);
+        REQUIRE((it + 3)->at(_0) == 2022_y / January / 1);
+        REQUIRE((it + 4)->at(_0) == 2022_y / January / 9);
+        REQUIRE((it + 5)->at(_0) == 2022_y / January / 2);
+        REQUIRE((it + 6)->at(_0) == 2022_y / January / 4);
+        REQUIRE((it + 7)->at(_0) == 2022_y / January / 5);
+        REQUIRE((it + 8)->at(_0) == 2022_y / January / 7);
+
+        REQUIRE((it + 0)->at(_1) == 9.1);
+        REQUIRE((it + 1)->at(_1) == 11.1);
+        REQUIRE((it + 2)->at(_1) == 14.4);
+        REQUIRE((it + 3)->at(_1) == 8.9);
+        REQUIRE((it + 4)->at(_1) == 9.3);
+        REQUIRE((it + 5)->at(_1) == 10.0);
+        REQUIRE((it + 6)->at(_1) == 12.2);
+        REQUIRE((it + 7)->at(_1) == 13.3);
+        REQUIRE((it + 8)->at(_1) == 15.5);
+
+        REQUIRE((it + 0)->at(_2) == 7);
+        REQUIRE((it + 1)->at(_2) == 7);
+        REQUIRE((it + 2)->at(_2) == 7);
+        REQUIRE((it + 3)->at(_2) == 10);
+        REQUIRE((it + 4)->at(_2) == 10);
+        REQUIRE((it + 5)->at(_2) == 10);
+        REQUIRE((it + 6)->at(_2) == 10);
+        REQUIRE((it + 7)->at(_2) == 10);
+        REQUIRE((it + 8)->at(_2) == 10);
+    }
 }
 
 TEST_CASE("aggregate", "[frame]")
@@ -1537,29 +1631,31 @@ TEST_CASE("aggregate", "[frame]")
     gf.build_index();
     auto f2 = gf.aggregate(
         agg::sum(_2), agg::min(_2), agg::max(_2), agg::mean(_2), agg::stddev(_2), agg::count());
-    dout << f2;
     auto f3 = gf.aggregate(
         agg::sum(_3), agg::min(_3), agg::max(_3), agg::mean(_3), agg::stddev(_3), agg::count());
-    dout << f3;
     std::sort(f2.begin(), f2.end());
     std::sort(f3.begin(), f3.end());
+    dout << "SELECT SUM(rain), MIN(rain), MAX(rain), MEAN(rain), STDDEV(rain), COUNT(*)\n";
+    dout << f2;
+    dout << "SELECT SUM(humidity), MIN(humidity), MAX(humidity), MEAN(humidity), STDDEV(humidity), COUNT(*)\n";
+    dout << f3;
 
     // rain
     {
-        //   |       date | temperature | sum( rain ) | min( rain ) | max( rain ) | mean( rain ) |
-        //   stddev( rain ) | count(*)
+        // clang-format off
+        //   |       date | temperature | sum( rain ) | min( rain ) | max( rain ) | mean( rain ) | stddev( rain ) | count(*)
         // __|____________|_____________|_____________|_____________|_____________|______________|________________|__________
-        //  0| 2022-01-01 |           1 |           0 |           0 |           0 |            0 |
-        //  0 |        1 1| 2022-01-02 |           2 |           3 |           1 |           2 | 1.5
-        //  |            0.5 |        2 2| 2022-01-03 |           3 |           9 |           2 | 4
-        //  |            3 |       0.816497 |        3 3| 2022-01-04 |           4 |          12 |
-        //  3 |           5 |            4 |       0.816497 |        3 4| 2022-01-05 |           5 |
-        //  15 |           4 |           6 |            5 |       0.816497 |        3 5| 2022-01-06
-        //  |           6 |          18 |           5 |           7 |            6 |       0.816497
-        //  |        3 6| 2022-01-07 |           7 |          21 |           6 |           8 | 7 |
-        //  0.816497 |        3 7| 2022-01-08 |           8 |          15 |           7 | 8 | 7.5 |
-        //  0.5 |        2 8| 2022-01-09 |           9 |           9 |           9 |           9 |
-        //  9 |              0 |        1
+        //  0| 2022-01-01 |           1 |           0 |           0 |           0 |            0 |              0 |        1
+        //  1| 2022-01-02 |           2 |           3 |           1 |           2 |          1.5 |            0.5 |        2
+        //  2| 2022-01-03 |           3 |           9 |           2 |           4 |            3 |       0.816497 |        3
+        //  3| 2022-01-04 |           4 |          12 |           3 |           5 |            4 |       0.816497 |        3
+        //  4| 2022-01-05 |           5 |          15 |           4 |           6 |            5 |       0.816497 |        3
+        //  5| 2022-01-06 |           6 |          18 |           5 |           7 |            6 |       0.816497 |        3
+        //  6| 2022-01-07 |           7 |          21 |           6 |           8 |            7 |       0.816497 |        3
+        //  7| 2022-01-08 |           8 |          15 |           7 |           8 |          7.5 |            0.5 |        2
+        //  8| 2022-01-09 |           9 |           9 |           9 |           9 |            9 |              0 |        1
+        // clang-format on
+
         auto it = f2.cbegin();
         // date
         REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
@@ -1652,21 +1748,20 @@ TEST_CASE("aggregate", "[frame]")
 
     // humidity
     {
-        //   |       date | temperature | sum( humidity ) | min( humidity ) | max( humidity ) |
-        //   mean( humidity ) | stddev( humidity ) | count(*)
+        // clang-format off
+        //   |       date | temperature | sum( humidity ) | min( humidity ) | max( humidity ) | mean( humidity ) | stddev( humidity ) | count(*)
         // __|____________|_____________|_________________|_________________|_________________|__________________|____________________|__________
-        //  0| 2022-01-01 |           1 |              -5 |              -5 |              -5 | -5 |
-        //  0 |        1 1| 2022-01-02 |           2 |             -10 |            -5.5 | -4.5 | -5
-        //  |                0.5 |        2 2| 2022-01-03 |           3 |             -15 | -6 | -4
-        //  |               -5 |           0.816497 |        3 3| 2022-01-04 |           4 | -15 |
-        //  -6 |              -4 |               -5 |           0.816497 |        3 4| 2022-01-05 |
-        //  5 |             -15 |              -6 |              -4 |               -5 | 0.816497 |
-        //  3 5| 2022-01-06 |           6 |             -15 |              -6 |              -4 | -5
-        //  |           0.816497 |        3 6| 2022-01-07 |           7 |             -15 | -6 | -4
-        //  |               -5 |           0.816497 |        3 7| 2022-01-08 |           8 | -10 |
-        //  -5.5 |            -4.5 |               -5 |                0.5 |        2 8| 2022-01-09
-        //  |           9 |              -5 |              -5 |              -5 |               -5 |
-        //  0 |        1
+        //  0| 2022-01-01 |           1 |              -5 |              -5 |              -5 |               -5 |                  0 |        1
+        //  1| 2022-01-02 |           2 |             -10 |            -5.5 |            -4.5 |               -5 |                0.5 |        2
+        //  2| 2022-01-03 |           3 |             -15 |              -6 |              -4 |               -5 |           0.816497 |        3
+        //  3| 2022-01-04 |           4 |             -15 |              -6 |              -4 |               -5 |           0.816497 |        3
+        //  4| 2022-01-05 |           5 |             -15 |              -6 |              -4 |               -5 |           0.816497 |        3
+        //  5| 2022-01-06 |           6 |             -15 |              -6 |              -4 |               -5 |           0.816497 |        3
+        //  6| 2022-01-07 |           7 |             -15 |              -6 |              -4 |               -5 |           0.816497 |        3
+        //  7| 2022-01-08 |           8 |             -10 |            -5.5 |            -4.5 |               -5 |                0.5 |        2
+        //  8| 2022-01-09 |           9 |              -5 |              -5 |              -5 |               -5 |                  0 |        1
+        // clang-format on
+
         auto it = f3.cbegin();
         // date
         REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
