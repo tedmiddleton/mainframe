@@ -817,19 +817,54 @@ public:
         return eq_impl<0>(other);
     }
 
-    _row_proxy<false, Ts...>
-    row(size_t ind)
+    // row-selector operator[]. One tricky bit is that rows(Ex) which it calls 
+    // only requires is_expression<Ex> whereas here we require 
+    // is_complex_expression<Ex>. This means that if we have a column (say 
+    // column _1) that is bool-convertible, we can call 
+    //   fr.rows(_1);
+    // ...and that will select all rows where column _1 is 'true' but we CANNOT 
+    // call
+    //   fr[_1];
+    // ...because this is a column-selector call that returns a frame with a 
+    // single column. Instead we either need to call rows() or call
+    //   fr[_1 == true];
+    //
+    template<typename Ex>
+    std::enable_if_t<is_complex_expression<Ex>::value, frame<Ts...>>
+    operator[](Ex ex) const
     {
-        _row_proxy<false, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
-        return out;
+        return rows(ex);
     }
 
-    _row_proxy<true, Ts...>
-    row(size_t ind) const
+#if __cplusplus <= 202002L
+    // Note that this will only work up to c++23, where we can be more sensible 
+    // about multiple arguments to operator[]
+    template<size_t... Inds>
+    typename detail::rearrange<frame<Ts...>, Inds...>::type
+    operator[](columnindexpack<Inds...> cols) const
     {
-        _row_proxy<true, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
-        return out;
+        uframe u;
+        columns_impl(u, cols);
+        return u;
     }
+
+    template<size_t Ind>
+    typename detail::rearrange<frame<Ts...>, Ind>::type
+    operator[](columnindex<Ind>) const
+    {
+        uframe u;
+        columnindexpack<Ind> cols;
+        columns_impl(u, cols);
+        return u;
+    }
+#else
+    template<size_t... Inds>
+    typename detail::rearrange<frame<Ts...>, Inds...>::type
+    operator[](columnindex<Inds>... cols) const
+    {
+        return columns(cols...);
+    }
+#endif
 
     void
     pop_back()
@@ -909,8 +944,22 @@ public:
         return out;
     }
 
+    _row_proxy<false, Ts...>
+    row(size_t ind)
+    {
+        _row_proxy<false, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
+        return out;
+    }
+
+    _row_proxy<true, Ts...>
+    row(size_t ind) const
+    {
+        _row_proxy<true, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
+        return out;
+    }
+
     template<typename Ex>
-    frame<Ts...>
+    std::enable_if_t<is_expression<Ex>::value, frame<Ts...>>
     rows(Ex ex) const
     {
         frame<Ts...> out;
@@ -1051,6 +1100,19 @@ private:
         f.add_series(s);
         if constexpr (sizeof...(Us) > 0) {
             columns_impl(f, us...);
+        }
+    }
+
+    template<size_t Ind, size_t... RemInds>
+    void
+    columns_impl(uframe& f, columnindexpack<Ind, RemInds...>) const
+    {
+        columnindex<Ind> ci;
+        useries s = column(ci);
+        f.add_series(s);
+        if constexpr (sizeof...(RemInds) > 0) {
+            columnindexpack<RemInds...> remcis;
+            columns_impl(f, remcis);
         }
     }
 

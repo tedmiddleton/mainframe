@@ -563,80 +563,6 @@ TEST_CASE("push_back() pop_back()", "[frame]")
     REQUIRE(f1.begin()->at(_2) == false);
 }
 
-// TEST_CASE( "push_back( variant )", "[frame]" )
-//{
-//     SECTION( "no missing" )
-//     {
-//         frame<year_month_day, double, bool> f1;
-//         f1.set_column_names( "date", "temperature", "rain" );
-//
-//         using row_type = decltype(f1)::row_type;
-//         row_type row;
-//         row.push_back( 2022_y/January/2 ); row.push_back( 10.0 ); row.push_back( false );
-//         f1.push_back( row );
-//         REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
-//         REQUIRE( std::holds_alternative<double>( row[1] ) );
-//         REQUIRE( std::holds_alternative<bool>( row[2] ) );
-//         row.clear();
-//         row.push_back( 2022_y/January/3 ); row.push_back( 11.1 ); row.push_back( true );
-//         f1.push_back( row );
-//         REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
-//         REQUIRE( std::holds_alternative<double>( row[1] ) );
-//         REQUIRE( std::holds_alternative<bool>( row[2] ) );
-//         row.clear();
-//         row.push_back( 2022_y/January/4 ); row.push_back( 12.2 ); row.push_back( false );
-//         f1.push_back( row );
-//         REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
-//         REQUIRE( std::holds_alternative<double>( row[1] ) );
-//         REQUIRE( std::holds_alternative<bool>( row[2] ) );
-//         row.clear();
-//         REQUIRE( f1.size() == 3 );
-//         REQUIRE( f1.begin()->at(_0) == 2022_y/January/2 );
-//         REQUIRE( f1.begin()->at(_1) == 10.0 );
-//         REQUIRE( f1.begin()->at(_2) == false );
-//         REQUIRE( (f1.begin() + 1)->at(_0) == 2022_y/January/3 );
-//         REQUIRE( (f1.begin() + 1)->at(_1) == 11.1 );
-//         REQUIRE( (f1.begin() + 1)->at(_2) == true );
-//         REQUIRE( (f1.begin() + 2)->at(_0) == 2022_y/January/4 );
-//         REQUIRE( (f1.begin() + 2)->at(_1) == 12.2 );
-//         REQUIRE( (f1.begin() + 2)->at(_2) == false );
-//     }
-//
-//     SECTION( "missing" )
-//     {
-//         frame<year_month_day, double, bool> f0;
-//         f0.set_column_names( "date", "temperature", "rain" );
-//         auto f1 = f0.allow_missing( _1, _2 );
-//
-//         using row_type = decltype(f1)::row_type;
-//         row_type row;
-//         row.push_back( 2022_y/January/2 ); row.push_back( mi(10.0) ); row.push_back( mi(false) );
-//         f1.push_back( row );
-//         REQUIRE( std::holds_alternative<year_month_day>( row[0] ) );
-//         REQUIRE( std::holds_alternative<mi<double>>( row[1] ) );
-//         REQUIRE( std::holds_alternative<mi<bool>>( row[2] ) );
-//         row.clear();
-//         row.push_back( 2022_y/January/3 ); row.push_back( mi<double>(missing) ); row.push_back(
-//         mi<bool>(missing) ); f1.push_back( row ); REQUIRE(
-//         std::holds_alternative<year_month_day>( row[0] ) ); REQUIRE(
-//         std::holds_alternative<mi<double>>( row[1] ) ); REQUIRE(
-//         std::holds_alternative<mi<bool>>( row[2] ) ); row.clear(); row.push_back(
-//         2022_y/January/4 ); row.push_back( mi(12.2) ); row.push_back( mi(true) ); f1.push_back(
-//         row ); REQUIRE( std::holds_alternative<year_month_day>( row[0] ) ); REQUIRE(
-//         std::holds_alternative<mi<double>>( row[1] ) ); REQUIRE(
-//         std::holds_alternative<mi<bool>>( row[2] ) ); row.clear(); REQUIRE( f1.size() == 3 );
-//         REQUIRE( f1.begin()->at(_0) == 2022_y/January/2 );
-//         REQUIRE( f1.begin()->at(_1) == 10.0 );
-//         REQUIRE( f1.begin()->at(_2) == false );
-//         REQUIRE( (f1.begin() + 1)->at(_0) == 2022_y/January/3 );
-//         REQUIRE( (f1.begin() + 1)->at(_1) == missing );
-//         REQUIRE( (f1.begin() + 1)->at(_2) == missing );
-//         REQUIRE( (f1.begin() + 2)->at(_0) == 2022_y/January/4 );
-//         REQUIRE( (f1.begin() + 2)->at(_1) == 12.2 );
-//         REQUIRE( (f1.begin() + 2)->at(_2) == true );
-//     }
-// }
-
 TEST_CASE("resize()", "[frame]")
 {
     SECTION("bigger")
@@ -808,6 +734,195 @@ TEST_CASE("rows()", "[frame]")
     REQUIRE((flasthalf.begin() + 2)->at(_0) == 2022_y / January / 7);
     REQUIRE((flasthalf.begin() + 2)->at(_1) == 15.5);
     REQUIRE((flasthalf.begin() + 2)->at(_2) == false);
+}
+
+TEST_CASE("operator,", "[frame]")
+{
+    columnindex<1> c1;
+    columnindex<2> c2;
+    columnindex<3> c3;
+    columnindex<4> c4;
+    auto c123 = c1.operator,(c2).operator,(c3);
+    auto c1234 = c123.operator,(c4);
+    auto c1234p = ( c123 , c4 );
+    (void)c1234;
+    (void)c1234p;
+    auto d1234 = (c1,c2,c3,c4);
+    (void)d1234;
+}
+
+TEST_CASE("operator[columnindex<Inds>...]", "[frame]")
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names("date", "temperature", "rain");
+    f1.push_back(2022_y / January / 2, 10.0, false);
+    f1.push_back(2022_y / January / 3, 11.1, false);
+    f1.push_back(2022_y / January / 4, 12.2, false);
+
+    SECTION("2 Reverse")
+    {
+        auto f3 = f1[_2, _0];
+        REQUIRE(f3.column_name<0>() == "rain");
+        REQUIRE(f3.column_name<1>() == "date");
+        REQUIRE(f3.begin()->at(_0) == false);
+        REQUIRE(f3.begin()->at(_1) == 2022_y / January / 2);
+    }
+
+    SECTION("1")
+    {
+        auto f3 = f1[_2];
+        REQUIRE(f3.column_name<0>() == "rain");
+        REQUIRE(f3.begin()->at(_0) == false);
+    }
+}
+
+TEST_CASE("operator[Ex]", "[frame]")
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names("date", "temperature", "rain");
+    f1.push_back(2022_y / January / 2, 10.0, false);
+    f1.push_back(2022_y / January / 3, 11.1, true);
+    f1.push_back(2022_y / January / 4, 12.2, false);
+    f1.push_back(2022_y / January / 5, 13.3, false);
+    f1.push_back(2022_y / January / 6, 14.4, true);
+    f1.push_back(2022_y / January / 7, 15.5, false);
+
+    auto frain             = f1[col<2>() == true];
+    auto fnorain           = f1[false == col<2>()];
+    auto fhot              = f1[_1 >= 14];
+    auto fhotandrain       = f1[col1 >= 13 && col2 == true];
+    auto fcoldandrain      = f1[_1 <= 12 && _2 == true && _0 > 2022_y / January / 4];
+    auto f2or3orhotandrain = f1[
+        (_1 >= 13 && _2 == true) || _0 == 2022_y / January / 2 || _0 == 2022_y / January / 3];
+    auto feven              = f1[ rownum % 2 == 0 ];
+    auto ffirsthalf         = f1[ rownum < 3 ];
+    auto flasthalf          = f1[ (framelen - rownum) <= 3 ];
+    dout << "f1:\n";
+    dout << f1;
+    dout << "even:\n";
+    dout << feven;
+    dout << "first half:\n";
+    dout << ffirsthalf;
+    dout << "last half:\n";
+    dout << flasthalf;
+
+    REQUIRE(frain.size() == 2);
+    REQUIRE(fnorain.size() == 4);
+    REQUIRE(fhot.size() == 2);
+    REQUIRE(fhotandrain.size() == 1);
+    REQUIRE(fcoldandrain.empty());
+    REQUIRE(f2or3orhotandrain.size() == 3);
+    REQUIRE(feven.size() == 3);
+    REQUIRE(ffirsthalf.size() == 3);
+    REQUIRE(flasthalf.size() == 3);
+
+    REQUIRE((frain.begin() + 0)->at(_0) == 2022_y / January / 3);
+    REQUIRE((frain.begin() + 0)->at(_1) == 11.1);
+    REQUIRE((frain.begin() + 0)->at(_2) == true);
+    REQUIRE((frain.begin() + 1)->at(_0) == 2022_y / January / 6);
+    REQUIRE((frain.begin() + 1)->at(_1) == 14.4);
+    REQUIRE((frain.begin() + 1)->at(_2) == true);
+
+    REQUIRE((fnorain.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((fnorain.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((fnorain.begin() + 0)->at(_2) == false);
+    REQUIRE((fnorain.begin() + 1)->at(_0) == 2022_y / January / 4);
+    REQUIRE((fnorain.begin() + 1)->at(_1) == 12.2);
+    REQUIRE((fnorain.begin() + 1)->at(_2) == false);
+    REQUIRE((fnorain.begin() + 2)->at(_0) == 2022_y / January / 5);
+    REQUIRE((fnorain.begin() + 2)->at(_1) == 13.3);
+    REQUIRE((fnorain.begin() + 2)->at(_2) == false);
+    REQUIRE((fnorain.begin() + 3)->at(_0) == 2022_y / January / 7);
+    REQUIRE((fnorain.begin() + 3)->at(_1) == 15.5);
+    REQUIRE((fnorain.begin() + 3)->at(_2) == false);
+
+    REQUIRE((fhot.begin() + 0)->at(_0) == 2022_y / January / 6);
+    REQUIRE((fhot.begin() + 0)->at(_1) == 14.4);
+    REQUIRE((fhot.begin() + 0)->at(_2) == true);
+    REQUIRE((fhot.begin() + 1)->at(_0) == 2022_y / January / 7);
+    REQUIRE((fhot.begin() + 1)->at(_1) == 15.5);
+    REQUIRE((fhot.begin() + 1)->at(_2) == false);
+
+    REQUIRE((fhotandrain.begin() + 0)->at(_0) == 2022_y / January / 6);
+    REQUIRE((fhotandrain.begin() + 0)->at(_1) == 14.4);
+    REQUIRE((fhotandrain.begin() + 0)->at(_2) == true);
+
+    REQUIRE((f2or3orhotandrain.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((f2or3orhotandrain.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((f2or3orhotandrain.begin() + 0)->at(_2) == false);
+    REQUIRE((f2or3orhotandrain.begin() + 1)->at(_0) == 2022_y / January / 3);
+    REQUIRE((f2or3orhotandrain.begin() + 1)->at(_1) == 11.1);
+    REQUIRE((f2or3orhotandrain.begin() + 1)->at(_2) == true);
+    REQUIRE((f2or3orhotandrain.begin() + 2)->at(_0) == 2022_y / January / 6);
+    REQUIRE((f2or3orhotandrain.begin() + 2)->at(_1) == 14.4);
+    REQUIRE((f2or3orhotandrain.begin() + 2)->at(_2) == true);
+
+    REQUIRE((feven.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((feven.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((feven.begin() + 0)->at(_2) == false);
+    REQUIRE((feven.begin() + 1)->at(_0) == 2022_y / January / 4);
+    REQUIRE((feven.begin() + 1)->at(_1) == 12.2);
+    REQUIRE((feven.begin() + 1)->at(_2) == false);
+    REQUIRE((feven.begin() + 2)->at(_0) == 2022_y / January / 6);
+    REQUIRE((feven.begin() + 2)->at(_1) == 14.4);
+    REQUIRE((feven.begin() + 2)->at(_2) == true);
+
+    REQUIRE((ffirsthalf.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((ffirsthalf.begin() + 0)->at(_1) == 10.0);
+    REQUIRE((ffirsthalf.begin() + 0)->at(_2) == false);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_0) == 2022_y / January / 3);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_1) == 11.1);
+    REQUIRE((ffirsthalf.begin() + 1)->at(_2) == true);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_0) == 2022_y / January / 4);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_1) == 12.2);
+    REQUIRE((ffirsthalf.begin() + 2)->at(_2) == false);
+
+    REQUIRE((flasthalf.begin() + 0)->at(_0) == 2022_y / January / 5);
+    REQUIRE((flasthalf.begin() + 0)->at(_1) == 13.3);
+    REQUIRE((flasthalf.begin() + 0)->at(_2) == false);
+    REQUIRE((flasthalf.begin() + 1)->at(_0) == 2022_y / January / 6);
+    REQUIRE((flasthalf.begin() + 1)->at(_1) == 14.4);
+    REQUIRE((flasthalf.begin() + 1)->at(_2) == true);
+    REQUIRE((flasthalf.begin() + 2)->at(_0) == 2022_y / January / 7);
+    REQUIRE((flasthalf.begin() + 2)->at(_1) == 15.5);
+    REQUIRE((flasthalf.begin() + 2)->at(_2) == false);
+}
+
+TEST_CASE("row and column indexers combined", "[frame]")
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names("date", "temperature", "rain");
+    f1.push_back(2022_y / January / 2, 10.0, false);
+    f1.push_back(2022_y / January / 3, 11.1, true);
+    f1.push_back(2022_y / January / 4, 12.2, false);
+    f1.push_back(2022_y / January / 5, 13.3, false);
+    f1.push_back(2022_y / January / 6, 14.4, true);
+    f1.push_back(2022_y / January / 7, 15.5, false);
+
+    SECTION("row then column")
+    {
+        auto f2 = f1[_1 > 12.2][_0, _2];
+        REQUIRE((f2.begin() + 0)->at(_0) == 2022_y / January / 5);
+        REQUIRE((f2.begin() + 0)->at(_1) == false);
+        REQUIRE((f2.begin() + 1)->at(_0) == 2022_y / January / 6);
+        REQUIRE((f2.begin() + 1)->at(_1) == true);
+        REQUIRE((f2.begin() + 2)->at(_0) == 2022_y / January / 7);
+        REQUIRE((f2.begin() + 2)->at(_1) == false);
+    }
+
+    SECTION("column then row")
+    {
+        auto f2 = f1[_2, _1, _0][_1 > 12.2];
+        REQUIRE((f2.begin() + 0)->at(_2) == 2022_y / January / 5);
+        REQUIRE((f2.begin() + 0)->at(_0) == false);
+        REQUIRE((f2.begin() + 0)->at(_1) == 13.3);
+        REQUIRE((f2.begin() + 1)->at(_2) == 2022_y / January / 6);
+        REQUIRE((f2.begin() + 1)->at(_0) == true);
+        REQUIRE((f2.begin() + 1)->at(_1) == 14.4);
+        REQUIRE((f2.begin() + 2)->at(_2) == 2022_y / January / 7);
+        REQUIRE((f2.begin() + 2)->at(_0) == false);
+        REQUIRE((f2.begin() + 2)->at(_1) == 15.5);
+    }
 }
 
 TEST_CASE("operator+", "[frame]")
