@@ -582,7 +582,7 @@ private:
         T temp = static_cast<T>(0);
         columnindex<ColInd> ci;
         for (size_t rowind : rowinds) {
-            const auto& row = m_frame[rowind];
+            const auto& row = m_frame.row(rowind);
             const T& t      = row.at(ci);
             temp += t;
         }
@@ -599,7 +599,7 @@ private:
         T temp = numeric_limits<T>::lowest();
         columnindex<ColInd> ci;
         for (size_t rowind : rowinds) {
-            const auto& row = m_frame[rowind];
+            const auto& row = m_frame.row(rowind);
             const T& t      = row.at(ci);
             temp            = max(temp, t);
         }
@@ -616,7 +616,7 @@ private:
         T temp = numeric_limits<T>::max();
         columnindex<ColInd> ci;
         for (size_t rowind : rowinds) {
-            const auto& row = m_frame[rowind];
+            const auto& row = m_frame.row(rowind);
             const T& t      = row.at(ci);
             temp            = min(temp, t);
         }
@@ -631,7 +631,7 @@ private:
         T temp = static_cast<T>(0);
         columnindex<ColInd> ci;
         for (size_t rowind : rowinds) {
-            const auto& row = m_frame[rowind];
+            const auto& row = m_frame.row(rowind);
             const T& t      = row.at(ci);
             temp += t;
         }
@@ -647,7 +647,7 @@ private:
         T sum = static_cast<T>(0);
         columnindex<ColInd> ci;
         for (size_t rowind : rowinds) {
-            const auto& row = m_frame[rowind];
+            const auto& row = m_frame.row(rowind);
             const T& t      = row.at(ci);
             sum += t;
         }
@@ -655,7 +655,7 @@ private:
 
         T sqdist = static_cast<T>(0);
         for (size_t rowind : rowinds) {
-            const auto& row = m_frame[rowind];
+            const auto& row = m_frame.row(rowind);
             const T& t      = row.at(ci);
             T dist          = t - mean;
             sqdist += (dist * dist);
@@ -702,7 +702,7 @@ public:
         m_idx.reserve(ifr.size());
 
         for (size_t i = 0; i < ifr.size(); ++i) {
-            auto row    = ifr[i];
+            auto row    = ifr.row(i);
             auto findit = m_idx.find(row);
             if (findit == m_idx.end()) {
                 map_value_type arr;

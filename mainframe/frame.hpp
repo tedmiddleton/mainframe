@@ -818,14 +818,14 @@ public:
     }
 
     _row_proxy<false, Ts...>
-    operator[](size_t ind)
+    row(size_t ind)
     {
         _row_proxy<false, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
         return out;
     }
 
     _row_proxy<true, Ts...>
-    operator[](size_t ind) const
+    row(size_t ind) const
     {
         _row_proxy<true, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
         return out;
