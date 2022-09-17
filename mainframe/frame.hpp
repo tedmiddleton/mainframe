@@ -139,10 +139,10 @@ namespace detail
 {
 
 template<typename T, typename U>
-struct join_frames;
+struct combine_frames;
 
 template<typename... Ts, typename... Us>
-struct join_frames<frame<Ts...>, frame<Us...>>
+struct combine_frames<frame<Ts...>, frame<Us...>>
 {
     using type = frame<Ts..., Us...>;
 };
@@ -162,7 +162,7 @@ struct add_opt<frame<mi<T>, Ts...>, Curr, IndList...>
 {
     using frame_type   = frame<mi<T>>;
     using add_opt_type = typename add_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type         = typename join_frames<frame_type, add_opt_type>::type;
+    using type         = typename combine_frames<frame_type, add_opt_type>::type;
 };
 
 template<typename T, typename... Ts, size_t Curr, size_t... IndList>
@@ -171,7 +171,7 @@ struct add_opt<frame<T, Ts...>, Curr, IndList...>
     static const bool inds_contains = contains<Curr, IndList...>::value;
     using frame_type   = typename std::conditional<inds_contains, frame<mi<T>>, frame<T>>::type;
     using add_opt_type = typename add_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type         = typename join_frames<frame_type, add_opt_type>::type;
+    using type         = typename combine_frames<frame_type, add_opt_type>::type;
 };
 
 template<typename T, size_t Curr, size_t... IndList>
@@ -196,7 +196,7 @@ struct remove_opt<frame<mi<T>, Ts...>, Curr, IndList...>
     static const bool inds_contains = contains<Curr, IndList...>::value;
     using frame_type      = typename std::conditional<inds_contains, frame<T>, frame<mi<T>>>::type;
     using remove_opt_type = typename remove_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type            = typename join_frames<frame_type, remove_opt_type>::type;
+    using type            = typename combine_frames<frame_type, remove_opt_type>::type;
 };
 
 template<typename T, typename... Ts, size_t Curr, size_t... IndList>
@@ -204,7 +204,7 @@ struct remove_opt<frame<T, Ts...>, Curr, IndList...>
 {
     using frame_type      = frame<T>;
     using remove_opt_type = typename remove_opt<frame<Ts...>, Curr + 1, IndList...>::type;
-    using type            = typename join_frames<frame_type, remove_opt_type>::type;
+    using type            = typename combine_frames<frame_type, remove_opt_type>::type;
 };
 
 template<typename T, size_t Curr, size_t... IndList>

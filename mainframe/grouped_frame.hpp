@@ -194,7 +194,7 @@ struct get_result_frame<index_defn<Inds1...>, index_defn<Inds2...>, Frame>
 {
     using indexed_cols1 = typename get_index_frame<index_defn<Inds1...>, Frame>::type;
     using indexed_cols2 = typename get_index_frame<index_defn<Inds2...>, Frame>::type;
-    using type          = typename join_frames<indexed_cols1, indexed_cols2>::type;
+    using type          = typename combine_frames<indexed_cols1, indexed_cols2>::type;
 
     static type
     op(Frame& f)
@@ -323,7 +323,7 @@ struct get_aggregate_frame<frame<Ts...>, index_defn<Inds...>, Ops...>
 {
     using index_frame = typename get_index_frame<index_defn<Inds...>, frame<Ts...>>::type;
     using args_frame  = typename get_frame_from_args<frame<Ts...>, Ops...>::type;
-    using type        = typename detail::join_frames<index_frame, args_frame>::type;
+    using type        = typename detail::combine_frames<index_frame, args_frame>::type;
 };
 
 } // namespace detail
@@ -389,7 +389,7 @@ class grouped_frame<index_defn<GroupInds...>, Ts...>
     template<size_t Ind, typename... Us>
     using pack_element = detail::pack_element<Ind, Us...>;
     template<typename T, typename U>
-    using join_frames = detail::join_frames<T, U>;
+    using combine_frames = detail::combine_frames<T, U>;
 
     // The index definition for this grouped_frame
     using group_index_defn = index_defn<GroupInds...>;
