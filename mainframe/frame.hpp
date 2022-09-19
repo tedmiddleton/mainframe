@@ -730,6 +730,26 @@ public:
         return grouped_frame<index_defn<Idx...>, Ts...>{ *this };
     }
 
+    template<typename...Us>
+    frame<Ts..., Us...>
+    hcat(frame<Us...> other) const
+    {
+        frame<Ts...> self( *this );
+        size_t max_size = std::max(self.size(), other.size());
+        // Redundant resize will be handled at the series level to prevent an 
+        // unnecessary unref 
+        self.resize(max_size);
+        other.resize(max_size);
+
+        uframe out(self);
+        uframe uother(other);
+        for (size_t c = 0; c < other.num_columns(); ++c) {
+            out.add_series(uother.column(c));
+        }
+
+        return out;
+    }
+
     iterator
     insert(iterator pos, const_iterator first, const_iterator last)
     {

@@ -497,14 +497,18 @@ public:
     void
     resize(size_type newsize)
     {
-        unref();
-        return m_sharedvec->resize(newsize);
+        if (newsize != m_sharedvec->size()) {
+            unref();
+            m_sharedvec->resize(newsize);
+        }
     }
     void
     resize(size_type newsize, const T& value)
     {
-        unref();
-        return m_sharedvec->resize(newsize, value);
+        if (newsize != m_sharedvec->size()) {
+            unref();
+            m_sharedvec->resize(newsize, value);
+        }
     }
 
     // swap

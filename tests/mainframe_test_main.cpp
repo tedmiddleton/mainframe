@@ -1967,3 +1967,140 @@ TEST_CASE("aggregate", "[frame]")
         REQUIRE((it + 8)->at(_7) == 1);
     }
 }
+
+TEST_CASE("hcat", "[frame]")
+{
+    SECTION("same size")
+    {
+        frame<year_month_day, bool> f1;
+        f1.set_column_names("date", "rain");
+        f1.push_back(2022_y / January / 1, false);
+        f1.push_back(2022_y / January / 2, false);
+        f1.push_back(2022_y / January / 3, true);
+        f1.push_back(2022_y / January / 4, true);
+
+        frame<year_month_day, double> f2;
+        f2.set_column_names("date", "temperature");
+        f2.push_back(2022_y / January / 6, 14.4);
+        f2.push_back(2022_y / January / 7, 15.5);
+        f2.push_back(2022_y / January / 8, 9.1);
+        f2.push_back(2022_y / January / 9, 9.3);
+
+        frame<year_month_day, double, year_month_day, bool> f3 = f2.hcat(f1);
+
+        REQUIRE(f3.size() == 4);
+
+        dout << "f2.hcat(f1):\n";
+        dout << f3;
+
+        auto it = f3.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 6);
+        REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 7);
+        REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 8);
+        REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 9);
+
+        REQUIRE((it + 0)->at(_1) == 14.4);
+        REQUIRE((it + 1)->at(_1) == 15.5);
+        REQUIRE((it + 2)->at(_1) ==  9.1);
+        REQUIRE((it + 3)->at(_1) ==  9.3);
+
+        REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 2);
+        REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
+        REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_3) == false);
+        REQUIRE((it + 1)->at(_3) == false);
+        REQUIRE((it + 2)->at(_3) == true);
+        REQUIRE((it + 3)->at(_3) == true);
+    }
+
+    SECTION("left larger")
+    {
+        frame<year_month_day, bool> f1;
+        f1.set_column_names("date", "rain");
+        f1.push_back(2022_y / January / 1, false);
+        f1.push_back(2022_y / January / 2, false);
+        f1.push_back(2022_y / January / 3, true);
+
+        frame<year_month_day, double> f2;
+        f2.set_column_names("date", "temperature");
+        f2.push_back(2022_y / January / 6, 14.4);
+        f2.push_back(2022_y / January / 7, 15.5);
+        f2.push_back(2022_y / January / 8, 9.1);
+        f2.push_back(2022_y / January / 9, 9.3);
+
+        frame<year_month_day, double, year_month_day, bool> f3 = f2.hcat(f1);
+
+        REQUIRE(f3.size() == 4);
+
+        dout << "f2.hcat(f1):\n";
+        dout << f3;
+
+        auto it = f3.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 6);
+        REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 7);
+        REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 8);
+        REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 9);
+
+        REQUIRE((it + 0)->at(_1) == 14.4);
+        REQUIRE((it + 1)->at(_1) == 15.5);
+        REQUIRE((it + 2)->at(_1) ==  9.1);
+        REQUIRE((it + 3)->at(_1) ==  9.3);
+
+        REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 2);
+        REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
+        REQUIRE(!(it + 3)->at(_2).ok());
+
+        REQUIRE((it + 0)->at(_3) == false);
+        REQUIRE((it + 1)->at(_3) == false);
+        REQUIRE((it + 2)->at(_3) == true);
+        REQUIRE((it + 3)->at(_3) == false);
+    }
+
+    SECTION("left small")
+    {
+        frame<year_month_day, bool> f1;
+        f1.set_column_names("date", "rain");
+        f1.push_back(2022_y / January / 1, false);
+        f1.push_back(2022_y / January / 2, false);
+        f1.push_back(2022_y / January / 3, true);
+        f1.push_back(2022_y / January / 4, true);
+
+        frame<year_month_day, double> f2;
+        f2.set_column_names("date", "temperature");
+        f2.push_back(2022_y / January / 6, 14.4);
+        f2.push_back(2022_y / January / 7, 15.5);
+        f2.push_back(2022_y / January / 8, 9.1);
+
+        frame<year_month_day, double, year_month_day, bool> f3 = f2.hcat(f1);
+
+        REQUIRE(f3.size() == 4);
+
+        dout << "f2.hcat(f1):\n";
+        dout << f3;
+
+        auto it = f3.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 6);
+        REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 7);
+        REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 8);
+        REQUIRE(!(it + 3)->at(_0).ok());
+
+        REQUIRE((it + 0)->at(_1) == 14.4);
+        REQUIRE((it + 1)->at(_1) == 15.5);
+        REQUIRE((it + 2)->at(_1) ==  9.1);
+        REQUIRE((it + 3)->at(_1) ==  0.0);
+
+        REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 2);
+        REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
+        REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_3) == false);
+        REQUIRE((it + 1)->at(_3) == false);
+        REQUIRE((it + 2)->at(_3) == true);
+        REQUIRE((it + 3)->at(_3) == true);
+    }
+}
+
