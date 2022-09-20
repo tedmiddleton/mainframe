@@ -463,6 +463,33 @@ private:
     tuple_type m_ptrs;
 };
 
+template<size_t Ind = 0, bool IsConst, typename... Ts>
+std::ostream&
+operator<<(std::ostream& o, const _row_proxy<IsConst, Ts...>& fr)
+{
+    columnindex<Ind> ci;
+
+    if constexpr (sizeof...(Ts) == 0) {
+        o << "[]";
+        return o;
+    }
+
+    if constexpr (Ind == 0) {
+        o << "[ ";
+    }
+
+    detail::stringify(o, fr.at(ci), true);
+
+    if constexpr (Ind + 1 < sizeof...(Ts)) {
+        o << ", ";
+        operator<< <Ind + 1>(o, fr);
+    }
+    else {
+        o << " ]";
+    }
+    return o;
+}
+
 template<bool IsConst, typename... Ts>
 void
 swap(mf::_row_proxy<IsConst, Ts...>& left, mf::_row_proxy<IsConst, Ts...>& right) noexcept
