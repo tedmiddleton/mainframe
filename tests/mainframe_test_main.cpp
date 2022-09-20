@@ -774,6 +774,23 @@ TEST_CASE("operator[columnindex<Inds>...]", "[frame]")
     }
 }
 
+TEST_CASE("operator[size_t]", "[frame]")
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names("date", "temperature", "rain");
+    f1.push_back(2022_y / January / 2, 10.0, false);
+    f1.push_back(2022_y / January / 3, 11.1, true);
+    f1.push_back(2022_y / January / 4, 12.2, false);
+
+    auto f2 = f1[1];
+    REQUIRE(f2.size() == 1);
+    auto it = f2.begin();
+
+    REQUIRE(it->at(_0) == 2022_y / January / 3);
+    REQUIRE(it->at(_1) == 11.1);
+    REQUIRE(it->at(_2) == true);
+}
+
 TEST_CASE("operator[Ex]", "[frame]")
 {
     frame<year_month_day, double, bool> f1;

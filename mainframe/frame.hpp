@@ -856,6 +856,14 @@ public:
         return rows(ex);
     }
 
+    frame<Ts...>
+    operator[](size_t ind) const
+    {
+        frame<Ts...> out;
+        out.push_back(*(cbegin() + ind));
+        return out;
+    }
+
 #if __cplusplus <= 202002L
     // Note that this will only work up to c++23, where we can be more sensible 
     // about multiple arguments to operator[]
