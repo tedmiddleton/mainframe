@@ -231,9 +231,99 @@ operator!(const mi<T>& t) -> mi<decltype(!*t)>
     return mi<decltype(!*t)>{ !*t };
 }
 
-template<typename _Tp>
-mi(_Tp) -> mi<_Tp>;
+template<typename T, typename U>
+bool
+operator==(const mi<T>& lhs, const mi<U>& rhs)
+{
+    if (!lhs.has_value() && !rhs.has_value()) {
+        return true;
+    }
+    if (!lhs.has_value() || !rhs.has_value()) {
+        return false;
+    }
+    return *lhs == *rhs;
+}
+
+template<typename T, typename U>
+bool
+operator==(const mi<T>& lhs, const U& rhs)
+{
+    if (!lhs.has_value()) {
+        return false;
+    }
+    return *lhs == rhs;
+}
+
+template<typename T, typename U>
+bool
+operator==(const T& lhs, const mi<U>& rhs)
+{
+    if (!rhs.has_value()) {
+        return false;
+    }
+    return lhs == *rhs;
+}
+
+template<typename T>
+bool
+operator==(const mi<T>& lhs, const std::nullopt_t&)
+{
+    return !lhs.has_value();
+}
+
+template<typename U>
+bool
+operator==(const std::nullopt_t&, const mi<U>& rhs)
+{
+    return !rhs.has_value();
+}
+
+template<typename T, typename U>
+bool
+operator!=(const mi<T>& lhs, const mi<U>& rhs)
+{
+    return !(lhs == rhs);
+}
+
+template<typename T, typename U>
+bool
+operator!=(const mi<T>& lhs, const U& rhs)
+{
+    if (!lhs.has_value()) {
+        return true;
+    }
+    return *lhs != rhs;
+}
+
+template<typename T, typename U>
+bool
+operator!=(const T& lhs, const mi<U>& rhs)
+{
+    if (!rhs.has_value()) {
+        return true;
+    }
+    return lhs != *rhs;
+}
+
+template<typename T>
+bool
+operator!=(const mi<T>& lhs, const std::nullopt_t&)
+{
+    return lhs.has_value();
+}
+
+template<typename U>
+bool
+operator!=(const std::nullopt_t&, const mi<U>& rhs)
+{
+    return rhs.has_value();
+}
+
+template<typename T>
+mi(T) -> mi<T>;
 
 } // namespace mf
+
+
 
 #endif // INCLUDED_mainframe_missing_hpp

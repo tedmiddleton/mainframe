@@ -12,7 +12,7 @@
 
 #include "date.h"
 #include "debug_cout.hpp"
-#include <mainframe/series.hpp>
+#include <mainframe.hpp>
 
 using namespace std;
 using namespace std::chrono;
@@ -1215,3 +1215,60 @@ TEST_CASE("disallow_missing()", "[series]")
         REQUIRE(sv2[2] == f2);
     }
 }
+
+struct HoldsInt
+{
+    explicit HoldsInt(int f) : m_f(f) {}
+    bool operator==(const HoldsInt& other) const 
+    { 
+        return m_f == other.m_f; 
+    }
+    bool operator!=(const HoldsInt& other) const 
+    { 
+        return m_f != other.m_f; 
+    }
+
+
+    int getf() const { return m_f; }
+private:
+    int m_f;
+};
+
+ostream&
+operator<<(ostream& o, const HoldsInt& hi)
+{
+    o << "HoldsInt{" << hi.getf() << "}";
+    return o;
+}
+
+TEST_CASE("missing", "[series]")
+{
+    mi<HoldsInt> mi1 = HoldsInt(1);
+    mi<HoldsInt> mi1_1 = HoldsInt(1);
+    mi<HoldsInt> mi2 = HoldsInt(2);
+    mi<HoldsInt> mim1 = missing;
+    mi<HoldsInt> mim2 = missing;
+
+    REQUIRE(mi1 == mi1_1);
+    REQUIRE(mi1 == HoldsInt(1));
+    REQUIRE(HoldsInt(1) == mi1);
+    REQUIRE(mi1 == mi1);
+
+    REQUIRE(mim1 == mim2);
+    REQUIRE(mim1 == missing);
+    REQUIRE(missing == mim1);
+
+    REQUIRE(mi1 != mi2);
+    REQUIRE(mi1 != HoldsInt(2));
+    REQUIRE(HoldsInt(2) != mi1);
+    REQUIRE(mi1 != mim1);
+    REQUIRE(mim1 != mi1);
+    REQUIRE(HoldsInt(1) != mim1);
+    REQUIRE(mim1 != HoldsInt(1));
+    REQUIRE(mi1 != missing);
+    REQUIRE(missing != mi1);
+
+    //REQUIRE(mi1 < mi2);
+
+}
+
