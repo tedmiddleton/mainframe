@@ -465,6 +465,22 @@ mi(T) -> mi<T>;
 
 } // namespace mf
 
+namespace std
+{
+    template<typename T>
+    struct hash<mf::mi<T>>
+    {
+        size_t 
+        operator()(const mf::mi<T>& mit) const noexcept
+        {
+            if (!mit.has_value()) {
+                return 0;
+            }
+            std::hash<T> hasher;
+            return hasher(*mit);
+        }
+    };
+}
 
 
 #endif // INCLUDED_mainframe_missing_hpp
