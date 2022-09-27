@@ -1,4 +1,3 @@
-
 //          Copyright Ted Middleton 2022.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -1227,6 +1226,22 @@ struct HoldsInt
     { 
         return m_f != other.m_f; 
     }
+    bool operator<(const HoldsInt& other) const 
+    { 
+        return m_f < other.m_f; 
+    }
+    bool operator<=(const HoldsInt& other) const 
+    { 
+        return m_f <= other.m_f; 
+    }
+    bool operator>(const HoldsInt& other) const 
+    { 
+        return m_f > other.m_f; 
+    }
+    bool operator>=(const HoldsInt& other) const 
+    { 
+        return m_f >= other.m_f; 
+    }
 
 
     int getf() const { return m_f; }
@@ -1253,7 +1268,6 @@ TEST_CASE("missing", "[series]")
     REQUIRE(mi1 == HoldsInt(1));
     REQUIRE(HoldsInt(1) == mi1);
     REQUIRE(mi1 == mi1);
-
     REQUIRE(mim1 == mim2);
     REQUIRE(mim1 == missing);
     REQUIRE(missing == mim1);
@@ -1268,7 +1282,34 @@ TEST_CASE("missing", "[series]")
     REQUIRE(mi1 != missing);
     REQUIRE(missing != mi1);
 
-    //REQUIRE(mi1 < mi2);
+    REQUIRE(mi1 < mi2);
+    REQUIRE(missing < mi2);
+    REQUIRE(missing < mi1);
 
+    REQUIRE(mi2 > mi1);
+    REQUIRE(mi2 > missing );
+    REQUIRE(mi1 > missing );
+
+    REQUIRE(mi1 <= mi2);
+    REQUIRE(missing <= mi2);
+    REQUIRE(missing <= mi1);
+    REQUIRE(mi1 <= mi1_1);
+    REQUIRE(mi1 <= HoldsInt(1));
+    REQUIRE(HoldsInt(1) <= mi1);
+    REQUIRE(mi1 <= mi1);
+    REQUIRE(mim1 <= mim2);
+    REQUIRE(mim1 <= missing);
+    REQUIRE(missing <= mim1);
+
+    REQUIRE(mi2 >= mi1);
+    REQUIRE(mi2 >= missing );
+    REQUIRE(mi1 >= missing );
+    REQUIRE(mi1 >= mi1_1);
+    REQUIRE(mi1 >= HoldsInt(1));
+    REQUIRE(HoldsInt(1) >= mi1);
+    REQUIRE(mi1 >= mi1);
+    REQUIRE(mim1 >= mim2);
+    REQUIRE(mim1 >= missing);
+    REQUIRE(missing >= mim1);
 }
 

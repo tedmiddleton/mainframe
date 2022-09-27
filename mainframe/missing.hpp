@@ -12,7 +12,8 @@
 namespace mf
 {
 
-inline constexpr std::nullopt_t missing = std::nullopt;
+using missing_t = std::nullopt_t;
+inline constexpr missing_t missing = std::nullopt;
 
 template<typename T>
 class mi : public std::optional<T>
@@ -266,14 +267,14 @@ operator==(const T& lhs, const mi<U>& rhs)
 
 template<typename T>
 bool
-operator==(const mi<T>& lhs, const std::nullopt_t&)
+operator==(const mi<T>& lhs, missing_t)
 {
     return !lhs.has_value();
 }
 
 template<typename U>
 bool
-operator==(const std::nullopt_t&, const mi<U>& rhs)
+operator==(missing_t, const mi<U>& rhs)
 {
     return !rhs.has_value();
 }
@@ -307,16 +308,156 @@ operator!=(const T& lhs, const mi<U>& rhs)
 
 template<typename T>
 bool
-operator!=(const mi<T>& lhs, const std::nullopt_t&)
+operator!=(const mi<T>& lhs, missing_t)
 {
     return lhs.has_value();
 }
 
 template<typename U>
 bool
-operator!=(const std::nullopt_t&, const mi<U>& rhs)
+operator!=(missing_t, const mi<U>& rhs)
 {
     return rhs.has_value();
+}
+
+template<typename T, typename U>
+bool
+operator<(const mi<T>& lhs, const mi<U>& rhs)
+{
+    return rhs.has_value() && (!lhs.has_value() || (*lhs < *rhs));
+}
+
+template<typename T>
+bool
+operator<(const mi<T>&, missing_t)
+{
+    return false;
+}
+
+template<typename U>
+bool
+operator<(missing_t, const mi<U>& rhs)
+{
+    return rhs.has_value();
+}
+
+template<typename T, typename U>
+bool
+operator<(const mi<T>& lhs, const U& rhs)
+{
+    return !lhs.has_value() || (*lhs < rhs);
+}
+
+template<typename T, typename U>
+bool
+operator<(const T& lhs, const mi<U>& rhs)
+{
+    return rhs.has_value() && (lhs < *rhs);
+}
+
+template<typename T, typename U>
+bool
+operator>(const mi<T>& lhs, const mi<U>& rhs)
+{
+    return lhs.has_value() && (!rhs.has_value() || (*lhs > *rhs));
+}
+
+template<typename T>
+bool
+operator>(const mi<T>& lhs, missing_t)
+{
+    return lhs.has_value();
+}
+
+template<typename U>
+bool
+operator>(missing_t, const mi<U>&)
+{
+    return false;
+}
+
+template<typename T, typename U>
+bool
+operator>(const mi<T>& lhs, const U& rhs)
+{
+    return lhs.has_value() && (*lhs > rhs);
+}
+
+template<typename T, typename U>
+bool
+operator>(const T& lhs, const mi<U>& rhs)
+{
+    return !rhs.has_value() || (lhs > *rhs);
+}
+
+template<typename T, typename U>
+bool
+operator<=(const mi<T>& lhs, const mi<U>& rhs)
+{
+    return !lhs.has_value() || (rhs.has_value() && (*lhs <= *rhs));
+}
+
+template<typename T>
+bool
+operator<=(const mi<T>& lhs, missing_t)
+{
+    return !lhs.has_value();
+}
+
+template<typename U>
+bool
+operator<=(missing_t, const mi<U>&)
+{
+    return true;
+}
+
+template<typename T, typename U>
+bool
+operator<=(const mi<T>& lhs, const U& rhs)
+{
+    return !lhs.has_value() || (*lhs <= rhs);
+}
+
+template<typename T, typename U>
+bool
+operator<=(const T& lhs, const mi<U>& rhs)
+{
+    return rhs.has_value() && (lhs <= *rhs);
+}
+
+template<typename T, typename U>
+bool
+operator>=(const mi<T>& lhs, const mi<U>& rhs)
+{
+    return !rhs.has_value() || (lhs.has_value() && (*lhs >= *rhs));
+}
+
+template<typename T>
+bool
+operator>=(const mi<T>&, missing_t)
+{
+    return true;
+}
+
+template<typename U>
+bool
+operator>=(missing_t, const mi<U>& rhs)
+{
+    return !rhs.has_value();
+}
+
+template<typename T, typename U>
+bool
+operator>=(const mi<T>& lhs, const U& rhs)
+{
+    return lhs.has_value() && (*lhs >= rhs);
+}
+
+template<typename T, typename U>
+bool
+operator>=(const T& lhs, const mi<U>& rhs)
+{
+    return !rhs.has_value() || (lhs >= *rhs);
 }
 
 template<typename T>
