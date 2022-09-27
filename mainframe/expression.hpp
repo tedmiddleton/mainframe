@@ -325,8 +325,7 @@ struct terminal<expr_column<Ind>>
     static const size_t index = Ind;
 
     terminal() = default;
-    explicit terminal(expr_column<Ind>)
-    {}
+    explicit terminal(expr_column<Ind>) {}
 
     template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
         typename... Ts>
@@ -373,13 +372,13 @@ struct columnindexpack
 template<>
 struct terminal<row_number>
 {
-    using is_expr             = void;
+    using is_expr = void;
 
     terminal() = default;
 
     template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
         typename... Ts>
-    ptrdiff_t 
+    ptrdiff_t
     operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
         const Iter<IsConst, IsReverse, Ts...>& curr,
         const Iter<IsConst, IsReverse, Ts...>& /*end*/) const
@@ -391,13 +390,13 @@ struct terminal<row_number>
 template<>
 struct terminal<frame_length>
 {
-    using is_expr             = void;
+    using is_expr = void;
 
     terminal() = default;
 
     template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
         typename... Ts>
-    ptrdiff_t 
+    ptrdiff_t
     operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
         const Iter<IsConst, IsReverse, Ts...>& /*curr*/,
         const Iter<IsConst, IsReverse, Ts...>& end) const

@@ -296,15 +296,16 @@ struct build_lt;
 template<typename Row, size_t Ind, size_t... Inds>
 struct build_lt<Row, Ind, Inds...>
 {
-    bool operator()(const Row& rowl, const Row& rowr) const 
+    bool
+    operator()(const Row& rowl, const Row& rowr) const
     {
         columnindex<Ind> ci;
-        if (rowl.at( ci ) == rowr.at( ci )) {
+        if (rowl.at(ci) == rowr.at(ci)) {
             build_lt<Row, Inds...> remaining;
             return remaining(rowl, rowr);
         }
         else {
-            return rowl.at( ci ) < rowr.at( ci );
+            return rowl.at(ci) < rowr.at(ci);
         }
     };
 };
@@ -312,10 +313,11 @@ struct build_lt<Row, Ind, Inds...>
 template<typename Row, size_t Ind>
 struct build_lt<Row, Ind>
 {
-    bool operator()(const Row& rowl, const Row& rowr) const
+    bool
+    operator()(const Row& rowl, const Row& rowr) const
     {
         columnindex<Ind> ci;
-        return rowl.at( ci ) < rowr.at( ci );
+        return rowl.at(ci) < rowr.at(ci);
     };
 };
 
@@ -325,15 +327,16 @@ struct build_gt;
 template<typename Row, size_t Ind, size_t... Inds>
 struct build_gt<Row, Ind, Inds...>
 {
-    bool operator()(const Row& rowl, const Row& rowr) const 
+    bool
+    operator()(const Row& rowl, const Row& rowr) const
     {
         columnindex<Ind> ci;
-        if (rowl.at( ci ) == rowr.at( ci )) {
+        if (rowl.at(ci) == rowr.at(ci)) {
             build_gt<Row, Inds...> remaining;
             return remaining(rowl, rowr);
         }
         else {
-            return rowl.at( ci ) > rowr.at( ci );
+            return rowl.at(ci) > rowr.at(ci);
         }
     };
 };
@@ -341,10 +344,11 @@ struct build_gt<Row, Ind, Inds...>
 template<typename Row, size_t Ind>
 struct build_gt<Row, Ind>
 {
-    bool operator()(const Row& rowl, const Row& rowr) const
+    bool
+    operator()(const Row& rowl, const Row& rowr) const
     {
         columnindex<Ind> ci;
-        return rowl.at( ci ) > rowr.at( ci );
+        return rowl.at(ci) > rowr.at(ci);
     };
 };
 
@@ -359,25 +363,25 @@ class grouped_frame;
 ///
 /// dataframe class
 ///
-/// frame is mainframe's dataframe class, a column-oriented table data structure 
-/// with columns of different types. In a database this could be thought of as 
-/// the table schema, but with column-oriented storage we can think of this more 
-/// naturally as a collection of arrays. A frame must be declared with it's 
-/// column types as in 
+/// frame is mainframe's dataframe class, a column-oriented table data structure
+/// with columns of different types. In a database this could be thought of as
+/// the table schema, but with column-oriented storage we can think of this more
+/// naturally as a collection of arrays. A frame must be declared with it's
+/// column types as in
 ///
 /// `frame<int, double, std::string> f;`
 ///
-/// @ref frame is mostly a column/@ref series (the two terms are interchangeable 
-/// in the mainframe library) container. The @ref frame `f` in the above declaration 
-/// contains 3 @ref series objects. @ref series objects themselves point to 
-/// reference-counted copy-on-write arrays which means a @ref frame, as a @ref series 
-/// container, also points to reference-counted copy-on-write arrays and as such 
+/// @ref frame is mostly a column/@ref series (the two terms are interchangeable
+/// in the mainframe library) container. The @ref frame `f` in the above declaration
+/// contains 3 @ref series objects. @ref series objects themselves point to
+/// reference-counted copy-on-write arrays which means a @ref frame, as a @ref series
+/// container, also points to reference-counted copy-on-write arrays and as such
 /// can be copied and moved cheaply.
 ///
-/// Any mutating operation on a @ref frame - requesting a non-const iterator or 
-/// calling push_back() or erase() for example - will trigger an "unref" where 
-/// the underlying array is copied if it's ref-count is greater than 1. 
-/// Depending on the size of the data set, this could be expensive. 
+/// Any mutating operation on a @ref frame - requesting a non-const iterator or
+/// calling push_back() or erase() for example - will trigger an "unref" where
+/// the underlying array is copied if it's ref-count is greater than 1.
+/// Depending on the size of the data set, this could be expensive.
 ///
 template<typename... Ts>
 class frame
@@ -401,12 +405,12 @@ public:
     frame& operator=(const frame&) = default;
     frame& operator=(frame&&)      = default;
 
-    /// Append one frame to this one and return a new frame non-destructively. 
-    /// This will necessarily trigger an "unref" (copy) of this @ref frame's 
+    /// Append one frame to this one and return a new frame non-destructively.
+    /// This will necessarily trigger an "unref" (copy) of this @ref frame's
     /// data.
     ///
-    ///     frame_row<year_month, int, double> fr1; 
-    ///     frame_row<year_month, int, double> fr2; 
+    ///     frame_row<year_month, int, double> fr1;
+    ///     frame_row<year_month, int, double> fr2;
     ///     fr1.push_back(2022_y/11, 1, 3.14);
     ///     fr2.push_back(2022_y/12, 2, 0.007297);
     ///
@@ -420,9 +424,9 @@ public:
         return out;
     }
 
-    /// Requests a row iterator pointing to the first row of the frame. Note 
-    /// that this is a nonconst-iterator which means that any underlying series 
-    /// with a reference count greater than 1 will be copied first. 
+    /// Requests a row iterator pointing to the first row of the frame. Note
+    /// that this is a nonconst-iterator which means that any underlying series
+    /// with a reference count greater than 1 will be copied first.
     ///
     iterator
     begin()
@@ -430,9 +434,9 @@ public:
         unref();
         return iterator{ m_columns, 0 };
     }
-    /// Requests a row iterator pointing just past the last row of the frame. Note 
-    /// that this is a nonconst-iterator which means that any underlying series 
-    /// with a reference count greater than 1 will be copied first. 
+    /// Requests a row iterator pointing just past the last row of the frame. Note
+    /// that this is a nonconst-iterator which means that any underlying series
+    /// with a reference count greater than 1 will be copied first.
     ///
     iterator
     end()
@@ -440,46 +444,46 @@ public:
         unref();
         return iterator{ m_columns, static_cast<int>(size()) };
     }
-    /// Requests a row iterator pointing to the first row of the frame.  
+    /// Requests a row iterator pointing to the first row of the frame.
     ///
     const_iterator
     begin() const
     {
         return const_iterator{ m_columns, 0 };
     }
-    /// Requests a row iterator pointing just past the last row of the frame.  
+    /// Requests a row iterator pointing just past the last row of the frame.
     ///
     const_iterator
     end() const
     {
         return const_iterator{ m_columns, static_cast<int>(size()) };
     }
-    /// Requests a row iterator pointing to the first row of the frame.  
+    /// Requests a row iterator pointing to the first row of the frame.
     ///
     const_iterator
     cbegin() const
     {
         return const_iterator{ m_columns, 0 };
     }
-    /// Requests a row iterator pointing just past the last row of the frame.  
+    /// Requests a row iterator pointing just past the last row of the frame.
     ///
     const_iterator
     cend() const
     {
         return const_iterator{ m_columns, static_cast<int>(size()) };
     }
-    /// Requests a reverse (will increment from the last row to the first) row 
-    /// iterator that points to the last row. This operation will unref the 
+    /// Requests a reverse (will increment from the last row to the first) row
+    /// iterator that points to the last row. This operation will unref the
     /// dataframe.
     ///
-    reverse_iterator 
+    reverse_iterator
     rbegin()
     {
         unref();
         return reverse_iterator{ m_columns, static_cast<int>(size()) - 1 };
     }
-    /// Requests a reverse (will increment from the last row to the first) row 
-    /// iterator that points to the place in memory just before the first row. 
+    /// Requests a reverse (will increment from the last row to the first) row
+    /// iterator that points to the place in memory just before the first row.
     /// This operation will unref the dataframe.
     ///
     reverse_iterator
@@ -488,8 +492,8 @@ public:
         unref();
         return reverse_iterator{ m_columns, -1 };
     }
-    /// Requests a reverse (will increment from the last row to the first) const 
-    /// row iterator that points to the last row. 
+    /// Requests a reverse (will increment from the last row to the first) const
+    /// row iterator that points to the last row.
     ///
     const_reverse_iterator
     rbegin() const
@@ -497,8 +501,8 @@ public:
         unref();
         return const_reverse_iterator{ m_columns, static_cast<int>(size()) - 1 };
     }
-    /// Requests a reverse (will increment from the last row to the first) row 
-    /// iterator that points to the place in memory just before the first row. 
+    /// Requests a reverse (will increment from the last row to the first) row
+    /// iterator that points to the place in memory just before the first row.
     /// This operation will unref the dataframe.
     ///
     const_reverse_iterator
@@ -507,16 +511,16 @@ public:
         unref();
         return const_reverse_iterator{ m_columns, -1 };
     }
-    /// Requests a reverse (will increment from the last row to the first) const 
-    /// row iterator that points to the last row. 
+    /// Requests a reverse (will increment from the last row to the first) const
+    /// row iterator that points to the last row.
     ///
     const_reverse_iterator
     crbegin() const
     {
         return const_reverse_iterator{ m_columns, static_cast<int>(size()) - 1 };
     }
-    /// Requests a reverse (will increment from the last row to the first) row 
-    /// iterator that points to the place in memory just before the first row. 
+    /// Requests a reverse (will increment from the last row to the first) row
+    /// iterator that points to the place in memory just before the first row.
     ///
     const_reverse_iterator
     crend() const
@@ -524,10 +528,10 @@ public:
         return const_reverse_iterator{ m_columns, -1 };
     }
 
-    /// convert a column to use the missing class mi<> to represent missing 
+    /// convert a column to use the missing class mi<> to represent missing
     /// elements
     ///
-    ///     frame_row<year_month, int, double> fr1; 
+    ///     frame_row<year_month, int, double> fr1;
     ///
     ///     // fr2 is frame_row<year_month, int, mi<double>>
     ///     auto fr2 = fr1.allow_missing(_2);
@@ -544,7 +548,7 @@ public:
         return u;
     }
 
-    /// convert all columns to use the missing class mi<> to represent missing 
+    /// convert all columns to use the missing class mi<> to represent missing
     /// elements
     ///
     typename detail::add_all_opt<frame<Ts...>>::type
@@ -652,10 +656,10 @@ public:
         return c;
     }
 
-    /// convert a column to NOT use the missing class mi<> to represent missing 
+    /// convert a column to NOT use the missing class mi<> to represent missing
     /// elements
     ///
-    ///     frame_row<year_month, int, mi<double>> fr1; 
+    ///     frame_row<year_month, int, mi<double>> fr1;
     ///
     ///     // fr2 is frame_row<year_month, int, double>
     ///     auto fr2 = fr1.disallow_missing(_2);
@@ -672,7 +676,7 @@ public:
         return u;
     }
 
-    /// convert all columns to NOT use the missing class mi<> to represent 
+    /// convert all columns to NOT use the missing class mi<> to represent
     /// missing elements
     ///
     typename detail::remove_all_opt<frame<Ts...>>::type
@@ -730,14 +734,14 @@ public:
         return grouped_frame<index_defn<Idx...>, Ts...>{ *this };
     }
 
-    template<typename...Us>
+    template<typename... Us>
     frame<Ts..., Us...>
     hcat(frame<Us...> other) const
     {
-        frame<Ts...> self( *this );
+        frame<Ts...> self(*this);
         size_t max_size = std::max(self.size(), other.size());
-        // Redundant resize will be handled at the series level to prevent an 
-        // unnecessary unref 
+        // Redundant resize will be handled at the series level to prevent an
+        // unnecessary unref
         self.resize(max_size);
         other.resize(max_size);
 
@@ -837,15 +841,15 @@ public:
         return eq_impl<0>(other);
     }
 
-    // row-selector operator[]. One tricky bit is that rows(Ex) which it calls 
-    // only requires is_expression<Ex> whereas here we require 
-    // is_complex_expression<Ex>. This means that if we have a column (say 
-    // column _1) that is bool-convertible, we can call 
+    // row-selector operator[]. One tricky bit is that rows(Ex) which it calls
+    // only requires is_expression<Ex> whereas here we require
+    // is_complex_expression<Ex>. This means that if we have a column (say
+    // column _1) that is bool-convertible, we can call
     //   fr.rows(_1);
-    // ...and that will select all rows where column _1 is 'true' but we CANNOT 
+    // ...and that will select all rows where column _1 is 'true' but we CANNOT
     // call
     //   fr[_1];
-    // ...because this is a column-selector call that returns a frame with a 
+    // ...because this is a column-selector call that returns a frame with a
     // single column. Instead we either need to call rows() or call
     //   fr[_1 == true];
     //
@@ -865,7 +869,7 @@ public:
     }
 
 #if __cplusplus <= 202002L
-    // Note that this will only work up to c++23, where we can be more sensible 
+    // Note that this will only work up to c++23, where we can be more sensible
     // about multiple arguments to operator[]
     template<size_t... Inds>
     typename detail::rearrange<frame<Ts...>, Inds...>::type
@@ -905,7 +909,7 @@ public:
     ///
     ///     void do_something( const frame_row<year_month, int, double>& fr_other )
     ///     {
-    ///       frame_row<year_month, int, double> fr; 
+    ///       frame_row<year_month, int, double> fr;
     ///       fr.push_back( fr_other[0] );
     ///
     template<bool IsConst, typename... Us, typename... Vs>
@@ -915,10 +919,10 @@ public:
         push_back_multiple_row_impl<0>(fr, args...);
     }
     ///
-    /// Append an explicitly declared frame_row to the end of the frame be 
-    /// an explicitly 
-    /// 
-    ///     frame_row<year_month, int, double> fr; 
+    /// Append an explicitly declared frame_row to the end of the frame be
+    /// an explicitly
+    ///
+    ///     frame_row<year_month, int, double> fr;
     ///     fr.at(_0) = 2022_y/12; fr.at(_1) = 1; fr.at(_2) = 3.14;
     ///
     ///     frame<year_month, int, double> f;
@@ -932,8 +936,8 @@ public:
     }
     ///
     /// Append a flexible list of objects to the end of this frame as a new row
-    /// 
-    ///     frame_row<year_month, int, double> fr; 
+    ///
+    ///     frame_row<year_month, int, double> fr;
     ///     fr.push_back(2022_y/12, 1, 3.14);
     ///
     template<typename U, typename... Us>

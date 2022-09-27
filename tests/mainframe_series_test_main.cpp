@@ -1217,34 +1217,47 @@ TEST_CASE("disallow_missing()", "[series]")
 
 struct HoldsInt
 {
-    explicit HoldsInt(int f) : m_f(f) {}
-    bool operator==(const HoldsInt& other) const 
-    { 
-        return m_f == other.m_f; 
+    explicit HoldsInt(int f)
+        : m_f(f)
+    {}
+    bool
+    operator==(const HoldsInt& other) const
+    {
+        return m_f == other.m_f;
     }
-    bool operator!=(const HoldsInt& other) const 
-    { 
-        return m_f != other.m_f; 
+    bool
+    operator!=(const HoldsInt& other) const
+    {
+        return m_f != other.m_f;
     }
-    bool operator<(const HoldsInt& other) const 
-    { 
-        return m_f < other.m_f; 
+    bool
+    operator<(const HoldsInt& other) const
+    {
+        return m_f < other.m_f;
     }
-    bool operator<=(const HoldsInt& other) const 
-    { 
-        return m_f <= other.m_f; 
+    bool
+    operator<=(const HoldsInt& other) const
+    {
+        return m_f <= other.m_f;
     }
-    bool operator>(const HoldsInt& other) const 
-    { 
-        return m_f > other.m_f; 
+    bool
+    operator>(const HoldsInt& other) const
+    {
+        return m_f > other.m_f;
     }
-    bool operator>=(const HoldsInt& other) const 
-    { 
-        return m_f >= other.m_f; 
+    bool
+    operator>=(const HoldsInt& other) const
+    {
+        return m_f >= other.m_f;
     }
 
 
-    int getf() const { return m_f; }
+    int
+    getf() const
+    {
+        return m_f;
+    }
+
 private:
     int m_f;
 };
@@ -1258,11 +1271,11 @@ operator<<(ostream& o, const HoldsInt& hi)
 
 TEST_CASE("missing", "[series]")
 {
-    mi<HoldsInt> mi1 = HoldsInt(1);
+    mi<HoldsInt> mi1   = HoldsInt(1);
     mi<HoldsInt> mi1_1 = HoldsInt(1);
-    mi<HoldsInt> mi2 = HoldsInt(2);
-    mi<HoldsInt> mim1 = missing;
-    mi<HoldsInt> mim2 = missing;
+    mi<HoldsInt> mi2   = HoldsInt(2);
+    mi<HoldsInt> mim1  = missing;
+    mi<HoldsInt> mim2  = missing;
 
     REQUIRE(mi1 == mi1_1);
     REQUIRE(mi1 == HoldsInt(1));
@@ -1287,8 +1300,8 @@ TEST_CASE("missing", "[series]")
     REQUIRE(missing < mi1);
 
     REQUIRE(mi2 > mi1);
-    REQUIRE(mi2 > missing );
-    REQUIRE(mi1 > missing );
+    REQUIRE(mi2 > missing);
+    REQUIRE(mi1 > missing);
 
     REQUIRE(mi1 <= mi2);
     REQUIRE(missing <= mi2);
@@ -1302,8 +1315,8 @@ TEST_CASE("missing", "[series]")
     REQUIRE(missing <= mim1);
 
     REQUIRE(mi2 >= mi1);
-    REQUIRE(mi2 >= missing );
-    REQUIRE(mi1 >= missing );
+    REQUIRE(mi2 >= missing);
+    REQUIRE(mi1 >= missing);
     REQUIRE(mi1 >= mi1_1);
     REQUIRE(mi1 >= HoldsInt(1));
     REQUIRE(HoldsInt(1) >= mi1);
@@ -1312,4 +1325,3 @@ TEST_CASE("missing", "[series]")
     REQUIRE(mim1 >= missing);
     REQUIRE(missing >= mim1);
 }
-

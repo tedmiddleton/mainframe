@@ -14,7 +14,7 @@ namespace mf
 template<typename T>
 class TD;
 
-template<typename...Ts, size_t Ind1, typename...Us, size_t Ind2>
+template<typename... Ts, size_t Ind1, typename... Us, size_t Ind2>
 frame<Ts..., Us...>
 innerjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<Ind2>)
 {
@@ -33,16 +33,16 @@ innerjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<
         auto riit = iright.find_index(liit->first);
         if (riit != iright.end_index()) {
 
-            for (auto lrit = ileft.begin_index_row(liit);
-                 lrit != ileft.end_index_row(liit); ++lrit) {
+            for (auto lrit = ileft.begin_index_row(liit); lrit != ileft.end_index_row(liit);
+                 ++lrit) {
                 size_t leftind = *lrit;
-                auto leftrow = *(ileft.begin() + leftind);
+                auto leftrow   = *(ileft.begin() + leftind);
                 (void)leftrow;
 
-                for (auto rrit = iright.begin_index_row(riit);
-                     rrit != iright.end_index_row(riit); ++rrit) {
+                for (auto rrit = iright.begin_index_row(riit); rrit != iright.end_index_row(riit);
+                     ++rrit) {
                     size_t rightind = *rrit;
-                    auto rightrow = *(iright.begin() + rightind);
+                    auto rightrow   = *(iright.begin() + rightind);
                     (void)rightrow;
 
                     fleft.push_back(leftrow);
@@ -54,11 +54,11 @@ innerjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<
 
     // hcat fleft and fright into out
     frame<Ts..., Us...> out = fleft.hcat(fright);
- 
+
     return out;
 }
 
-template<typename...Ts, size_t Ind1, typename...Us, size_t Ind2>
+template<typename... Ts, size_t Ind1, typename... Us, size_t Ind2>
 frame<Ts..., Us...>
 leftjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<Ind2>)
 {
@@ -77,16 +77,16 @@ leftjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<I
         auto riit = iright.find_index(liit->first);
         if (riit != iright.end_index()) {
 
-            for (auto lrit = ileft.begin_index_row(liit);
-                 lrit != ileft.end_index_row(liit); ++lrit) {
+            for (auto lrit = ileft.begin_index_row(liit); lrit != ileft.end_index_row(liit);
+                 ++lrit) {
                 size_t leftind = *lrit;
-                auto leftrow = *(ileft.begin() + leftind);
+                auto leftrow   = *(ileft.begin() + leftind);
                 (void)leftrow;
 
-                for (auto rrit = iright.begin_index_row(riit);
-                     rrit != iright.end_index_row(riit); ++rrit) {
+                for (auto rrit = iright.begin_index_row(riit); rrit != iright.end_index_row(riit);
+                     ++rrit) {
                     size_t rightind = *rrit;
-                    auto rightrow = *(iright.begin() + rightind);
+                    auto rightrow   = *(iright.begin() + rightind);
                     (void)rightrow;
 
                     fleft.push_back(leftrow);
@@ -100,26 +100,25 @@ leftjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<I
         auto riit = iright.find_index(liit->first);
         if (riit == iright.end_index()) {
 
-            for (auto lrit = ileft.begin_index_row(liit);
-                 lrit != ileft.end_index_row(liit); ++lrit) {
+            for (auto lrit = ileft.begin_index_row(liit); lrit != ileft.end_index_row(liit);
+                 ++lrit) {
                 size_t leftind = *lrit;
-                auto leftrow = *(ileft.begin() + leftind);
+                auto leftrow   = *(ileft.begin() + leftind);
                 (void)leftrow;
 
                 fleft.push_back(leftrow);
-                fright.resize(fright.size()+1);
+                fright.resize(fright.size() + 1);
             }
         }
     }
 
     // hcat fleft and fright into out
     frame<Ts..., Us...> out = fleft.hcat(fright);
- 
- 
+
+
     return out;
 }
 
 } // namespace mf
   //
 #endif // INCLUDED_mainframe_join_h
-

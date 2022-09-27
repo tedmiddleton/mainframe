@@ -640,9 +640,9 @@ TEST_CASE("rows()", "[frame]")
     auto fcoldandrain      = f1.rows(_1 <= 12 && _2 == true && _0 > 2022_y / January / 4);
     auto f2or3orhotandrain = f1.rows(
         (_1 >= 13 && _2 == true) || _0 == 2022_y / January / 2 || _0 == 2022_y / January / 3);
-    auto feven = f1.rows( rownum % 2 == 0 );
-    auto ffirsthalf = f1.rows( rownum < 3 );
-    auto flasthalf = f1.rows( (framelen - rownum) <= 3 );
+    auto feven      = f1.rows(rownum % 2 == 0);
+    auto ffirsthalf = f1.rows(rownum < 3);
+    auto flasthalf  = f1.rows((framelen - rownum) <= 3);
     dout << "f1:\n";
     dout << f1;
     dout << "even:\n";
@@ -740,12 +740,12 @@ TEST_CASE("operator,", "[frame]")
     columnindex<2> c2;
     columnindex<3> c3;
     columnindex<4> c4;
-    auto c123 = c1.operator,(c2).operator,(c3);
-    auto c1234 = c123.operator,(c4);
-    auto c1234p = ( c123 , c4 );
+    auto c123   = c1.operator,(c2).operator,(c3);
+    auto c1234  = c123.operator,(c4);
+    auto c1234p = (c123, c4);
     (void)c1234;
     (void)c1234p;
-    auto d1234 = (c1,c2,c3,c4);
+    auto d1234 = (c1, c2, c3, c4);
     (void)d1234;
 }
 
@@ -802,16 +802,16 @@ TEST_CASE("operator[Ex]", "[frame]")
     f1.push_back(2022_y / January / 6, 14.4, true);
     f1.push_back(2022_y / January / 7, 15.5, false);
 
-    auto frain             = f1[col<2>() == true];
-    auto fnorain           = f1[false == col<2>()];
-    auto fhot              = f1[_1 >= 14];
-    auto fhotandrain       = f1[col1 >= 13 && col2 == true];
-    auto fcoldandrain      = f1[_1 <= 12 && _2 == true && _0 > 2022_y / January / 4];
-    auto f2or3orhotandrain = f1[
-        (_1 >= 13 && _2 == true) || _0 == 2022_y / January / 2 || _0 == 2022_y / January / 3];
-    auto feven              = f1[ rownum % 2 == 0 ];
-    auto ffirsthalf         = f1[ rownum < 3 ];
-    auto flasthalf          = f1[ (framelen - rownum) <= 3 ];
+    auto frain        = f1[col<2>() == true];
+    auto fnorain      = f1[false == col<2>()];
+    auto fhot         = f1[_1 >= 14];
+    auto fhotandrain  = f1[col1 >= 13 && col2 == true];
+    auto fcoldandrain = f1[_1 <= 12 && _2 == true && _0 > 2022_y / January / 4];
+    auto f2or3orhotandrain =
+        f1[(_1 >= 13 && _2 == true) || _0 == 2022_y / January / 2 || _0 == 2022_y / January / 3];
+    auto feven      = f1[rownum % 2 == 0];
+    auto ffirsthalf = f1[rownum < 3];
+    auto flasthalf  = f1[(framelen - rownum) <= 3];
     dout << "f1:\n";
     dout << f1;
     dout << "even:\n";
@@ -1767,7 +1767,8 @@ TEST_CASE("aggregate", "[frame]")
     std::sort(f3.begin(), f3.end());
     dout << "SELECT SUM(rain), MIN(rain), MAX(rain), MEAN(rain), STDDEV(rain), COUNT(*)\n";
     dout << f2;
-    dout << "SELECT SUM(humidity), MIN(humidity), MAX(humidity), MEAN(humidity), STDDEV(humidity), COUNT(*)\n";
+    dout << "SELECT SUM(humidity), MIN(humidity), MAX(humidity), MEAN(humidity), STDDEV(humidity), "
+            "COUNT(*)\n";
     dout << f3;
 
     // rain
@@ -2016,8 +2017,8 @@ TEST_CASE("hcat", "[frame]")
 
         REQUIRE((it + 0)->at(_1) == 14.4);
         REQUIRE((it + 1)->at(_1) == 15.5);
-        REQUIRE((it + 2)->at(_1) ==  9.1);
-        REQUIRE((it + 3)->at(_1) ==  9.3);
+        REQUIRE((it + 2)->at(_1) == 9.1);
+        REQUIRE((it + 3)->at(_1) == 9.3);
 
         REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
         REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 2);
@@ -2060,8 +2061,8 @@ TEST_CASE("hcat", "[frame]")
 
         REQUIRE((it + 0)->at(_1) == 14.4);
         REQUIRE((it + 1)->at(_1) == 15.5);
-        REQUIRE((it + 2)->at(_1) ==  9.1);
-        REQUIRE((it + 3)->at(_1) ==  9.3);
+        REQUIRE((it + 2)->at(_1) == 9.1);
+        REQUIRE((it + 3)->at(_1) == 9.3);
 
         REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
         REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 2);
@@ -2101,8 +2102,8 @@ TEST_CASE("hcat", "[frame]")
 
         REQUIRE((it + 0)->at(_1) == 14.4);
         REQUIRE((it + 1)->at(_1) == 15.5);
-        REQUIRE((it + 2)->at(_1) ==  9.1);
-        REQUIRE((it + 3)->at(_1) ==  9.3);
+        REQUIRE((it + 2)->at(_1) == 9.1);
+        REQUIRE((it + 3)->at(_1) == 9.3);
 
         REQUIRE(!(it + 0)->at(_2).ok());
         REQUIRE(!(it + 1)->at(_2).ok());
@@ -2145,8 +2146,8 @@ TEST_CASE("hcat", "[frame]")
 
         REQUIRE((it + 0)->at(_1) == 14.4);
         REQUIRE((it + 1)->at(_1) == 15.5);
-        REQUIRE((it + 2)->at(_1) ==  9.1);
-        REQUIRE((it + 3)->at(_1) ==  0.0);
+        REQUIRE((it + 2)->at(_1) == 9.1);
+        REQUIRE((it + 3)->at(_1) == 0.0);
 
         REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
         REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 2);
@@ -2228,7 +2229,7 @@ TEST_CASE("innerjoin", "[frame]")
         // 1| 2022-01-02 | false | 2022-01-02 |   10
         // 2| 2022-01-03 |  true | 2022-01-03 |   11
         // 3| 2022-01-04 |  true | 2022-01-04 | 12.2
- 
+
         auto it = res.cbegin();
         REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
         REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 2);
@@ -2245,7 +2246,7 @@ TEST_CASE("innerjoin", "[frame]")
         REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
         REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
 
-        REQUIRE((it + 0)->at(_3) ==  9.0);
+        REQUIRE((it + 0)->at(_3) == 9.0);
         REQUIRE((it + 1)->at(_3) == 10.0);
         REQUIRE((it + 2)->at(_3) == 11.0);
         REQUIRE((it + 3)->at(_3) == 12.2);
@@ -2293,8 +2294,8 @@ TEST_CASE("innerjoin", "[frame]")
         REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
         REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
 
-        REQUIRE((it + 0)->at(_3) ==  9.0);
-        REQUIRE((it + 1)->at(_3) ==  9.0);
+        REQUIRE((it + 0)->at(_3) == 9.0);
+        REQUIRE((it + 1)->at(_3) == 9.0);
         REQUIRE((it + 2)->at(_3) == 11.0);
         REQUIRE((it + 3)->at(_3) == 12.2);
     }
@@ -2321,7 +2322,7 @@ TEST_CASE("innerjoin", "[frame]")
         REQUIRE(res.size() == 4);
 
         // 0| 2022-01-01 | false | 2022-01-01 |    9
-        // 1| 2022-01-01 | false | 2022-01-01 |   10 
+        // 1| 2022-01-01 | false | 2022-01-01 |   10
         // 2| 2022-01-03 |  true | 2022-01-03 |   11
         // 3| 2022-01-04 |  true | 2022-01-04 | 12.2
 
@@ -2341,7 +2342,7 @@ TEST_CASE("innerjoin", "[frame]")
         REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
         REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
 
-        REQUIRE((it + 0)->at(_3) ==  9.0);
+        REQUIRE((it + 0)->at(_3) == 9.0);
         REQUIRE((it + 1)->at(_3) == 10.0);
         REQUIRE((it + 2)->at(_3) == 11.0);
         REQUIRE((it + 3)->at(_3) == 12.2);
@@ -2382,7 +2383,6 @@ TEST_CASE("innerjoin", "[frame]")
         dout << res;
         REQUIRE(res.size() == 0);
     }
-
 }
 
 
@@ -2413,7 +2413,7 @@ TEST_CASE("leftjoin", "[frame]")
         // 1| 2022-01-02 | false | 2022-01-02 |   10
         // 2| 2022-01-03 |  true | 2022-01-03 |   11
         // 3| 2022-01-04 |  true | 2022-01-04 | 12.2
- 
+
         auto it = res.cbegin();
         REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
         REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 2);
@@ -2430,7 +2430,7 @@ TEST_CASE("leftjoin", "[frame]")
         REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
         REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
 
-        REQUIRE((it + 0)->at(_3) ==  9.0);
+        REQUIRE((it + 0)->at(_3) == 9.0);
         REQUIRE((it + 1)->at(_3) == 10.0);
         REQUIRE((it + 2)->at(_3) == 11.0);
         REQUIRE((it + 3)->at(_3) == 12.2);
@@ -2478,8 +2478,8 @@ TEST_CASE("leftjoin", "[frame]")
         REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
         REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
 
-        REQUIRE((it + 0)->at(_3) ==  9.0);
-        REQUIRE((it + 1)->at(_3) ==  9.0);
+        REQUIRE((it + 0)->at(_3) == 9.0);
+        REQUIRE((it + 1)->at(_3) == 9.0);
         REQUIRE((it + 2)->at(_3) == 11.0);
         REQUIRE((it + 3)->at(_3) == 12.2);
     }
@@ -2506,8 +2506,8 @@ TEST_CASE("leftjoin", "[frame]")
         REQUIRE(res.size() == 5);
 
         // 0| 2022-01-01 | false | 2022-01-01 |       9
-        // 1| 2022-01-01 | false | 2022-01-01 |      10 
-        // 2| 2022-01-02 |  true |    missing | missing 
+        // 1| 2022-01-01 | false | 2022-01-01 |      10
+        // 2| 2022-01-02 |  true |    missing | missing
         // 3| 2022-01-03 |  true | 2022-01-03 |      11
         // 4| 2022-01-04 |  true | 2022-01-04 |    12.2
 
@@ -2530,7 +2530,7 @@ TEST_CASE("leftjoin", "[frame]")
         REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 3);
         REQUIRE((it + 4)->at(_2) == 2022_y / 1 / 4);
 
-        REQUIRE((it + 0)->at(_3) ==  9.0);
+        REQUIRE((it + 0)->at(_3) == 9.0);
         REQUIRE((it + 1)->at(_3) == 10.0);
         REQUIRE((it + 2)->at(_3) == missing);
         REQUIRE((it + 3)->at(_3) == 11.0);
@@ -2571,8 +2571,8 @@ TEST_CASE("leftjoin", "[frame]")
         res.sort(_0, _1);
         dout << res;
         REQUIRE(res.size() == 4);
-        // 1| 2022-01-01 | false | missing | missing 
-        // 2| 2022-01-02 |  true | missing | missing 
+        // 1| 2022-01-01 | false | missing | missing
+        // 2| 2022-01-02 |  true | missing | missing
         // 3| 2022-01-03 |  true | missing | missing
         // 4| 2022-01-04 |  true | missing | missing
 
@@ -2597,6 +2597,4 @@ TEST_CASE("leftjoin", "[frame]")
         REQUIRE((it + 2)->at(_3) == missing);
         REQUIRE((it + 3)->at(_3) == missing);
     }
-
 }
-

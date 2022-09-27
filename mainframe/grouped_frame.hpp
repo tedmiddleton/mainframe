@@ -227,12 +227,12 @@ class TD;
 ///
 /// Intermediate class for GROUP BY aggregate operations
 ///
-/// grouped_frame is a container for a class frame along with a column index. It 
-/// can be created explicitly, but it makes more sense to create one with 
+/// grouped_frame is a container for a class frame along with a column index. It
+/// can be created explicitly, but it makes more sense to create one with
 /// frame::group_by().
-/// 
+///
 template<size_t... GroupInds, typename... Ts>
-class grouped_frame<index_defn<GroupInds...>, Ts...> 
+class grouped_frame<index_defn<GroupInds...>, Ts...>
     : public indexed_frame<index_defn<GroupInds...>, Ts...>
 {
     // The index definition for this grouped_frame
@@ -533,8 +533,6 @@ private:
             vectorize_result_columns<Ind + 1>(result_columns, us);
         }
     }
-
-
 };
 
 

@@ -6,8 +6,8 @@
 #ifndef INCLUDED_mainframe_simd_h
 #define INCLUDED_mainframe_simd_h
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 #if __AVX__
 #include <immintrin.h>

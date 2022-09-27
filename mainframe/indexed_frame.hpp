@@ -167,7 +167,7 @@ using get_unindex_frame =
     get_index_frame<typename index_defn_invert<IndexDefn, Frame>::type, Frame>;
 
 } // namespace detail
- 
+
 template<typename IndexDefn, typename... Ts>
 class indexed_frame;
 
@@ -188,11 +188,11 @@ public:
         : m_frame(f)
     {}
 
-    using iterator = typename frame<Ts...>::iterator;
-    using const_iterator = typename frame<Ts...>::const_iterator;
-    using index_iterator = typename map_type::iterator;
-    using const_index_iterator = typename map_type::const_iterator;
-    using index_row_iterator = typename map_value_type::iterator;
+    using iterator                 = typename frame<Ts...>::iterator;
+    using const_iterator           = typename frame<Ts...>::const_iterator;
+    using index_iterator           = typename map_type::iterator;
+    using const_index_iterator     = typename map_type::const_iterator;
+    using index_row_iterator       = typename map_value_type::iterator;
     using const_index_row_iterator = typename map_value_type::const_iterator;
 
     iterator
@@ -356,12 +356,12 @@ public:
             std::cout << " ]\n";
         }
     }
-protected:
 
+protected:
     mutable map_type m_idx;
     frame<Ts...> m_frame;
 };
 
 } // namespace mf
- 
+
 #endif // INCLUDED_mainframe_indexed_frame_h

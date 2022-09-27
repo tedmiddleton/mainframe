@@ -12,7 +12,7 @@
 namespace mf
 {
 
-using missing_t = std::nullopt_t;
+using missing_t                    = std::nullopt_t;
 inline constexpr missing_t missing = std::nullopt;
 
 template<typename T>
@@ -467,19 +467,19 @@ mi(T) -> mi<T>;
 
 namespace std
 {
-    template<typename T>
-    struct hash<mf::mi<T>>
+template<typename T>
+struct hash<mf::mi<T>>
+{
+    size_t
+    operator()(const mf::mi<T>& mit) const noexcept
     {
-        size_t 
-        operator()(const mf::mi<T>& mit) const noexcept
-        {
-            if (!mit.has_value()) {
-                return 0;
-            }
-            std::hash<T> hasher;
-            return hasher(*mit);
+        if (!mit.has_value()) {
+            return 0;
         }
-    };
+        std::hash<T> hasher;
+        return hasher(*mit);
+    }
+};
 }
 
 
