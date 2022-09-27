@@ -2385,3 +2385,218 @@ TEST_CASE("innerjoin", "[frame]")
 
 }
 
+
+TEST_CASE("leftjoin", "[frame]")
+{
+    SECTION("no duplicates")
+    {
+        frame<mi<year_month_day>, mi<bool>> f1;
+        f1.set_column_names("date", "rain");
+        f1.push_back(2022_y / January / 1, false);
+        f1.push_back(2022_y / January / 2, false);
+        f1.push_back(2022_y / January / 3, true);
+        f1.push_back(2022_y / January / 4, true);
+
+        frame<mi<year_month_day>, mi<double>> f2;
+        f2.set_column_names("date", "temperature");
+        f2.push_back(2022_y / January / 1, 9.0);
+        f2.push_back(2022_y / January / 2, 10.0);
+        f2.push_back(2022_y / January / 3, 11.0);
+        f2.push_back(2022_y / January / 4, 12.2);
+
+        auto res = leftjoin(f1, _0, f2, _0);
+        res.sort(_0, _1);
+        dout << res;
+        REQUIRE(res.size() == 4);
+
+        // 0| 2022-01-01 | false | 2022-01-01 |    9
+        // 1| 2022-01-02 | false | 2022-01-02 |   10
+        // 2| 2022-01-03 |  true | 2022-01-03 |   11
+        // 3| 2022-01-04 |  true | 2022-01-04 | 12.2
+ 
+        auto it = res.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 2);
+        REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 3);
+        REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_1) == false);
+        REQUIRE((it + 1)->at(_1) == false);
+        REQUIRE((it + 2)->at(_1) == true);
+        REQUIRE((it + 3)->at(_1) == true);
+
+        REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 2);
+        REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
+        REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_3) ==  9.0);
+        REQUIRE((it + 1)->at(_3) == 10.0);
+        REQUIRE((it + 2)->at(_3) == 11.0);
+        REQUIRE((it + 3)->at(_3) == 12.2);
+    }
+
+    SECTION("left duplicates")
+    {
+        frame<mi<year_month_day>, mi<bool>> f1;
+        f1.set_column_names("date", "rain");
+        f1.push_back(2022_y / January / 1, false);
+        f1.push_back(2022_y / January / 1, true);
+        f1.push_back(2022_y / January / 3, true);
+        f1.push_back(2022_y / January / 4, true);
+
+        frame<mi<year_month_day>, mi<double>> f2;
+        f2.set_column_names("date", "temperature");
+        f2.push_back(2022_y / January / 1, 9.0);
+        f2.push_back(2022_y / January / 2, 10.0);
+        f2.push_back(2022_y / January / 3, 11.0);
+        f2.push_back(2022_y / January / 4, 12.2);
+
+        auto res = leftjoin(f1, _0, f2, _0);
+        res.sort(_0, _1);
+        dout << res;
+        REQUIRE(res.size() == 4);
+
+        // 0| 2022-01-01 | false | 2022-01-01 |    9
+        // 1| 2022-01-01 |  true | 2022-01-01 |    9
+        // 2| 2022-01-03 |  true | 2022-01-03 |   11
+        // 3| 2022-01-04 |  true | 2022-01-04 | 12.2
+
+        auto it = res.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 1);
+        REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 3);
+        REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_1) == false);
+        REQUIRE((it + 1)->at(_1) == true);
+        REQUIRE((it + 2)->at(_1) == true);
+        REQUIRE((it + 3)->at(_1) == true);
+
+        REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 2)->at(_2) == 2022_y / 1 / 3);
+        REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_3) ==  9.0);
+        REQUIRE((it + 1)->at(_3) ==  9.0);
+        REQUIRE((it + 2)->at(_3) == 11.0);
+        REQUIRE((it + 3)->at(_3) == 12.2);
+    }
+
+    SECTION("right duplicates")
+    {
+        frame<mi<year_month_day>, mi<bool>> f1;
+        f1.set_column_names("date", "rain");
+        f1.push_back(2022_y / January / 1, false);
+        f1.push_back(2022_y / January / 2, true);
+        f1.push_back(2022_y / January / 3, true);
+        f1.push_back(2022_y / January / 4, true);
+
+        frame<mi<year_month_day>, mi<double>> f2;
+        f2.set_column_names("date", "temperature");
+        f2.push_back(2022_y / January / 1, 9.0);
+        f2.push_back(2022_y / January / 1, 10.0);
+        f2.push_back(2022_y / January / 3, 11.0);
+        f2.push_back(2022_y / January / 4, 12.2);
+
+        auto res = leftjoin(f1, _0, f2, _0);
+        res.sort(_0, _1);
+        dout << res;
+        REQUIRE(res.size() == 5);
+
+        // 0| 2022-01-01 | false | 2022-01-01 |       9
+        // 1| 2022-01-01 | false | 2022-01-01 |      10 
+        // 2| 2022-01-02 |  true |    missing | missing 
+        // 3| 2022-01-03 |  true | 2022-01-03 |      11
+        // 4| 2022-01-04 |  true | 2022-01-04 |    12.2
+
+        auto it = res.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 1);
+        REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 2);
+        REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 3);
+        REQUIRE((it + 4)->at(_0) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_1) == false);
+        REQUIRE((it + 1)->at(_1) == false);
+        REQUIRE((it + 2)->at(_1) == true);
+        REQUIRE((it + 3)->at(_1) == true);
+        REQUIRE((it + 4)->at(_1) == true);
+
+        REQUIRE((it + 0)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_2) == 2022_y / 1 / 1);
+        REQUIRE((it + 2)->at(_2) == missing);
+        REQUIRE((it + 3)->at(_2) == 2022_y / 1 / 3);
+        REQUIRE((it + 4)->at(_2) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_3) ==  9.0);
+        REQUIRE((it + 1)->at(_3) == 10.0);
+        REQUIRE((it + 2)->at(_3) == missing);
+        REQUIRE((it + 3)->at(_3) == 11.0);
+        REQUIRE((it + 4)->at(_3) == 12.2);
+    }
+
+    SECTION("left empty")
+    {
+        frame<mi<year_month_day>, mi<bool>> f1;
+        f1.set_column_names("date", "rain");
+
+        frame<mi<year_month_day>, mi<double>> f2;
+        f2.set_column_names("date", "temperature");
+        f2.push_back(2022_y / January / 1, 9.0);
+        f2.push_back(2022_y / January / 2, 10.0);
+        f2.push_back(2022_y / January / 3, 11.0);
+        f2.push_back(2022_y / January / 4, 12.2);
+
+        auto res = leftjoin(f1, _0, f2, _0);
+        res.sort(_0, _1);
+        dout << res;
+        REQUIRE(res.size() == 0);
+    }
+
+    SECTION("right empty")
+    {
+        frame<mi<year_month_day>, mi<bool>> f1;
+        f1.set_column_names("date", "rain");
+        f1.push_back(2022_y / January / 1, false);
+        f1.push_back(2022_y / January / 2, true);
+        f1.push_back(2022_y / January / 3, true);
+        f1.push_back(2022_y / January / 4, true);
+
+        frame<mi<year_month_day>, mi<double>> f2;
+        f2.set_column_names("date", "temperature");
+
+        auto res = leftjoin(f1, _0, f2, _0);
+        res.sort(_0, _1);
+        dout << res;
+        REQUIRE(res.size() == 4);
+        // 1| 2022-01-01 | false | missing | missing 
+        // 2| 2022-01-02 |  true | missing | missing 
+        // 3| 2022-01-03 |  true | missing | missing
+        // 4| 2022-01-04 |  true | missing | missing
+
+        auto it = res.cbegin();
+        REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+        REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 2);
+        REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 3);
+        REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
+
+        REQUIRE((it + 0)->at(_1) == false);
+        REQUIRE((it + 1)->at(_1) == true);
+        REQUIRE((it + 2)->at(_1) == true);
+        REQUIRE((it + 3)->at(_1) == true);
+
+        REQUIRE((it + 0)->at(_2) == missing);
+        REQUIRE((it + 1)->at(_2) == missing);
+        REQUIRE((it + 2)->at(_2) == missing);
+        REQUIRE((it + 3)->at(_2) == missing);
+
+        REQUIRE((it + 0)->at(_3) == missing);
+        REQUIRE((it + 1)->at(_3) == missing);
+        REQUIRE((it + 2)->at(_3) == missing);
+        REQUIRE((it + 3)->at(_3) == missing);
+    }
+
+}
+

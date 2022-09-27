@@ -60,19 +60,61 @@ innerjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<
 
 template<typename...Ts, size_t Ind1, typename...Us, size_t Ind2>
 frame<Ts..., Us...>
-leftjoin(frame<Ts...>, columnindex<Ind1>, frame<Us...>, columnindex<Ind2>)
+leftjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<Ind2>)
 {
-    frame<Ts..., Us...> out;
+    const indexed_frame<index_defn<Ind1>, Ts...> ileft{ left };
+    const indexed_frame<index_defn<Ind2>, Us...> iright{ right };
+    ileft.build_index();
+    iright.build_index();
     frame<Ts...> fleft;
+    fleft.set_column_names(left.column_names());
     frame<Us...> fright;
+    fright.set_column_names(right.column_names());
 
     // Iterator through left index keys
-    //   insert left row into fleft
-    //   if right index has this key
-    //      insert right row into fright
-    //   else
-    //      insert empty row into fright
+    for (auto liit = ileft.begin_index(); liit != ileft.end_index(); ++liit) {
+
+        auto riit = iright.find_index(liit->first);
+        if (riit != iright.end_index()) {
+
+            for (auto lrit = ileft.begin_index_row(liit);
+                 lrit != ileft.end_index_row(liit); ++lrit) {
+                size_t leftind = *lrit;
+                auto leftrow = *(ileft.begin() + leftind);
+                (void)leftrow;
+
+                for (auto rrit = iright.begin_index_row(riit);
+                     rrit != iright.end_index_row(riit); ++rrit) {
+                    size_t rightind = *rrit;
+                    auto rightrow = *(iright.begin() + rightind);
+                    (void)rightrow;
+
+                    fleft.push_back(leftrow);
+                    fright.push_back(rightrow);
+                }
+            }
+        }
+    }
+    for (auto liit = ileft.begin_index(); liit != ileft.end_index(); ++liit) {
+
+        auto riit = iright.find_index(liit->first);
+        if (riit == iright.end_index()) {
+
+            for (auto lrit = ileft.begin_index_row(liit);
+                 lrit != ileft.end_index_row(liit); ++lrit) {
+                size_t leftind = *lrit;
+                auto leftrow = *(ileft.begin() + leftind);
+                (void)leftrow;
+
+                fleft.push_back(leftrow);
+                fright.resize(fright.size()+1);
+            }
+        }
+    }
+
     // hcat fleft and fright into out
+    frame<Ts..., Us...> out = fleft.hcat(fright);
+ 
  
     return out;
 }
