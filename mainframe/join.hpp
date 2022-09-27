@@ -94,11 +94,7 @@ leftjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<I
                 }
             }
         }
-    }
-    for (auto liit = ileft.begin_index(); liit != ileft.end_index(); ++liit) {
-
-        auto riit = iright.find_index(liit->first);
-        if (riit == iright.end_index()) {
+        else {
 
             for (auto lrit = ileft.begin_index_row(liit); lrit != ileft.end_index_row(liit);
                  ++lrit) {
