@@ -2598,3 +2598,219 @@ TEST_CASE("leftjoin", "[frame]")
         REQUIRE((it + 3)->at(_3) == missing);
     }
 }
+
+TEST_CASE("replace_missing", "[frame]")
+{
+    frame<mi<year_month_day>, mi<double>, mi<bool>> f1;
+    f1.set_column_names("date", "temperature", "rain");
+    f1.push_back(2022_y / January / 1, 8.9, true);
+    f1.push_back(2022_y / January / 2, 10.0, false);
+    f1.push_back(2022_y / January / 3, 11.1, true);
+    f1.push_back(2022_y / January / 4, 12.2, false);
+    f1.push_back(2022_y / January / 5, 14.4, false);
+    REQUIRE(f1.size() == 5);
+    auto row = f1.row(4);
+
+    SECTION("no replacemant")
+    {
+        frame_row<mi<year_month_day>, mi<double>, mi<bool>> fr1;
+        fr1.at(_0) = 2022_y / January / 6;
+        fr1.at(_1) = 15.5;
+        fr1.at(_2) = true;
+
+        fr1.replace_missing(row);
+
+        REQUIRE(fr1.at(_0) == 2022_y / January / 6);
+        REQUIRE(fr1.at(_1) == 15.5);
+        REQUIRE(fr1.at(_2) == true);
+    }
+
+    SECTION("first date replacemant")
+    {
+        frame_row<mi<year_month_day>, mi<double>, mi<bool>> fr1;
+        fr1.at(_0) = missing;
+        fr1.at(_1) = 15.5;
+        fr1.at(_2) = true;
+
+        fr1.replace_missing(row);
+
+        REQUIRE(fr1.at(_0) == 2022_y / January / 5);
+        REQUIRE(fr1.at(_1) == 15.5);
+        REQUIRE(fr1.at(_2) == true);
+    }
+
+    SECTION("second fp replacemant")
+    {
+        frame_row<mi<year_month_day>, mi<double>, mi<bool>> fr1;
+        fr1.at(_0) = 2022_y / January / 6;
+        fr1.at(_1) = missing;
+        fr1.at(_2) = true;
+
+        fr1.replace_missing(row);
+
+        REQUIRE(fr1.at(_0) == 2022_y / January / 6);
+        REQUIRE(fr1.at(_1) == 14.4);
+        REQUIRE(fr1.at(_2) == true);
+    }
+
+    SECTION("third bool replacemant")
+    {
+        frame_row<mi<year_month_day>, mi<double>, mi<bool>> fr1;
+        fr1.at(_0) = 2022_y / January / 6;
+        fr1.at(_1) = 15.5;
+        fr1.at(_2) = missing;
+
+        fr1.replace_missing(row);
+
+        REQUIRE(fr1.at(_0) == 2022_y / January / 6);
+        REQUIRE(fr1.at(_1) == 15.5);
+        REQUIRE(fr1.at(_2) == false);
+    }
+
+    SECTION("first and last replacemant")
+    {
+        frame_row<mi<year_month_day>, mi<double>, mi<bool>> fr1;
+        fr1.at(_0) = missing;
+        fr1.at(_1) = 15.5;
+        fr1.at(_2) = missing;
+
+        fr1.replace_missing(row);
+
+        REQUIRE(fr1.at(_0) == 2022_y / January / 5);
+        REQUIRE(fr1.at(_1) == 15.5);
+        REQUIRE(fr1.at(_2) == false);
+    }
+
+    SECTION("full replacemant")
+    {
+        frame_row<mi<year_month_day>, mi<double>, mi<bool>> fr1;
+        fr1.at(_0) = missing;
+        fr1.at(_1) = missing;
+        fr1.at(_2) = missing;
+
+        fr1.replace_missing(row);
+
+        REQUIRE(fr1.at(_0) == 2022_y / January / 5);
+        REQUIRE(fr1.at(_1) == 14.4);
+        REQUIRE(fr1.at(_2) == false);
+    }
+}
+
+TEST_CASE("fill_forward", "[frame]")
+{
+    frame<year_month_day, double, bool> f1;
+    auto f2 = f1.allow_missing();
+    f2.set_column_names("date", "temperature", "rain");
+    f2.push_back(2022_y / January / 1, 8.9, missing);
+    f2.push_back(missing, 10.0, false);
+    f2.push_back(2022_y / January / 3, missing, true);
+    f2.push_back(2022_y / January / 4, 12.2, missing);
+    f2.push_back(missing, missing, false);
+    f2.push_back(2022_y / January / 6, 15.5, false);
+    REQUIRE(f2.size() == 6);
+    auto f3 = f2.fill_forward();
+
+    auto it = f2.cbegin();
+    REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+    REQUIRE((it + 1)->at(_0) == missing);
+    REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 3);
+    REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
+    REQUIRE((it + 4)->at(_0) == missing);
+    REQUIRE((it + 5)->at(_0) == 2022_y / 1 / 6);
+
+    REQUIRE((it + 0)->at(_1) == 8.9);
+    REQUIRE((it + 1)->at(_1) == 10.0);
+    REQUIRE((it + 2)->at(_1) == missing);
+    REQUIRE((it + 3)->at(_1) == 12.2);
+    REQUIRE((it + 4)->at(_1) == missing);
+    REQUIRE((it + 5)->at(_1) == 15.5);
+
+    REQUIRE((it + 0)->at(_2) == missing);
+    REQUIRE((it + 1)->at(_2) == false);
+    REQUIRE((it + 2)->at(_2) == true);
+    REQUIRE((it + 3)->at(_2) == missing);
+    REQUIRE((it + 4)->at(_2) == false);
+    REQUIRE((it + 5)->at(_2) == false);
+
+    it = f3.cbegin();
+    CHECK((it + 0)->at(_0) == 2022_y / 1 / 1);
+    CHECK((it + 1)->at(_0) == 2022_y / 1 / 1);
+    CHECK((it + 2)->at(_0) == 2022_y / 1 / 3);
+    CHECK((it + 3)->at(_0) == 2022_y / 1 / 4);
+    CHECK((it + 4)->at(_0) == 2022_y / 1 / 4);
+    CHECK((it + 5)->at(_0) == 2022_y / 1 / 6);
+
+    CHECK((it + 0)->at(_1) == 8.9);
+    CHECK((it + 1)->at(_1) == 10.0);
+    CHECK((it + 2)->at(_1) == 10.0);
+    CHECK((it + 3)->at(_1) == 12.2);
+    CHECK((it + 4)->at(_1) == 12.2);
+    CHECK((it + 5)->at(_1) == 15.5);
+
+    CHECK((it + 0)->at(_2) == missing);
+    CHECK((it + 1)->at(_2) == false);
+    CHECK((it + 2)->at(_2) == true);
+    CHECK((it + 3)->at(_2) == true);
+    CHECK((it + 4)->at(_2) == false);
+    CHECK((it + 5)->at(_2) == false);
+}
+
+TEST_CASE("fill_backward", "[frame]")
+{
+    frame<year_month_day, double, bool> f1;
+    auto f2 = f1.allow_missing();
+    f2.set_column_names("date", "temperature", "rain");
+    f2.push_back(2022_y / January / 1, 8.9, missing);
+    f2.push_back(missing, 10.0, false);
+    f2.push_back(2022_y / January / 3, missing, true);
+    f2.push_back(2022_y / January / 4, 12.2, missing);
+    f2.push_back(missing, missing, false);
+    f2.push_back(2022_y / January / 6, 15.5, false);
+    REQUIRE(f2.size() == 6);
+    auto f3 = f2.fill_backward();
+
+    auto it = f2.cbegin();
+    REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+    REQUIRE((it + 1)->at(_0) == missing);
+    REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 3);
+    REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
+    REQUIRE((it + 4)->at(_0) == missing);
+    REQUIRE((it + 5)->at(_0) == 2022_y / 1 / 6);
+
+    REQUIRE((it + 0)->at(_1) == 8.9);
+    REQUIRE((it + 1)->at(_1) == 10.0);
+    REQUIRE((it + 2)->at(_1) == missing);
+    REQUIRE((it + 3)->at(_1) == 12.2);
+    REQUIRE((it + 4)->at(_1) == missing);
+    REQUIRE((it + 5)->at(_1) == 15.5);
+
+    REQUIRE((it + 0)->at(_2) == missing);
+    REQUIRE((it + 1)->at(_2) == false);
+    REQUIRE((it + 2)->at(_2) == true);
+    REQUIRE((it + 3)->at(_2) == missing);
+    REQUIRE((it + 4)->at(_2) == false);
+    REQUIRE((it + 5)->at(_2) == false);
+
+    it = f3.cbegin();
+    CHECK((it + 0)->at(_0) == 2022_y / 1 / 1);
+    CHECK((it + 1)->at(_0) == 2022_y / 1 / 3);
+    CHECK((it + 2)->at(_0) == 2022_y / 1 / 3);
+    CHECK((it + 3)->at(_0) == 2022_y / 1 / 4);
+    CHECK((it + 4)->at(_0) == 2022_y / 1 / 6);
+    CHECK((it + 5)->at(_0) == 2022_y / 1 / 6);
+
+    CHECK((it + 0)->at(_1) == 8.9);
+    CHECK((it + 1)->at(_1) == 10.0);
+    CHECK((it + 2)->at(_1) == 12.2);
+    CHECK((it + 3)->at(_1) == 12.2);
+    CHECK((it + 4)->at(_1) == 15.5);
+    CHECK((it + 5)->at(_1) == 15.5);
+
+    CHECK((it + 0)->at(_2) == false);
+    CHECK((it + 1)->at(_2) == false);
+    CHECK((it + 2)->at(_2) == true);
+    CHECK((it + 3)->at(_2) == false);
+    CHECK((it + 4)->at(_2) == false);
+    CHECK((it + 5)->at(_2) == false);
+}
+

@@ -318,24 +318,28 @@ public:
     void
     build_index() const
     {
-        if (this->m_idx.size() != 0) {
+        if (m_idx.size() != 0) {
             return;
         }
 
-        const index_frame ifr{ get_index_frame::op(this->m_frame) };
-        this->m_idx.reserve(ifr.size());
+        const index_frame ifr{ get_index_frame::op(m_frame) };
+        m_idx.reserve(ifr.size());
 
         for (size_t i = 0; i < ifr.size(); ++i) {
             auto row    = ifr.row(i);
-            auto findit = this->m_idx.find(row);
-            if (findit == this->m_idx.end()) {
+            auto findit = m_idx.find(row);
+            if (findit == m_idx.end()) {
                 map_value_type arr;
                 arr.push_back(i);
-                this->m_idx[row] = arr;
+                m_idx[row] = arr;
             }
             else {
                 findit->second.push_back(i);
             }
+        }
+        for (auto& kv : m_idx)  {
+            map_value_type& arr = kv.second;
+            std::sort(arr.begin(), arr.end());
         }
     }
 
@@ -343,7 +347,7 @@ public:
     debug_index() const
     {
         std::cout << "Index:\n";
-        for (auto& [key, val] : this->m_idx) {
+        for (auto& [key, val] : m_idx) {
             std::cout << "key " << key << ": ";
             std::cout << "[ ";
             int i = 0;

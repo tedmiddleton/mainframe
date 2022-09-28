@@ -108,6 +108,13 @@ public:
         return std::get<Ind>(data);
     }
 
+    template<bool IsConst>
+    void
+    replace_missing(const _row_proxy<IsConst, Ts...>& refs)
+    {
+        replace_missing_impl<0>(refs);
+    }
+
 private:
     template<size_t Ind>
     void
@@ -139,6 +146,25 @@ private:
         std::get<Ind>(data) = refs.at(ci);
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             init<Ind + 1>(refs);
+        }
+    }
+
+
+    template<size_t Ind, bool IsConst>
+    void
+    replace_missing_impl(const _row_proxy<IsConst, Ts...>& refs)
+    {
+        using T = typename detail::pack_element<Ind, Ts...>::type;
+        if constexpr (detail::is_missing<T>::value) {
+            columnindex<Ind> ci;
+            T& t = at(ci);
+            const T& rt = refs.at(ci);
+            if (!t.has_value() && rt.has_value()) {
+                t = rt;
+            }
+        }
+        if constexpr (Ind + 1 < sizeof...(Ts)) {
+            replace_missing_impl<Ind+1>(refs);
         }
     }
 

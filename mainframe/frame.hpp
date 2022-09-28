@@ -727,6 +727,56 @@ public:
         return iterator{ ptrs };
     }
 
+    frame<Ts...>
+    fill_forward() const
+    {
+        frame<Ts...> out;
+        out.set_column_names(column_names());
+
+        auto b          = cbegin();
+        auto curr       = b;
+        auto e          = cend();
+        auto previous   = e;
+        for (; curr != e; ++curr) {
+            auto& row = *curr;
+            if (previous == e || !row.any_missing()) {
+                out.push_back(row);
+            }
+            else {
+                frame_row<Ts...> fr{row};
+                fr.replace_missing(*previous);
+                out.push_back(fr);
+            }
+            previous = curr;
+        }
+        return out;
+    }
+
+    frame<Ts...>
+    fill_backward() const
+    {
+        frame<Ts...> out;
+        out.set_column_names(column_names());
+
+        auto b          = crbegin();
+        auto curr       = b;
+        auto e          = crend();
+        auto previous   = e;
+        for (; curr != e; ++curr) {
+            auto& row = *curr;
+            if (previous == e || !row.any_missing()) {
+                out.push_back(row);
+            }
+            else {
+                frame_row<Ts...> fr{row};
+                fr.replace_missing(*previous);
+                out.push_back(fr);
+            }
+            previous = curr;
+        }
+        return out.reversed();
+    }
+
     template<size_t... Idx>
     grouped_frame<index_defn<Idx...>, Ts...>
     groupby(columnindex<Idx>...) const
@@ -957,6 +1007,16 @@ public:
     resize(size_t newsize)
     {
         resize_impl<0>(newsize);
+    }
+
+    frame<Ts...>
+    reversed() const
+    {
+        frame<Ts...> out;
+        for (auto it(crbegin()); it != crend(); ++it) {
+            out.push_back(*it);
+        }
+        return out;
     }
 
     template<size_t... Inds>
