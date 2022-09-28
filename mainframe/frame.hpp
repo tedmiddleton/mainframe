@@ -733,21 +733,19 @@ public:
         frame<Ts...> out;
         out.set_column_names(column_names());
 
-        auto b          = cbegin();
-        auto curr       = b;
-        auto e          = cend();
-        auto previous   = e;
+        auto b    = cbegin();
+        auto curr = b;
+        auto e    = cend();
         for (; curr != e; ++curr) {
             auto& row = *curr;
-            if (previous == e || !row.any_missing()) {
+            if (out.size() == 0 || !row.any_missing()) {
                 out.push_back(row);
             }
             else {
-                frame_row<Ts...> fr{row};
-                fr.replace_missing(*previous);
+                frame_row<Ts...> fr{ row };
+                fr.replace_missing(*(out.end() - 1));
                 out.push_back(fr);
             }
-            previous = curr;
         }
         return out;
     }
@@ -758,21 +756,19 @@ public:
         frame<Ts...> out;
         out.set_column_names(column_names());
 
-        auto b          = crbegin();
-        auto curr       = b;
-        auto e          = crend();
-        auto previous   = e;
+        auto b    = crbegin();
+        auto curr = b;
+        auto e    = crend();
         for (; curr != e; ++curr) {
             auto& row = *curr;
-            if (previous == e || !row.any_missing()) {
+            if (out.size() == 0 || !row.any_missing()) {
                 out.push_back(row);
             }
             else {
-                frame_row<Ts...> fr{row};
-                fr.replace_missing(*previous);
+                frame_row<Ts...> fr{ row };
+                fr.replace_missing(*(out.end() - 1));
                 out.push_back(fr);
             }
-            previous = curr;
         }
         return out.reversed();
     }

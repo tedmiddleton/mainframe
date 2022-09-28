@@ -2703,7 +2703,7 @@ TEST_CASE("fill_forward", "[frame]")
     f2.set_column_names("date", "temperature", "rain");
     f2.push_back(2022_y / January / 1, 8.9, missing);
     f2.push_back(missing, 10.0, false);
-    f2.push_back(2022_y / January / 3, missing, true);
+    f2.push_back(missing, missing, true);
     f2.push_back(2022_y / January / 4, 12.2, missing);
     f2.push_back(missing, missing, false);
     f2.push_back(2022_y / January / 6, 15.5, false);
@@ -2713,7 +2713,7 @@ TEST_CASE("fill_forward", "[frame]")
     auto it = f2.cbegin();
     REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
     REQUIRE((it + 1)->at(_0) == missing);
-    REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 3);
+    REQUIRE((it + 2)->at(_0) == missing);
     REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
     REQUIRE((it + 4)->at(_0) == missing);
     REQUIRE((it + 5)->at(_0) == 2022_y / 1 / 6);
@@ -2733,26 +2733,26 @@ TEST_CASE("fill_forward", "[frame]")
     REQUIRE((it + 5)->at(_2) == false);
 
     it = f3.cbegin();
-    CHECK((it + 0)->at(_0) == 2022_y / 1 / 1);
-    CHECK((it + 1)->at(_0) == 2022_y / 1 / 1);
-    CHECK((it + 2)->at(_0) == 2022_y / 1 / 3);
-    CHECK((it + 3)->at(_0) == 2022_y / 1 / 4);
-    CHECK((it + 4)->at(_0) == 2022_y / 1 / 4);
-    CHECK((it + 5)->at(_0) == 2022_y / 1 / 6);
+    REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+    REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 1);
+    REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 1);
+    REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
+    REQUIRE((it + 4)->at(_0) == 2022_y / 1 / 4);
+    REQUIRE((it + 5)->at(_0) == 2022_y / 1 / 6);
 
-    CHECK((it + 0)->at(_1) == 8.9);
-    CHECK((it + 1)->at(_1) == 10.0);
-    CHECK((it + 2)->at(_1) == 10.0);
-    CHECK((it + 3)->at(_1) == 12.2);
-    CHECK((it + 4)->at(_1) == 12.2);
-    CHECK((it + 5)->at(_1) == 15.5);
+    REQUIRE((it + 0)->at(_1) == 8.9);
+    REQUIRE((it + 1)->at(_1) == 10.0);
+    REQUIRE((it + 2)->at(_1) == 10.0);
+    REQUIRE((it + 3)->at(_1) == 12.2);
+    REQUIRE((it + 4)->at(_1) == 12.2);
+    REQUIRE((it + 5)->at(_1) == 15.5);
 
-    CHECK((it + 0)->at(_2) == missing);
-    CHECK((it + 1)->at(_2) == false);
-    CHECK((it + 2)->at(_2) == true);
-    CHECK((it + 3)->at(_2) == true);
-    CHECK((it + 4)->at(_2) == false);
-    CHECK((it + 5)->at(_2) == false);
+    REQUIRE((it + 0)->at(_2) == missing);
+    REQUIRE((it + 1)->at(_2) == false);
+    REQUIRE((it + 2)->at(_2) == true);
+    REQUIRE((it + 3)->at(_2) == true);
+    REQUIRE((it + 4)->at(_2) == false);
+    REQUIRE((it + 5)->at(_2) == false);
 }
 
 TEST_CASE("fill_backward", "[frame]")
@@ -2762,7 +2762,7 @@ TEST_CASE("fill_backward", "[frame]")
     f2.set_column_names("date", "temperature", "rain");
     f2.push_back(2022_y / January / 1, 8.9, missing);
     f2.push_back(missing, 10.0, false);
-    f2.push_back(2022_y / January / 3, missing, true);
+    f2.push_back(missing, missing, true);
     f2.push_back(2022_y / January / 4, 12.2, missing);
     f2.push_back(missing, missing, false);
     f2.push_back(2022_y / January / 6, 15.5, false);
@@ -2772,7 +2772,7 @@ TEST_CASE("fill_backward", "[frame]")
     auto it = f2.cbegin();
     REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
     REQUIRE((it + 1)->at(_0) == missing);
-    REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 3);
+    REQUIRE((it + 2)->at(_0) == missing);
     REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
     REQUIRE((it + 4)->at(_0) == missing);
     REQUIRE((it + 5)->at(_0) == 2022_y / 1 / 6);
@@ -2792,25 +2792,25 @@ TEST_CASE("fill_backward", "[frame]")
     REQUIRE((it + 5)->at(_2) == false);
 
     it = f3.cbegin();
-    CHECK((it + 0)->at(_0) == 2022_y / 1 / 1);
-    CHECK((it + 1)->at(_0) == 2022_y / 1 / 3);
-    CHECK((it + 2)->at(_0) == 2022_y / 1 / 3);
-    CHECK((it + 3)->at(_0) == 2022_y / 1 / 4);
-    CHECK((it + 4)->at(_0) == 2022_y / 1 / 6);
-    CHECK((it + 5)->at(_0) == 2022_y / 1 / 6);
+    REQUIRE((it + 0)->at(_0) == 2022_y / 1 / 1);
+    REQUIRE((it + 1)->at(_0) == 2022_y / 1 / 4);
+    REQUIRE((it + 2)->at(_0) == 2022_y / 1 / 4);
+    REQUIRE((it + 3)->at(_0) == 2022_y / 1 / 4);
+    REQUIRE((it + 4)->at(_0) == 2022_y / 1 / 6);
+    REQUIRE((it + 5)->at(_0) == 2022_y / 1 / 6);
 
-    CHECK((it + 0)->at(_1) == 8.9);
-    CHECK((it + 1)->at(_1) == 10.0);
-    CHECK((it + 2)->at(_1) == 12.2);
-    CHECK((it + 3)->at(_1) == 12.2);
-    CHECK((it + 4)->at(_1) == 15.5);
-    CHECK((it + 5)->at(_1) == 15.5);
+    REQUIRE((it + 0)->at(_1) == 8.9);
+    REQUIRE((it + 1)->at(_1) == 10.0);
+    REQUIRE((it + 2)->at(_1) == 12.2);
+    REQUIRE((it + 3)->at(_1) == 12.2);
+    REQUIRE((it + 4)->at(_1) == 15.5);
+    REQUIRE((it + 5)->at(_1) == 15.5);
 
-    CHECK((it + 0)->at(_2) == false);
-    CHECK((it + 1)->at(_2) == false);
-    CHECK((it + 2)->at(_2) == true);
-    CHECK((it + 3)->at(_2) == false);
-    CHECK((it + 4)->at(_2) == false);
-    CHECK((it + 5)->at(_2) == false);
+    REQUIRE((it + 0)->at(_2) == false);
+    REQUIRE((it + 1)->at(_2) == false);
+    REQUIRE((it + 2)->at(_2) == true);
+    REQUIRE((it + 3)->at(_2) == false);
+    REQUIRE((it + 4)->at(_2) == false);
+    REQUIRE((it + 5)->at(_2) == false);
 }
 
