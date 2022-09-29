@@ -662,12 +662,6 @@ operator!(T t)
     return make_unary_expr<expr_op::NOT, T>::create(t);
 }
 
-template<size_t Ind>
-terminal<expr_column<Ind>>
-col()
-{
-    return terminal<expr_column<Ind>>{ expr_column<Ind>{} };
-}
 
 namespace placeholders
 {

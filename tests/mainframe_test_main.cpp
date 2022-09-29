@@ -633,8 +633,9 @@ TEST_CASE("rows()", "[frame]")
     f1.push_back(2022_y / January / 6, 14.4, true);
     f1.push_back(2022_y / January / 7, 15.5, false);
 
-    auto frain             = f1.rows(col<2>() == true);
-    auto fnorain           = f1.rows(false == col<2>());
+    columnindex<2> ci;
+    auto frain             = f1.rows(ci == true);
+    auto fnorain           = f1.rows(false == ci);
     auto fhot              = f1.rows(_1 >= 14);
     auto fhotandrain       = f1.rows(col1 >= 13 && col2 == true);
     auto fcoldandrain      = f1.rows(_1 <= 12 && _2 == true && _0 > 2022_y / January / 4);
@@ -802,8 +803,9 @@ TEST_CASE("operator[Ex]", "[frame]")
     f1.push_back(2022_y / January / 6, 14.4, true);
     f1.push_back(2022_y / January / 7, 15.5, false);
 
-    auto frain        = f1[col<2>() == true];
-    auto fnorain      = f1[false == col<2>()];
+    columnindex<2> ci;
+    auto frain        = f1[ci == true];
+    auto fnorain      = f1[false == ci];
     auto fhot         = f1[_1 >= 14];
     auto fhotandrain  = f1[col1 >= 13 && col2 == true];
     auto fcoldandrain = f1[_1 <= 12 && _2 == true && _0 > 2022_y / January / 4];
