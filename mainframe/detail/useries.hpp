@@ -35,6 +35,10 @@ class series;
 // This is an untyped version of series
 class useries
 {
+    using iseries_vector = detail::iseries_vector;
+    template<typename T>
+    using series_vector = detail::series_vector<T>;
+
 public:
     useries(const useries&)            = default;
     useries& operator=(const useries&) = default;
@@ -42,7 +46,7 @@ public:
     template<typename T>
     useries(const series<T>& s)
         : m_name(s.m_name)
-        , m_data(std::dynamic_pointer_cast<detail::iseries_vector>(s.m_sharedvec))
+        , m_data(std::dynamic_pointer_cast<iseries_vector>(s.m_sharedvec))
     {}
 
     template<typename T>
@@ -50,7 +54,7 @@ public:
     {
         series<T> s;
         s.m_name      = m_name;
-        s.m_sharedvec = std::dynamic_pointer_cast<detail::series_vector<T>>(m_data);
+        s.m_sharedvec = std::dynamic_pointer_cast<series_vector<T>>(m_data);
         return s;
     }
 
@@ -81,7 +85,7 @@ public:
 
 private:
     std::string m_name;
-    std::shared_ptr<detail::iseries_vector> m_data;
+    std::shared_ptr<iseries_vector> m_data;
 };
 
 } // namespace mf

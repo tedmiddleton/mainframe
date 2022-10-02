@@ -33,36 +33,40 @@ namespace mf
 template<typename T>
 class series
 {
+    using iseries_vector = detail::iseries_vector;
+    template<typename U>
+    using series_vector = detail::series_vector<U>;
+
 public:
     // types
     using value_type             = T;
-    using size_type              = typename detail::series_vector<T>::size_type;
-    using difference_type        = typename detail::series_vector<T>::difference_type;
+    using size_type              = typename series_vector<T>::size_type;
+    using difference_type        = typename series_vector<T>::difference_type;
     using reference              = value_type&;
     using const_reference        = const value_type&;
     using pointer                = value_type*;
     using const_pointer          = const value_type*;
-    using iterator               = typename detail::series_vector<T>::iterator;
-    using const_iterator         = typename detail::series_vector<T>::const_iterator;
-    using reverse_iterator       = typename detail::series_vector<T>::reverse_iterator;
-    using const_reverse_iterator = typename detail::series_vector<T>::const_reverse_iterator;
+    using iterator               = typename series_vector<T>::iterator;
+    using const_iterator         = typename series_vector<T>::const_iterator;
+    using reverse_iterator       = typename series_vector<T>::reverse_iterator;
+    using const_reverse_iterator = typename series_vector<T>::const_reverse_iterator;
 
     // ctors
     series()
-        : m_sharedvec(std::make_shared<detail::series_vector<T>>())
+        : m_sharedvec(std::make_shared<series_vector<T>>())
     {}
 
     series(size_type count, const T& value)
-        : m_sharedvec(std::make_shared<detail::series_vector<T>>(count, value))
+        : m_sharedvec(std::make_shared<series_vector<T>>(count, value))
     {}
 
     explicit series(size_type count)
-        : m_sharedvec(std::make_shared<detail::series_vector<T>>(count))
+        : m_sharedvec(std::make_shared<series_vector<T>>(count))
     {}
 
     template<typename InputIt>
     series(InputIt f, InputIt l)
-        : m_sharedvec(std::make_shared<detail::series_vector<T>>(f, l))
+        : m_sharedvec(std::make_shared<series_vector<T>>(f, l))
     {}
 
     series(const series& other) = default;
@@ -72,11 +76,11 @@ public:
         , m_sharedvec(std::move(other.m_sharedvec))
     {
         // Don't leave other with nullptr
-        other.m_sharedvec = std::make_shared<detail::series_vector<T>>();
+        other.m_sharedvec = std::make_shared<series_vector<T>>();
     }
 
     explicit series(std::initializer_list<T> init)
-        : m_sharedvec(std::make_shared<detail::series_vector<T>>(init))
+        : m_sharedvec(std::make_shared<series_vector<T>>(init))
     {}
 
     virtual ~series() = default;
@@ -87,7 +91,7 @@ public:
     {
         m_name            = other.m_name;
         m_sharedvec       = std::move(other.m_sharedvec);
-        other.m_sharedvec = std::make_shared<detail::series_vector<T>>();
+        other.m_sharedvec = std::make_shared<series_vector<T>>();
         return *this;
     }
 
@@ -96,7 +100,7 @@ public:
     series&
     operator=(std::initializer_list<T> init)
     {
-        m_sharedvec = std::make_shared<detail::series_vector<T>>(init);
+        m_sharedvec = std::make_shared<series_vector<T>>(init);
         return *this;
     }
 
@@ -152,20 +156,20 @@ public:
     void
     assign(size_type count, const T& value)
     {
-        m_sharedvec = std::make_shared<detail::series_vector<T>>(count, value);
+        m_sharedvec = std::make_shared<series_vector<T>>(count, value);
     }
 
     template<typename InputIt>
     void
     assign(InputIt inbegin, InputIt inend)
     {
-        m_sharedvec = std::make_shared<detail::series_vector<T>>(inbegin, inend);
+        m_sharedvec = std::make_shared<series_vector<T>>(inbegin, inend);
     }
 
     void
     assign(std::initializer_list<T> init)
     {
-        m_sharedvec = std::make_shared<detail::series_vector<T>>(init);
+        m_sharedvec = std::make_shared<series_vector<T>>(init);
     }
 
     // at
@@ -337,7 +341,7 @@ public:
     void
     clear()
     {
-        m_sharedvec = std::make_shared<detail::series_vector<T>>();
+        m_sharedvec = std::make_shared<series_vector<T>>();
     }
 
     // insert & emplace
@@ -517,7 +521,7 @@ public:
     unref()
     {
         if (m_sharedvec.use_count() > 1) {
-            std::shared_ptr<detail::series_vector<T>> n = std::make_shared<detail::series_vector<T>>(*m_sharedvec);
+            std::shared_ptr<series_vector<T>> n = std::make_shared<series_vector<T>>(*m_sharedvec);
             m_sharedvec                         = n;
         }
     }
@@ -529,7 +533,7 @@ private:
         iterator newit = it;
         if (m_sharedvec.use_count() > 1) {
             auto oldbegin                       = m_sharedvec->begin();
-            std::shared_ptr<detail::series_vector<T>> n = std::make_shared<detail::series_vector<T>>(*m_sharedvec);
+            std::shared_ptr<series_vector<T>> n = std::make_shared<series_vector<T>>(*m_sharedvec);
             m_sharedvec                         = n;
             newit += (m_sharedvec->begin() - oldbegin);
         }
@@ -542,7 +546,7 @@ private:
         const_iterator newit = it;
         if (m_sharedvec.use_count() > 1) {
             auto oldbegin                       = m_sharedvec->cbegin();
-            std::shared_ptr<detail::series_vector<T>> n = std::make_shared<detail::series_vector<T>>(*m_sharedvec);
+            std::shared_ptr<series_vector<T>> n = std::make_shared<series_vector<T>>(*m_sharedvec);
             m_sharedvec                         = n;
             newit += (m_sharedvec->cbegin() - oldbegin);
         }
@@ -554,7 +558,7 @@ private:
     friend std::ostream& operator<<(std::ostream&, const series<U>&);
 
     std::string m_name;
-    std::shared_ptr<detail::series_vector<T>> m_sharedvec;
+    std::shared_ptr<series_vector<T>> m_sharedvec;
 };
 
 template<typename T>
