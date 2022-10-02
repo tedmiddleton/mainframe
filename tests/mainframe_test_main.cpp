@@ -2816,3 +2816,67 @@ TEST_CASE("fill_backward", "[frame]")
     REQUIRE((it + 5)->at(_2) == false);
 }
 
+
+//template<typename Func, typename Arg>
+//struct fnobj;
+//
+//template<typename R, typename FnArg, typename Arg>
+//struct fnobj<R (FnArg), Arg>
+//{
+//    using is_expr = void;
+//
+//    using F = R(FnArg);
+//
+//    fnobj(F& f, const Arg& arg) 
+//        : m_f( f ) 
+//        , m_arg(arg)
+//    {
+//    }
+//
+//    R operator()() const
+//    {
+//        return std::apply(m_f, m_arg);
+//    }
+//
+//    template<typename T>
+//    R
+//    operator()(
+//        const typename std::vector<T>::iterator& begin,
+//        const typename std::vector<T>::iterator& curr,
+//        const typename std::vector<T>::iterator& end) const
+//    {
+//        Arg a = std::get<0>(m_arg).operator()(begin, curr, end);
+//        return std::apply(m_f, a);
+//    }
+//
+//    F& m_f;
+//    std::tuple<Arg> m_arg;
+//};
+//
+//int foo(int a)
+//{
+//    printf("foo(a=%d)\n", a);
+//    return a+1;
+//}
+//
+//TEST_CASE("fn", "[frame]")
+//{
+//    vector<float> arr{ 
+//        1.0, 
+//        1.0, 
+//        2.0, 
+//        3.0, 
+//        5.0, 
+//        8.0, 
+//        13.0, 
+//        21.0, 
+//        34.0, 
+//        55.0, 
+//        89.0 };
+//
+//    fnobj<decltype(foo), decltype(_0)> fn(foo, _0);
+//    (void)fn;
+//    auto res = fn.operator()<float>(arr.begin(), arr.begin(), arr.end());
+//    (void)res;
+//}
+

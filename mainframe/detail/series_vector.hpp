@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef INCLUDED_mainframe_series_vector_h
-#define INCLUDED_mainframe_series_vector_h
+#ifndef INCLUDED_mainframe_detail_series_vector_h
+#define INCLUDED_mainframe_detail_series_vector_h
 
 #include <algorithm>
 #include <ios>
@@ -21,9 +21,9 @@
 #include <variant>
 #include <vector>
 
-#include "mainframe/base.hpp"
+#include "mainframe/detail/base.hpp"
 
-namespace mf
+namespace mf::detail
 {
 
 class iseries_vector
@@ -892,7 +892,8 @@ operator!=(const series_vector<T>& left, const series_vector<T>& right)
     return !(left == right);
 }
 
-} // namespace mf
+} // namespace mf::detail
 
 
-#endif // INCLUDED_mainframe_series_vector_h
+#endif // INCLUDED_mainframe_detail_series_vector_h
+

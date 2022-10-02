@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef INCLUDED_mainframe_indexed_frame_h
-#define INCLUDED_mainframe_indexed_frame_h
+#ifndef INCLUDED_mainframe_detail_frame_indexer_h
+#define INCLUDED_mainframe_detail_frame_indexer_h
 
 #include "mainframe/frame.hpp"
 
@@ -113,7 +113,7 @@ struct index_defn_invert<IndexDefn, Tpl<Ts...>>
 
 
 // A frame with only the indexed columns in it.
-// eg indexed_frame<index_defn<4, 0>, frame<short, double, double, int, year_month>>::type
+// eg frame_indexer<index_defn<4, 0>, frame<short, double, double, int, year_month>>::type
 // == frame<year_month, short>
 // This is used to build the frame index
 // This is very very similar to detail::rearrange
@@ -169,10 +169,10 @@ using get_unindex_frame =
 } // namespace detail
 
 template<typename IndexDefn, typename... Ts>
-class indexed_frame;
+class frame_indexer;
 
 template<size_t... GroupInds, typename... Ts>
-class indexed_frame<index_defn<GroupInds...>, Ts...>
+class frame_indexer<index_defn<GroupInds...>, Ts...>
 {
 protected:
     // The index frame is a frame made of the indexed columns
@@ -184,7 +184,7 @@ protected:
     using map_type       = std::unordered_map<key_type, map_value_type>;
 
 public:
-    indexed_frame(frame<Ts...> f)
+    frame_indexer(frame<Ts...> f)
         : m_frame(f)
     {}
 
@@ -368,4 +368,5 @@ protected:
 
 } // namespace mf
 
-#endif // INCLUDED_mainframe_indexed_frame_h
+#endif // INCLUDED_mainframe_detail_frame_indexer_h
+ 

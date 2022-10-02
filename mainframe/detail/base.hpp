@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef INCLUDED_mainframe_base_h
-#define INCLUDED_mainframe_base_h
+#ifndef INCLUDED_mainframe_detail_base_h
+#define INCLUDED_mainframe_detail_base_h
 
 #include <ostream>
 #include <variant>
@@ -219,4 +219,4 @@ struct rearrange<Tpl<Ts...>, IndHead>
 } // namespace mf
 
 
-#endif // INCLUDED_mainframe_base_h
+#endif // INCLUDED_mainframe_detail_base_h

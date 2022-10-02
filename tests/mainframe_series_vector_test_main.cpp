@@ -8,7 +8,7 @@
 
 #include "date.h"
 #include "debug_cout.hpp"
-#include <mainframe/series_vector.hpp>
+#include "mainframe.hpp"
 
 #define TRAP() asm("int $3\n")
 
@@ -18,6 +18,7 @@ using namespace std::literals;
 using namespace date::literals;
 using namespace date;
 using namespace mf;
+using mf::detail::series_vector;
 
 static char*
 mystrdup(const char* s)

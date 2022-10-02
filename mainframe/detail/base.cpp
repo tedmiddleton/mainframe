@@ -5,15 +5,11 @@
 
 #include <iomanip>
 #include <iostream>
-#include <mainframe/base.hpp>
+#include "mainframe/detail/base.hpp"
 
 using namespace std;
 
-
-namespace mf
-{
-
-namespace detail
+namespace mf::detail
 {
 
 const char*
@@ -82,6 +78,5 @@ stringify(std::ostream& o, const unsigned char& t, bool)
     return o;
 }
 
-} // namespace detail
+} // namespace mf::detail
 
-} // namespace mf

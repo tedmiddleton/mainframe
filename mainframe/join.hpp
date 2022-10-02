@@ -6,20 +6,17 @@
 #ifndef INCLUDED_mainframe_join_h
 #define INCLUDED_mainframe_join_h
 
-#include "mainframe/indexed_frame.hpp"
+#include "mainframe/detail/frame_indexer.hpp"
 
 namespace mf
 {
-
-template<typename T>
-class TD;
 
 template<typename... Ts, size_t Ind1, typename... Us, size_t Ind2>
 frame<Ts..., Us...>
 innerjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<Ind2>)
 {
-    const indexed_frame<index_defn<Ind1>, Ts...> ileft{ left };
-    const indexed_frame<index_defn<Ind2>, Us...> iright{ right };
+    const frame_indexer<index_defn<Ind1>, Ts...> ileft{ left };
+    const frame_indexer<index_defn<Ind2>, Us...> iright{ right };
     ileft.build_index();
     iright.build_index();
     frame<Ts...> fleft;
@@ -62,8 +59,8 @@ template<typename... Ts, size_t Ind1, typename... Us, size_t Ind2>
 frame<Ts..., Us...>
 leftjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<Ind2>)
 {
-    const indexed_frame<index_defn<Ind1>, Ts...> ileft{ left };
-    const indexed_frame<index_defn<Ind2>, Us...> iright{ right };
+    const frame_indexer<index_defn<Ind1>, Ts...> ileft{ left };
+    const frame_indexer<index_defn<Ind2>, Us...> iright{ right };
     ileft.build_index();
     iright.build_index();
     frame<Ts...> fleft;

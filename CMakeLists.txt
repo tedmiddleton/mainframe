@@ -32,16 +32,27 @@ set( version 0.6.0 )
 # mainframe ==================================================================
 
 add_library( mainframe STATIC
-    mainframe/base.hpp 
-    mainframe/base.cpp 
-    mainframe/series.hpp 
-    mainframe/series_vector.hpp 
-    mainframe/simd.hpp 
-    mainframe/missing.hpp 
+    mainframe/detail/base.cpp 
+    mainframe/detail/base.hpp 
+    mainframe/detail/expression.hpp 
+    mainframe/detail/frame.hpp 
+    mainframe/detail/frame_indexer.hpp 
+    mainframe/detail/group.hpp 
+    mainframe/detail/row_proxy.hpp 
+    mainframe/detail/series_vector.hpp 
+    mainframe/detail/simd.hpp 
+    mainframe/detail/uframe.hpp 
+    mainframe/detail/useries.hpp 
+    mainframe/columnindex.hpp 
+    mainframe/expression.hpp 
     mainframe/frame.hpp 
     mainframe/frame_iterator.hpp 
-    mainframe/grouped_frame.hpp 
-    mainframe/expression.hpp 
+    mainframe/frame_row.hpp 
+    mainframe/group.hpp 
+    mainframe/join.hpp 
+    mainframe/missing.hpp 
+    mainframe/row_decl.hpp 
+    mainframe/series.hpp 
     )
 
 add_subdirectory( tests )

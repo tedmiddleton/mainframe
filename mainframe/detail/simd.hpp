@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef INCLUDED_mainframe_simd_h
-#define INCLUDED_mainframe_simd_h
+#ifndef INCLUDED_mainframe_detail_simd_h
+#define INCLUDED_mainframe_detail_simd_h
 
 #include <cmath>
 #include <iostream>
@@ -13,7 +13,7 @@
 #include <immintrin.h>
 #endif
 
-#include "mainframe/base.hpp"
+#include "mainframe/detail/base.hpp"
 
 #if !defined(__AVX__) && !defined(__ARM_NEON)
 #ifdef _MSC_VER
@@ -23,10 +23,9 @@
 #endif
 #endif
 
-namespace mf
+namespace mf::detail
 {
-namespace detail
-{
+
 template<typename T>
 T
 mean(const T* t, size_t num)
@@ -216,7 +215,7 @@ correlate_pearson(const float* a, const float* b, size_t num)
 #elif defined(__ARM_NEON)
 #endif
 
-}
 } // namespace mf::detail
 
-#endif // INCLUDED_mainframe_simd_h
+#endif // INCLUDED_mainframe_detail_simd_h
+
