@@ -43,6 +43,8 @@ add_library( mainframe STATIC
     mainframe/detail/simd.hpp 
     mainframe/detail/uframe.hpp 
     mainframe/detail/useries.hpp 
+    mainframe/impl/frame.hpp 
+    mainframe/impl/series.hpp 
     mainframe/columnindex.hpp 
     mainframe/expression.hpp 
     mainframe/frame.hpp 

@@ -22,13 +22,13 @@
 #include <vector>
 
 #include "mainframe/detail/base.hpp"
+#include "mainframe/detail/frame.hpp"
+#include "mainframe/detail/simd.hpp"
+#include "mainframe/detail/uframe.hpp"
 #include "mainframe/expression.hpp"
 #include "mainframe/frame_iterator.hpp"
 #include "mainframe/missing.hpp"
 #include "mainframe/series.hpp"
-#include "mainframe/detail/simd.hpp"
-#include "mainframe/detail/frame.hpp"
-#include "mainframe/detail/uframe.hpp"
 
 namespace mf
 {
@@ -95,117 +95,68 @@ public:
     ///
     ///     auto fr3 = fr1 + fr2;
     ///
-    frame<Ts...>
-    operator+(const frame<Ts...>& other) const
-    {
-        frame<Ts...> out{ *this };
-        out.insert(out.end(), other.cbegin(), other.cend());
-        return out;
-    }
+    frame<Ts...> operator+(const frame<Ts...>& other) const;
 
     /// Requests a row iterator pointing to the first row of the frame. Note
     /// that this is a nonconst-iterator which means that any underlying series
     /// with a reference count greater than 1 will be copied first.
     ///
-    iterator
-    begin()
-    {
-        unref();
-        return iterator{ m_columns, 0 };
-    }
+    iterator begin();
+
     /// Requests a row iterator pointing just past the last row of the frame. Note
     /// that this is a nonconst-iterator which means that any underlying series
     /// with a reference count greater than 1 will be copied first.
     ///
-    iterator
-    end()
-    {
-        unref();
-        return iterator{ m_columns, static_cast<int>(size()) };
-    }
+    iterator end();
+
     /// Requests a row iterator pointing to the first row of the frame.
     ///
-    const_iterator
-    begin() const
-    {
-        return const_iterator{ m_columns, 0 };
-    }
+    const_iterator begin() const;
+
     /// Requests a row iterator pointing just past the last row of the frame.
     ///
-    const_iterator
-    end() const
-    {
-        return const_iterator{ m_columns, static_cast<int>(size()) };
-    }
+    const_iterator end() const;
+
     /// Requests a row iterator pointing to the first row of the frame.
     ///
-    const_iterator
-    cbegin() const
-    {
-        return const_iterator{ m_columns, 0 };
-    }
+    const_iterator cbegin() const;
+
     /// Requests a row iterator pointing just past the last row of the frame.
     ///
-    const_iterator
-    cend() const
-    {
-        return const_iterator{ m_columns, static_cast<int>(size()) };
-    }
+    const_iterator cend() const;
+
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the last row. This operation will unref the
     /// dataframe.
     ///
-    reverse_iterator
-    rbegin()
-    {
-        unref();
-        return reverse_iterator{ m_columns, static_cast<int>(size()) - 1 };
-    }
+    reverse_iterator rbegin();
+
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the place in memory just before the first row.
     /// This operation will unref the dataframe.
     ///
-    reverse_iterator
-    rend()
-    {
-        unref();
-        return reverse_iterator{ m_columns, -1 };
-    }
+    reverse_iterator rend();
+
     /// Requests a reverse (will increment from the last row to the first) const
     /// row iterator that points to the last row.
     ///
-    const_reverse_iterator
-    rbegin() const
-    {
-        unref();
-        return const_reverse_iterator{ m_columns, static_cast<int>(size()) - 1 };
-    }
+    const_reverse_iterator rbegin() const;
+
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the place in memory just before the first row.
     /// This operation will unref the dataframe.
     ///
-    const_reverse_iterator
-    rend() const
-    {
-        unref();
-        return const_reverse_iterator{ m_columns, -1 };
-    }
+    const_reverse_iterator rend() const;
+
     /// Requests a reverse (will increment from the last row to the first) const
     /// row iterator that points to the last row.
     ///
-    const_reverse_iterator
-    crbegin() const
-    {
-        return const_reverse_iterator{ m_columns, static_cast<int>(size()) - 1 };
-    }
+    const_reverse_iterator crbegin() const;
+
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the place in memory just before the first row.
     ///
-    const_reverse_iterator
-    crend() const
-    {
-        return const_reverse_iterator{ m_columns, -1 };
-    }
+    const_reverse_iterator crend() const;
 
     /// convert a column to use the missing class mi<> to represent missing
     /// elements
@@ -219,121 +170,51 @@ public:
     ///     fr2.push_back(2022_y/12, 3, 0.007297);
     ///
     template<size_t... Inds>
-    typename detail::add_opt<frame<Ts...>, 0, Inds...>::type
-    allow_missing(columnindex<Inds>... cols) const
-    {
-        uframe u(*this);
-        allow_missing_impl<0, Inds...>(u, cols...);
-        return u;
-    }
+    typename detail::add_opt<frame<Ts...>, 0, Inds...>::type allow_missing(
+        columnindex<Inds>... cols) const;
 
     /// convert all columns to use the missing class mi<> to represent missing
     /// elements
     ///
-    typename detail::add_all_opt<frame<Ts...>>::type
-    allow_missing() const
-    {
-        uframe u;
-        allow_missing_impl<0, Ts...>(u);
-        return u;
-    }
+    typename detail::add_all_opt<frame<Ts...>>::type allow_missing() const;
 
     /// Remove all rows/data from the dataframe
     ///
-    void
-    clear()
-    {
-        clear_impl<0>();
-    }
+    void clear();
 
     /// Return the @ref series with colname
     ///
-    useries
-    column(const std::string& colname) const
-    {
-        return column_impl<0, Ts...>(colname);
-    }
+    useries column(const std::string& colname) const;
 
     template<size_t Ind>
-    series<typename detail::pack_element<Ind, Ts...>::type>&
-    column()
-    {
-        return std::get<Ind>(m_columns);
-    }
+    series<typename detail::pack_element<Ind, Ts...>::type>& column();
 
     template<size_t Ind>
-    const series<typename detail::pack_element<Ind, Ts...>::type>&
-    column() const
-    {
-        return std::get<Ind>(m_columns);
-    }
+    const series<typename detail::pack_element<Ind, Ts...>::type>& column() const;
 
     template<size_t Ind>
-    series<typename detail::pack_element<Ind, Ts...>::type>&
-    column(columnindex<Ind>)
-    {
-        return std::get<Ind>(m_columns);
-    }
+    series<typename detail::pack_element<Ind, Ts...>::type>& column(columnindex<Ind>);
 
     template<size_t Ind>
-    const series<typename detail::pack_element<Ind, Ts...>::type>&
-    column(columnindex<Ind>) const
-    {
-        return std::get<Ind>(m_columns);
-    }
+    const series<typename detail::pack_element<Ind, Ts...>::type>& column(columnindex<Ind>) const;
 
     template<size_t Ind>
-    std::string
-    column_name() const
-    {
-        return std::get<Ind>(m_columns).name();
-    }
+    std::string column_name() const;
 
     template<size_t Ind>
-    std::string
-    column_name(columnindex<Ind>) const
-    {
-        return std::get<Ind>(m_columns).name();
-    }
+    std::string column_name(columnindex<Ind>) const;
 
-    name_array
-    column_names() const
-    {
-        std::array<std::string, sizeof...(Ts)> out;
-        column_names_impl<0>(out);
-        return out;
-    }
+    name_array column_names() const;
 
     template<size_t... Inds>
-    typename detail::rearrange<frame<Ts...>, Inds...>::type
-    columns(columnindex<Inds>... cols) const
-    {
-        uframe f;
-        columns_impl(f, cols...);
-        return f;
-    }
+    typename detail::rearrange<frame<Ts...>, Inds...>::type columns(
+        columnindex<Inds>... cols) const;
 
     template<typename... Us>
-    uframe
-    columns(const Us&... us) const
-    {
-        uframe f;
-        columns_impl(f, us...);
-        return f;
-    }
+    uframe columns(const Us&... us) const;
 
     template<size_t Ind1, size_t Ind2>
-    double
-    corr(terminal<expr_column<Ind1>>, terminal<expr_column<Ind2>>) const
-    {
-        using T1             = typename detail::pack_element<Ind1, Ts...>::type;
-        using T2             = typename detail::pack_element<Ind2, Ts...>::type;
-        const series<T1>& s1 = std::get<Ind1>(m_columns);
-        const series<T2>& s2 = std::get<Ind2>(m_columns);
-
-        double c = detail::correlate_pearson(s1.data(), s2.data(), s1.size());
-        return c;
-    }
+    double corr(terminal<expr_column<Ind1>>, terminal<expr_column<Ind2>>) const;
 
     /// convert a column to NOT use the missing class mi<> to represent missing
     /// elements
@@ -347,224 +228,50 @@ public:
     ///     fr2.push_back(2022_y/12, 3, 0.007297);
     ///
     template<size_t... Inds>
-    typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type
-    disallow_missing(columnindex<Inds>... cols) const
-    {
-        uframe u(*this);
-        disallow_missing_impl<0, Inds...>(u, cols...);
-        return u;
-    }
+    typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type disallow_missing(
+        columnindex<Inds>... cols) const;
 
     /// convert all columns to NOT use the missing class mi<> to represent
     /// missing elements
     ///
-    typename detail::remove_all_opt<frame<Ts...>>::type
-    disallow_missing() const
-    {
-        uframe u;
-        disallow_missing_impl<0, Ts...>(u);
-        return u;
-    }
+    typename detail::remove_all_opt<frame<Ts...>>::type disallow_missing() const;
 
-    frame<Ts...>
-    drop_missing() const
-    {
-        frame<Ts...> out;
-        out.set_column_names(column_names());
+    frame<Ts...> drop_missing() const;
 
-        auto b    = cbegin();
-        auto curr = b;
-        auto e    = cend();
-        for (; curr != e; ++curr) {
-            auto& row = *curr;
-            if (!row.any_missing()) {
-                out.push_back(row);
-            }
-        }
-        return out;
-    }
+    bool empty() const;
 
-    bool
-    empty() const
-    {
-        return std::get<0>(m_columns).empty();
-    }
+    iterator erase(iterator first, iterator last);
 
-    iterator
-    erase(iterator first, iterator last)
-    {
-        std::tuple<Ts*...> ptrs;
-        erase_impl<0>(ptrs, first, last);
-        return iterator{ ptrs };
-    }
+    iterator erase(iterator pos);
 
-    iterator
-    erase(iterator pos)
-    {
-        std::tuple<Ts*...> ptrs;
-        erase_impl<0>(ptrs, pos);
-        return iterator{ ptrs };
-    }
+    frame<Ts...> fill_forward() const;
 
-    frame<Ts...>
-    fill_forward() const
-    {
-        frame<Ts...> out;
-        out.set_column_names(column_names());
-
-        auto b    = cbegin();
-        auto curr = b;
-        auto e    = cend();
-        for (; curr != e; ++curr) {
-            auto& row = *curr;
-            if (out.size() == 0 || !row.any_missing()) {
-                out.push_back(row);
-            }
-            else {
-                frame_row<Ts...> fr{ row };
-                fr.replace_missing(*(out.end() - 1));
-                out.push_back(fr);
-            }
-        }
-        return out;
-    }
-
-    frame<Ts...>
-    fill_backward() const
-    {
-        frame<Ts...> out;
-        out.set_column_names(column_names());
-
-        auto b    = crbegin();
-        auto curr = b;
-        auto e    = crend();
-        for (; curr != e; ++curr) {
-            auto& row = *curr;
-            if (out.size() == 0 || !row.any_missing()) {
-                out.push_back(row);
-            }
-            else {
-                frame_row<Ts...> fr{ row };
-                fr.replace_missing(*(out.end() - 1));
-                out.push_back(fr);
-            }
-        }
-        return out.reversed();
-    }
+    frame<Ts...> fill_backward() const;
 
     template<size_t... Idx>
-    group<index_defn<Idx...>, Ts...>
-    groupby(columnindex<Idx>...) const
-    {
-        return group<index_defn<Idx...>, Ts...>{ *this };
-    }
+    group<index_defn<Idx...>, Ts...> groupby(columnindex<Idx>...) const;
 
     template<typename... Us>
-    frame<Ts..., Us...>
-    hcat(frame<Us...> other) const
-    {
-        frame<Ts...> self(*this);
-        size_t max_size = std::max(self.size(), other.size());
-        // Redundant resize will be handled at the series level to prevent an
-        // unnecessary unref
-        self.resize(max_size);
-        other.resize(max_size);
+    frame<Ts..., Us...> hcat(frame<Us...> other) const;
 
-        uframe out(self);
-        uframe uother(other);
-        for (size_t c = 0; c < other.num_columns(); ++c) {
-            out.add_series(uother.column(c));
-        }
+    iterator insert(iterator pos, const_iterator first, const_iterator last);
 
-        return out;
-    }
+    iterator insert(iterator pos, const Ts&... ts);
 
-    iterator
-    insert(iterator pos, const_iterator first, const_iterator last)
-    {
-        std::tuple<Ts*...> ptrs;
-        insert_impl<0>(ptrs, pos, first, last);
-        return iterator{ ptrs };
-    }
-
-    iterator
-    insert(iterator pos, const Ts&... ts)
-    {
-        std::tuple<Ts*...> ptrs;
-        insert_impl<0>(ptrs, pos, 1, ts...);
-        return iterator{ ptrs };
-    }
-
-    iterator
-    insert(iterator pos, size_t count, const Ts&... ts)
-    {
-        std::tuple<Ts*...> ptrs;
-        insert_impl<0>(ptrs, pos, count, ts...);
-        return iterator{ ptrs };
-    }
+    iterator insert(iterator pos, size_t count, const Ts&... ts);
 
     template<size_t Ind>
-    double
-    mean(columnindex<Ind>) const
-    {
-        using T            = typename detail::pack_element<Ind, Ts...>::type;
-        const series<T>& s = std::get<Ind>(m_columns);
-        double m           = detail::mean(s.data(), s.size());
-        return m;
-    }
+    double mean(columnindex<Ind>) const;
 
     template<typename T>
-    frame<Ts..., T>
-    new_series(const std::string& series_name) const
-    {
-        uframe plust(*this);
-        series<T> ns(size());
-        ns.set_name(series_name);
-        useries us(ns);
-        plust.add_series(us);
-        return plust;
-    }
+    frame<Ts..., T> new_series(const std::string& series_name) const;
 
     template<typename T, typename Ex>
-    frame<Ts..., T>
-    new_series(const std::string& series_name, Ex expr) const
-    {
-        uframe plust(*this);
-        series<T> ns(size());
-        ns.set_name(series_name);
-        useries us(ns);
-        plust.add_series(us);
-        frame<Ts..., T> out = plust;
-        auto b              = out.begin();
-        auto e              = out.end();
-        auto it             = b;
-        if constexpr (detail::is_missing<T>::value) {
-            for (; it != e; ++it) {
-                auto val                         = expr(b, it, e);
-                it->template at<sizeof...(Ts)>() = val;
-            }
-        }
-        else {
-            for (; it != e; ++it) {
-                auto val  = expr(b, it, e);
-                auto uval = detail::unwrap_missing<decltype(val)>::unwrap(val);
-                it->template at<sizeof...(Ts)>() = uval;
-            }
-        }
-        return out;
-    }
+    frame<Ts..., T> new_series(const std::string& series_name, Ex expr) const;
 
-    size_t
-    num_columns() const
-    {
-        return sizeof...(Ts);
-    }
+    size_t num_columns() const;
 
-    bool
-    operator==(const frame<Ts...>& other) const
-    {
-        return eq_impl<0>(other);
-    }
+    bool operator==(const frame<Ts...>& other) const;
 
     // row-selector operator[]. One tricky bit is that rows(Ex) which it calls
     // only requires is_expression<Ex> whereas here we require
@@ -579,55 +286,29 @@ public:
     //   fr[_1 == true];
     //
     template<typename Ex>
-    std::enable_if_t<is_complex_expression<Ex>::value, frame<Ts...>>
-    operator[](Ex ex) const
-    {
-        return rows(ex);
-    }
+    std::enable_if_t<is_complex_expression<Ex>::value, frame<Ts...>> operator[](Ex ex) const;
 
-    frame<Ts...>
-    operator[](size_t ind) const
-    {
-        frame<Ts...> out;
-        out.push_back(*(cbegin() + ind));
-        return out;
-    }
+    frame<Ts...> operator[](size_t ind) const;
 
 #if __cplusplus <= 202002L
     // Note that this will only work up to c++23, where we can be more sensible
     // about multiple arguments to operator[]
     template<size_t... Inds>
-    typename detail::rearrange<frame<Ts...>, Inds...>::type
-    operator[](columnindexpack<Inds...> cols) const
-    {
-        uframe u;
-        columns_impl(u, cols);
-        return u;
-    }
+    typename detail::rearrange<frame<Ts...>, Inds...>::type operator[](
+        columnindexpack<Inds...> cols) const;
 
     template<size_t Ind>
-    typename detail::rearrange<frame<Ts...>, Ind>::type
-    operator[](columnindex<Ind>) const
-    {
-        uframe u;
-        columnindexpack<Ind> cols;
-        columns_impl(u, cols);
-        return u;
-    }
+    typename detail::rearrange<frame<Ts...>, Ind>::type operator[](columnindex<Ind>) const;
+
 #else
+
     template<size_t... Inds>
-    typename detail::rearrange<frame<Ts...>, Inds...>::type
-    operator[](columnindex<Inds>... cols) const
-    {
-        return columns(cols...);
-    }
+    typename detail::rearrange<frame<Ts...>, Inds...>::type operator[](
+        columnindex<Inds>... cols) const;
+
 #endif
 
-    void
-    pop_back()
-    {
-        pop_back_impl<0>();
-    }
+    void pop_back();
 
     ///
     /// Append a row from another frame to the end of this frame.
@@ -638,11 +319,8 @@ public:
     ///       fr.push_back( fr_other[0] );
     ///
     template<bool IsConst, typename... Us, typename... Vs>
-    void
-    push_back(const _row_proxy<IsConst, Us...>& fr, const Vs&... args)
-    {
-        push_back_multiple_row_impl<0>(fr, args...);
-    }
+    void push_back(const _row_proxy<IsConst, Us...>& fr, const Vs&... args);
+
     ///
     /// Append an explicitly declared frame_row to the end of the frame be
     /// an explicitly
@@ -654,11 +332,8 @@ public:
     ///     f.push_back(fr);
     ///
     template<typename... Us, typename... Vs>
-    void
-    push_back(const frame_row<Us...>& fr, const Vs&... args)
-    {
-        push_back_multiple_row_impl<0>(fr, args...);
-    }
+    void push_back(const frame_row<Us...>& fr, const Vs&... args);
+
     ///
     /// Append a flexible list of objects to the end of this frame as a new row
     ///
@@ -666,507 +341,133 @@ public:
     ///     fr.push_back(2022_y/12, 1, 3.14);
     ///
     template<typename U, typename... Us>
-    void
-    push_back(U first_arg, Us... args)
-    {
-        push_back_impl<0, U, Us...>(first_arg, args...);
-    }
+    void push_back(U first_arg, Us... args);
 
-    void
-    reserve(size_t newsize)
-    {
-        reserve_impl<0>(newsize);
-    }
+    void reserve(size_t newsize);
 
-    void
-    resize(size_t newsize)
-    {
-        resize_impl<0>(newsize);
-    }
+    void resize(size_t newsize);
 
-    frame<Ts...>
-    reversed() const
-    {
-        frame<Ts...> out;
-        for (auto it(crbegin()); it != crend(); ++it) {
-            out.push_back(*it);
-        }
-        return out;
-    }
+    frame<Ts...> reversed() const;
 
     template<size_t... Inds>
-    void
-    reverse_sort(columnindex<Inds>...)
-    {
-        detail::build_gt<row_type, Inds...> op;
-        std::sort(this->begin(), this->end(), op);
-    }
+    void reverse_sort(columnindex<Inds>...);
 
     template<size_t... Inds>
-    frame<Ts...>
-    reverse_sorted(columnindex<Inds>... ci)
-    {
-        frame<Ts...> out(*this);
-        out.reverse_sort(ci...);
-        return out;
-    }
+    frame<Ts...> reverse_sorted(columnindex<Inds>... ci);
 
-    _row_proxy<false, Ts...>
-    row(size_t ind)
-    {
-        _row_proxy<false, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
-        return out;
-    }
+    _row_proxy<false, Ts...> row(size_t ind);
 
-    _row_proxy<true, Ts...>
-    row(size_t ind) const
-    {
-        _row_proxy<true, Ts...> out{ m_columns, static_cast<ptrdiff_t>(ind) };
-        return out;
-    }
+    _row_proxy<true, Ts...> row(size_t ind) const;
 
     template<typename Ex>
-    std::enable_if_t<is_expression<Ex>::value, frame<Ts...>>
-    rows(Ex ex) const
-    {
-        frame<Ts...> out;
-        out.set_column_names(column_names());
+    std::enable_if_t<is_expression<Ex>::value, frame<Ts...>> rows(Ex ex) const;
 
-        auto b    = cbegin();
-        auto curr = b;
-        auto e    = cend();
-        for (; curr != e; ++curr) {
-            auto exprval = ex(b, curr, e);
-            if (exprval) {
-                out.push_back(*curr);
-            }
-        }
+    void set_column_names(const std::vector<std::string>& names);
 
-        return out;
-    }
-
-    void
-    set_column_names(const std::vector<std::string>& names)
-    {
-        set_column_names_impl<0>(names);
-    }
-
-    void
-    set_column_names(const name_array& names)
-    {
-        set_column_names_impl<0>(names);
-    }
+    void set_column_names(const name_array& names);
 
     template<typename... Us>
-    void
-    set_column_names(const Us&... colnames)
-    {
-        set_column_names_impl<0, Us...>(colnames...);
-    }
+    void set_column_names(const Us&... colnames);
 
-    size_t
-    size() const
-    {
-        return size_impl_with_check<0, Ts...>();
-    }
+    size_t size() const;
 
     template<size_t... Inds>
-    void
-    sort(columnindex<Inds>...)
-    {
-        detail::build_lt<row_type, Inds...> op;
-        std::sort(this->begin(), this->end(), op);
-    }
+    void sort(columnindex<Inds>...);
 
     template<size_t... Inds>
-    frame<Ts...>
-    sorted(columnindex<Inds>... ci)
-    {
-        frame<Ts...> out(*this);
-        out.sort(ci...);
-        return out;
-    }
+    frame<Ts...> sorted(columnindex<Inds>... ci);
 
-    std::vector<std::vector<std::string>>
-    to_string() const
-    {
-        std::vector<std::vector<std::string>> out;
-        to_string_impl<0, Ts...>(out);
-        return out;
-    }
+    std::vector<std::vector<std::string>> to_string() const;
 
 private:
     template<size_t Ind, size_t... Inds>
-    void
-    allow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
-    {
-        if constexpr (detail::contains<Ind, Inds...>::value) {
-            auto& s  = column<Ind>();
-            auto ams = s.allow_missing();
-            uf.set_series(Ind, ams);
-        }
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            allow_missing_impl<Ind + 1, Inds...>(uf, cols...);
-        }
-    }
+    void allow_missing_impl(uframe& uf, columnindex<Inds>... cols) const;
 
     template<size_t Ind, typename U, typename... Us>
-    void
-    allow_missing_impl(uframe& uf) const
-    {
-        const series<U>& s = std::get<Ind>(m_columns);
-        auto os            = s.allow_missing();
-        uf.add_series(os);
-        if constexpr (sizeof...(Us) > 0) {
-            allow_missing_impl<Ind + 1, Us...>(uf);
-        }
-    }
+    void allow_missing_impl(uframe& uf) const;
 
     template<size_t Ind>
-    void
-    clear_impl()
-    {
-        std::get<Ind>(m_columns).clear();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            clear_impl<Ind + 1>();
-        }
-    }
+    void clear_impl();
 
     template<size_t Ind, typename U, typename... Us>
-    useries
-    column_impl(const std::string& colname) const
-    {
-        const series<U>& s = std::get<Ind>(m_columns);
-        if (s.name() == colname) {
-            return s;
-        }
-        if constexpr (sizeof...(Us) > 0) {
-            return column_impl<Ind + 1, Us...>(colname);
-        }
-        else {
-            throw std::out_of_range{ "out of range" };
-        }
-    }
+    useries column_impl(const std::string& colname) const;
 
     template<size_t Ind>
-    void
-    column_names_impl(std::array<std::string, sizeof...(Ts)>& out) const
-    {
-        auto& s  = std::get<Ind>(m_columns);
-        out[Ind] = s.name();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            column_names_impl<Ind + 1>(out);
-        }
-    }
+    void column_names_impl(std::array<std::string, sizeof...(Ts)>& out) const;
 
     template<typename U, typename... Us>
-    void
-    columns_impl(uframe& f, const U& u, const Us&... us) const
-    {
-        useries s = column(u);
-        f.add_series(s);
-        if constexpr (sizeof...(Us) > 0) {
-            columns_impl(f, us...);
-        }
-    }
+    void columns_impl(uframe& f, const U& u, const Us&... us) const;
 
     template<size_t Ind, size_t... RemInds>
-    void
-    columns_impl(uframe& f, columnindexpack<Ind, RemInds...>) const
-    {
-        columnindex<Ind> ci;
-        useries s = column(ci);
-        f.add_series(s);
-        if constexpr (sizeof...(RemInds) > 0) {
-            columnindexpack<RemInds...> remcis;
-            columns_impl(f, remcis);
-        }
-    }
+    void columns_impl(uframe& f, columnindexpack<Ind, RemInds...>) const;
 
     template<size_t Ind, size_t... Inds>
-    void
-    disallow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
-    {
-        if constexpr (detail::contains<Ind, Inds...>::value) {
-            auto& s  = column<Ind>();
-            auto ams = s.disallow_missing();
-            uf.set_series(Ind, ams);
-        }
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            disallow_missing_impl<Ind + 1, Inds...>(uf, cols...);
-        }
-    }
+    void disallow_missing_impl(uframe& uf, columnindex<Inds>... cols) const;
 
     template<size_t Ind, typename U, typename... Us>
-    void
-    disallow_missing_impl(uframe& uf) const
-    {
-        const series<U>& s = std::get<Ind>(m_columns);
-        auto os            = s.disallow_missing();
-        uf.add_series(os);
-        if constexpr (sizeof...(Us) > 0) {
-            disallow_missing_impl<Ind + 1, Us...>(uf);
-        }
-    }
+    void disallow_missing_impl(uframe& uf) const;
 
     template<size_t Ind>
-    void
-    erase_impl(std::tuple<Ts*...>& ptrs, iterator pos)
-    {
-        columnindex<Ind> ci;
-        auto& s             = std::get<Ind>(m_columns);
-        auto column_pos     = pos.column_iterator(ci);
-        auto newcpos        = s.erase(column_pos);
-        std::get<Ind>(ptrs) = newcpos.data();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            erase_impl<Ind + 1>(ptrs, pos);
-        }
-    }
+    void erase_impl(std::tuple<Ts*...>& ptrs, iterator pos);
 
     template<size_t Ind>
-    void
-    erase_impl(std::tuple<Ts*...>& ptrs, iterator first, iterator last)
-    {
-        columnindex<Ind> ci;
-        auto& s             = std::get<Ind>(m_columns);
-        auto column_first   = first.column_iterator(ci);
-        auto column_last    = last.column_iterator(ci);
-        auto newcpos        = s.erase(column_first, column_last);
-        std::get<Ind>(ptrs) = newcpos.data();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            erase_impl<Ind + 1>(ptrs, first, last);
-        }
-    }
+    void erase_impl(std::tuple<Ts*...>& ptrs, iterator first, iterator last);
 
     template<size_t Ind>
-    bool
-    eq_impl(const frame<Ts...>& other) const
-    {
-        auto& s  = std::get<Ind>(m_columns);
-        auto& os = std::get<Ind>(other.m_columns);
-        if (s != os) {
-            return false;
-        }
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            return eq_impl<Ind + 1>(other);
-        }
-        return true;
-    }
+    bool eq_impl(const frame<Ts...>& other) const;
 
     template<size_t Ind, typename U, typename... Us>
-    void
-    insert_impl(std::tuple<Ts*...>& ptrs, iterator pos, size_t count, const U& u, const Us&... us)
-    {
-        columnindex<Ind> ci;
-        auto& s             = std::get<Ind>(m_columns);
-        auto column_pos     = pos.column_iterator(ci);
-        auto newcpos        = s.insert(column_pos, count, u);
-        std::get<Ind>(ptrs) = newcpos.data();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            insert_impl<Ind + 1>(ptrs, pos, count, us...);
-        }
-    }
+    void insert_impl(
+        std::tuple<Ts*...>& ptrs, iterator pos, size_t count, const U& u, const Us&... us);
 
     template<size_t Ind>
-    void
-    insert_impl(std::tuple<Ts*...>& ptrs, iterator pos, const_iterator first, const_iterator last)
-    {
-        columnindex<Ind> ci;
-        auto& s             = std::get<Ind>(m_columns);
-        auto column_pos     = pos.column_iterator(ci);
-        auto column_first   = first.column_iterator(ci);
-        auto column_last    = last.column_iterator(ci);
-        auto newcpos        = s.insert(column_pos, column_first, column_last);
-        std::get<Ind>(ptrs) = newcpos.data();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            insert_impl<Ind + 1>(ptrs, pos, first, last);
-        }
-    }
+    void insert_impl(
+        std::tuple<Ts*...>& ptrs, iterator pos, const_iterator first, const_iterator last);
 
     template<size_t Ind>
-    void
-    pop_back_impl()
-    {
-        auto& s = std::get<Ind>(m_columns);
-        s.pop_back();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            pop_back_impl<Ind + 1>();
-        }
-    }
+    void pop_back_impl();
 
-    void
-    populate(const std::vector<useries>& columns)
-    {
-        populate_impl<0, Ts...>(columns);
-    }
+    void populate(const std::vector<useries>& columns);
 
     template<size_t Ind, typename U, typename... Us>
-    void
-    populate_impl(const std::vector<useries>& columns)
-    {
-        const useries& su = columns.at(Ind);
-        series<U>& s      = std::get<Ind>(m_columns);
-        s                 = series<U>(su);
-        if constexpr (sizeof...(Us) > 0) {
-            populate_impl<Ind + 1, Us...>(columns);
-        }
-    }
+    void populate_impl(const std::vector<useries>& columns);
 
     template<size_t Ind>
-    void
-    push_back_multiple_empty_impl()
-    {
-        using T = typename pack_element<Ind, Ts...>::type;
-        // Default ctor
-        std::get<Ind>(m_columns).push_back(T{});
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            push_back_multiple_empty_impl<Ind + 1>();
-        }
-    }
+    void push_back_multiple_empty_impl();
 
     template<size_t Ind, typename V, typename... Vs>
-    void
-    push_back_multiple_args_impl(V arg, const Vs&... args)
-    {
-        // Should really try some kind of conversion here
-        std::get<Ind>(m_columns).push_back(arg);
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            if constexpr (sizeof...(Vs) > 0) {
-                push_back_multiple_args_impl<Ind + 1>(args...);
-            }
-            else {
-                push_back_multiple_empty_impl<Ind + 1>();
-            }
-        }
-    }
+    void push_back_multiple_args_impl(V arg, const Vs&... args);
 
     template<size_t Ind, bool IsConst, template<bool, typename...> typename Row, typename... Us,
         typename... Vs>
-    void
-    push_back_multiple_row_impl(const Row<IsConst, Us...>& fr, const Vs&... args)
-    {
-        // Should really try some kind of conversion here
-        columnindex<Ind> ci;
-        std::get<Ind>(m_columns).push_back(fr.at(ci));
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            if constexpr (Ind + 1 < sizeof...(Us)) {
-                push_back_multiple_row_impl<Ind + 1>(fr, args...);
-            }
-            else if constexpr (sizeof...(Vs) > 0) {
-                push_back_multiple_args_impl<Ind + 1>(args...);
-            }
-            else {
-                push_back_multiple_empty_impl<Ind + 1>();
-            }
-        }
-    }
+    void push_back_multiple_row_impl(const Row<IsConst, Us...>& fr, const Vs&... args);
 
     template<size_t Ind, typename U, typename... Us>
-    void
-    push_back_impl(const U& u, const Us&... us)
-    {
-        using T = typename detail::pack_element<Ind, Ts...>::type;
-        std::get<Ind>(m_columns).push_back(static_cast<T>(u));
-        if constexpr (sizeof...(Us) > 0) {
-            push_back_impl<Ind + 1>(us...);
-        }
-    }
+    void push_back_impl(const U& u, const Us&... us);
 
     template<size_t Ind>
-    void
-    reserve_impl(size_t newsize)
-    {
-        auto& s = std::get<Ind>(m_columns);
-        s.reserve(newsize);
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            reserve_impl<Ind + 1>(newsize);
-        }
-    }
+    void reserve_impl(size_t newsize);
 
     template<size_t Ind>
-    void
-    resize_impl(size_t newsize)
-    {
-        auto& s = std::get<Ind>(m_columns);
-        s.resize(newsize);
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            resize_impl<Ind + 1>(newsize);
-        }
-    }
+    void resize_impl(size_t newsize);
 
     template<size_t Ind>
-    void
-    set_column_names_impl(const std::vector<std::string>& names)
-    {
-        if (Ind < names.size()) {
-            auto& s = std::get<Ind>(m_columns);
-            s.set_name(names.at(Ind));
-        }
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            set_column_names_impl<Ind + 1>(names);
-        }
-    }
+    void set_column_names_impl(const std::vector<std::string>& names);
 
     template<size_t Ind>
-    void
-    set_column_names_impl(const std::array<std::string, sizeof...(Ts)>& names)
-    {
-        auto& s = std::get<Ind>(m_columns);
-        s.set_name(names[Ind]);
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            set_column_names_impl<Ind + 1>(names);
-        }
-    }
+    void set_column_names_impl(const std::array<std::string, sizeof...(Ts)>& names);
 
     template<size_t Ind, typename U, typename... Us>
-    void
-    set_column_names_impl(const U& colname, const Us&... colnames)
-    {
-        auto& s = std::get<Ind>(m_columns);
-        s.set_name(colname);
-        if constexpr (sizeof...(Us) > 0) {
-            set_column_names_impl<Ind + 1, Us...>(colnames...);
-        }
-    }
+    void set_column_names_impl(const U& colname, const Us&... colnames);
 
     template<size_t Ind, typename U, typename... Us>
-    size_t
-    size_impl_with_check() const
-    {
-        const series<U>& series = std::get<Ind>(m_columns);
-        size_t s                = series.size();
-        if constexpr (sizeof...(Us) > 0) {
-            size_t si = size_impl_with_check<Ind + 1, Us...>();
-            if (si != s) {
-                throw std::logic_error{ "Inconsistent sizes!" };
-            }
-        }
-        return s;
-    }
+    size_t size_impl_with_check() const;
 
     template<size_t Ind, typename U, typename... Us>
-    void
-    to_string_impl(std::vector<std::vector<std::string>>& strs) const
-    {
-        const series<U>& s               = std::get<Ind>(m_columns);
-        std::vector<std::string> colstrs = s.to_string();
-        strs.push_back(colstrs);
-        if constexpr (sizeof...(Us) > 0) {
-            to_string_impl<Ind + 1, Us...>(strs);
-        }
-    }
+    void to_string_impl(std::vector<std::vector<std::string>>& strs) const;
 
     template<size_t Ind = 0>
-    void
-    unref()
-    {
-        using T      = typename detail::pack_element<Ind, Ts...>::type;
-        series<T>& s = std::get<Ind>(m_columns);
-        s.unref();
-        if constexpr (Ind + 1 < sizeof...(Ts)) {
-            unref<Ind + 1>();
-        }
-    }
+    void unref();
 
     template<typename... Us>
     friend std::ostream& operator<<(std::ostream&, const frame<Us...>&);
@@ -1175,53 +476,7 @@ private:
     std::tuple<series<Ts>...> m_columns;
 };
 
-template<typename... Ts>
-std::ostream&
-operator<<(std::ostream& o, const frame<Ts...>& f)
-{
-    std::ios_base::fmtflags fl(o.flags());
-
-    std::vector<std::vector<std::string>> uf = f.to_string();
-    auto names                               = f.column_names();
-    auto widths                              = detail::get_max_string_lengths(uf);
-    constexpr size_t num_columns             = sizeof...(Ts);
-    const size_t num_rows                    = f.size();
-
-    auto gutter_width = num_rows > 0 ? static_cast<size_t>(std::ceil(std::log10(num_rows))) + 1 : 1;
-
-    o << std::boolalpha;
-    o << detail::get_emptyspace(gutter_width);
-    for (size_t i = 0; i < num_columns; ++i) {
-        auto& name  = names[i];
-        auto& width = widths[i];
-        width       = std::max(width, name.size());
-        o << "| " << std::setw(width) << name << " ";
-    }
-    o << "\n";
-
-    o << detail::get_horzrule(gutter_width);
-    for (size_t i = 0; i < num_columns; ++i) {
-        auto& width = widths[i];
-        o << "|" << detail::get_horzrule(width + 2);
-    }
-    o << "\n";
-
-    for (size_t rowind = 0; rowind < num_rows; ++rowind) {
-        o << std::setw(gutter_width) << rowind;
-        for (size_t colind = 0; colind < num_columns; ++colind) {
-
-            std::string& datum = uf[colind][rowind];
-            auto width         = widths[colind];
-
-            o << "| " << std::setw(width) << datum << " ";
-        }
-        o << "\n";
-    }
-
-    o.flags(fl);
-    return o;
-}
-
 } // namespace mf
+
 
 #endif // INCLUDED_mainframe_frame_h
