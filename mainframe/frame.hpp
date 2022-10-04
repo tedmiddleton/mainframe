@@ -78,85 +78,86 @@ public:
     using value_type             = _row_proxy<false, Ts...>;
     using const_value_type       = _row_proxy<true, Ts...>;
 
-    frame()                        = default;
-    frame(const frame&)            = default;
-    frame(frame&&)                 = default;
-    frame& operator=(const frame&) = default;
-    frame& operator=(frame&&)      = default;
-
-    /// Append one frame to this one and return a new frame non-destructively.
-    /// This will necessarily trigger an "unref" (copy) of this @ref frame's
-    /// data.
-    ///
-    ///     frame_row<year_month, int, double> fr1;
-    ///     frame_row<year_month, int, double> fr2;
-    ///     fr1.push_back(2022_y/11, 1, 3.14);
-    ///     fr2.push_back(2022_y/12, 2, 0.007297);
-    ///
-    ///     auto fr3 = fr1 + fr2;
-    ///
-    frame<Ts...> operator+(const frame<Ts...>& other) const;
+    frame()             = default;
+    frame(const frame&) = default;
+    frame(frame&&)      = default;
+    frame&
+    operator=(const frame&) = default;
+    frame&
+    operator=(frame&&) = default;
 
     /// Requests a row iterator pointing to the first row of the frame. Note
     /// that this is a nonconst-iterator which means that any underlying series
     /// with a reference count greater than 1 will be copied first.
     ///
-    iterator begin();
+    iterator
+    begin();
 
     /// Requests a row iterator pointing just past the last row of the frame. Note
     /// that this is a nonconst-iterator which means that any underlying series
     /// with a reference count greater than 1 will be copied first.
     ///
-    iterator end();
+    iterator
+    end();
 
     /// Requests a row iterator pointing to the first row of the frame.
     ///
-    const_iterator begin() const;
+    const_iterator
+    begin() const;
 
     /// Requests a row iterator pointing just past the last row of the frame.
     ///
-    const_iterator end() const;
+    const_iterator
+    end() const;
 
     /// Requests a row iterator pointing to the first row of the frame.
     ///
-    const_iterator cbegin() const;
+    const_iterator
+    cbegin() const;
 
     /// Requests a row iterator pointing just past the last row of the frame.
     ///
-    const_iterator cend() const;
+    const_iterator
+    cend() const;
 
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the last row. This operation will unref the
     /// dataframe.
     ///
-    reverse_iterator rbegin();
+    reverse_iterator
+    rbegin();
 
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the place in memory just before the first row.
     /// This operation will unref the dataframe.
     ///
-    reverse_iterator rend();
+    reverse_iterator
+    rend();
 
     /// Requests a reverse (will increment from the last row to the first) const
     /// row iterator that points to the last row.
     ///
-    const_reverse_iterator rbegin() const;
+    const_reverse_iterator
+    rbegin() const;
 
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the place in memory just before the first row.
     /// This operation will unref the dataframe.
     ///
-    const_reverse_iterator rend() const;
+    const_reverse_iterator
+    rend() const;
 
     /// Requests a reverse (will increment from the last row to the first) const
     /// row iterator that points to the last row.
     ///
-    const_reverse_iterator crbegin() const;
+    const_reverse_iterator
+    crbegin() const;
 
     /// Requests a reverse (will increment from the last row to the first) row
     /// iterator that points to the place in memory just before the first row.
     ///
-    const_reverse_iterator crend() const;
+    const_reverse_iterator
+    crend() const;
 
     /// convert a column to use the missing class mi<> to represent missing
     /// elements
@@ -170,27 +171,32 @@ public:
     ///     fr2.push_back(2022_y/12, 3, 0.007297);
     ///
     template<size_t... Inds>
-    typename detail::add_opt<frame<Ts...>, 0, Inds...>::type allow_missing(
-        columnindex<Inds>... cols) const;
+    typename detail::add_opt<frame<Ts...>, 0, Inds...>::type
+    allow_missing(columnindex<Inds>... cols) const;
 
     /// convert all columns to use the missing class mi<> to represent missing
     /// elements
     ///
-    typename detail::add_all_opt<frame<Ts...>>::type allow_missing() const;
+    typename detail::add_all_opt<frame<Ts...>>::type
+    allow_missing() const;
 
     /// Remove all rows/data from the dataframe
     ///
-    void clear();
+    void
+    clear();
 
     /// Return the @ref series with colname
     ///
-    useries column(const std::string& colname) const;
+    useries
+    column(const std::string& colname) const;
 
     template<size_t Ind>
-    series<typename detail::pack_element<Ind, Ts...>::type>& column();
+    series<typename detail::pack_element<Ind, Ts...>::type>&
+    column();
 
     template<size_t Ind>
-    const series<typename detail::pack_element<Ind, Ts...>::type>& column() const;
+    const series<typename detail::pack_element<Ind, Ts...>::type>&
+    column() const;
 
     template<size_t Ind>
     series<typename detail::pack_element<Ind, Ts...>::type>& column(columnindex<Ind>);
@@ -199,19 +205,22 @@ public:
     const series<typename detail::pack_element<Ind, Ts...>::type>& column(columnindex<Ind>) const;
 
     template<size_t Ind>
-    std::string column_name() const;
+    std::string
+    column_name() const;
 
     template<size_t Ind>
     std::string column_name(columnindex<Ind>) const;
 
-    name_array column_names() const;
+    name_array
+    column_names() const;
 
     template<size_t... Inds>
-    typename detail::rearrange<frame<Ts...>, Inds...>::type columns(
-        columnindex<Inds>... cols) const;
+    typename detail::rearrange<frame<Ts...>, Inds...>::type
+    columns(columnindex<Inds>... cols) const;
 
     template<typename... Us>
-    uframe columns(const Us&... us) const;
+    uframe
+    columns(const Us&... us) const;
 
     template<size_t Ind1, size_t Ind2>
     double corr(terminal<expr_column<Ind1>>, terminal<expr_column<Ind2>>) const;
@@ -228,50 +237,80 @@ public:
     ///     fr2.push_back(2022_y/12, 3, 0.007297);
     ///
     template<size_t... Inds>
-    typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type disallow_missing(
-        columnindex<Inds>... cols) const;
+    typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type
+    disallow_missing(columnindex<Inds>... cols) const;
 
     /// convert all columns to NOT use the missing class mi<> to represent
     /// missing elements
     ///
-    typename detail::remove_all_opt<frame<Ts...>>::type disallow_missing() const;
+    typename detail::remove_all_opt<frame<Ts...>>::type
+    disallow_missing() const;
 
-    frame<Ts...> drop_missing() const;
+    frame<Ts...>
+    drop_missing() const;
 
-    bool empty() const;
+    bool
+    empty() const;
 
-    iterator erase(iterator first, iterator last);
+    iterator
+    erase(iterator first, iterator last);
 
-    iterator erase(iterator pos);
+    iterator
+    erase(iterator pos);
 
-    frame<Ts...> fill_forward() const;
+    frame<Ts...>
+    fill_forward() const;
 
-    frame<Ts...> fill_backward() const;
+    frame<Ts...>
+    fill_backward() const;
 
     template<size_t... Idx>
-    group<index_defn<Idx...>, Ts...> groupby(columnindex<Idx>...) const;
+    group<index_defn<Idx...>, Ts...>
+    groupby(columnindex<Idx>...) const;
 
     template<typename... Us>
-    frame<Ts..., Us...> hcat(frame<Us...> other) const;
+    frame<Ts..., Us...>
+    hcat(frame<Us...> other) const;
 
-    iterator insert(iterator pos, const_iterator first, const_iterator last);
+    iterator
+    insert(iterator pos, const_iterator first, const_iterator last);
 
-    iterator insert(iterator pos, const Ts&... ts);
+    iterator
+    insert(iterator pos, const Ts&... ts);
 
-    iterator insert(iterator pos, size_t count, const Ts&... ts);
+    iterator
+    insert(iterator pos, size_t count, const Ts&... ts);
 
     template<size_t Ind>
     double mean(columnindex<Ind>) const;
 
     template<typename T>
-    frame<Ts..., T> new_series(const std::string& series_name) const;
+    frame<Ts..., T>
+    new_series(const std::string& series_name) const;
 
     template<typename T, typename Ex>
-    frame<Ts..., T> new_series(const std::string& series_name, Ex expr) const;
+    frame<Ts..., T>
+    new_series(const std::string& series_name, Ex expr) const;
 
-    size_t num_columns() const;
+    size_t
+    num_columns() const;
 
-    bool operator==(const frame<Ts...>& other) const;
+    /// Append one frame to this one and return a new frame non-destructively.
+    /// This will necessarily trigger an "unref" (copy) of this @ref frame's
+    /// data.
+    ///
+    ///     frame_row<year_month, int, double> fr1;
+    ///     frame_row<year_month, int, double> fr2;
+    ///     fr1.push_back(2022_y/11, 1, 3.14);
+    ///     fr2.push_back(2022_y/12, 2, 0.007297);
+    ///
+    ///     auto fr3 = fr1 + fr2;
+    ///
+    frame<Ts...>
+    operator+(const frame<Ts...>& other) const;
+
+    bool
+    operator==(const frame<Ts...>& other) const;
 
     // row-selector operator[]. One tricky bit is that rows(Ex) which it calls
     // only requires is_expression<Ex> whereas here we require
@@ -286,16 +325,18 @@ public:
     //   fr[_1 == true];
     //
     template<typename Ex>
-    std::enable_if_t<is_complex_expression<Ex>::value, frame<Ts...>> operator[](Ex ex) const;
+    std::enable_if_t<is_complex_expression<Ex>::value, frame<Ts...>>
+    operator[](Ex ex) const;
 
-    frame<Ts...> operator[](size_t ind) const;
+    frame<Ts...>
+    operator[](size_t ind) const;
 
 #if __cplusplus <= 202002L
     // Note that this will only work up to c++23, where we can be more sensible
     // about multiple arguments to operator[]
     template<size_t... Inds>
-    typename detail::rearrange<frame<Ts...>, Inds...>::type operator[](
-        columnindexpack<Inds...> cols) const;
+    typename detail::rearrange<frame<Ts...>, Inds...>::type
+    operator[](columnindexpack<Inds...> cols) const;
 
     template<size_t Ind>
     typename detail::rearrange<frame<Ts...>, Ind>::type operator[](columnindex<Ind>) const;
@@ -303,12 +344,13 @@ public:
 #else
 
     template<size_t... Inds>
-    typename detail::rearrange<frame<Ts...>, Inds...>::type operator[](
-        columnindex<Inds>... cols) const;
+    typename detail::rearrange<frame<Ts...>, Inds...>::type
+    operator[](columnindex<Inds>... cols) const;
 
 #endif
 
-    void pop_back();
+    void
+    pop_back();
 
     ///
     /// Append a row from another frame to the end of this frame.
@@ -319,7 +361,8 @@ public:
     ///       fr.push_back( fr_other[0] );
     ///
     template<bool IsConst, typename... Us, typename... Vs>
-    void push_back(const _row_proxy<IsConst, Us...>& fr, const Vs&... args);
+    void
+    push_back(const _row_proxy<IsConst, Us...>& fr, const Vs&... args);
 
     ///
     /// Append an explicitly declared frame_row to the end of the frame be
@@ -332,7 +375,8 @@ public:
     ///     f.push_back(fr);
     ///
     template<typename... Us, typename... Vs>
-    void push_back(const frame_row<Us...>& fr, const Vs&... args);
+    void
+    push_back(const frame_row<Us...>& fr, const Vs&... args);
 
     ///
     /// Append a flexible list of objects to the end of this frame as a new row
@@ -341,136 +385,180 @@ public:
     ///     fr.push_back(2022_y/12, 1, 3.14);
     ///
     template<typename U, typename... Us>
-    void push_back(U first_arg, Us... args);
+    void
+    push_back(U first_arg, Us... args);
 
-    void reserve(size_t newsize);
+    void
+    reserve(size_t newsize);
 
-    void resize(size_t newsize);
+    void
+    resize(size_t newsize);
 
-    frame<Ts...> reversed() const;
+    frame<Ts...>
+    reversed() const;
 
     template<size_t... Inds>
-    void reverse_sort(columnindex<Inds>...);
+    void
+    reverse_sort(columnindex<Inds>...);
 
     template<size_t... Inds>
-    frame<Ts...> reverse_sorted(columnindex<Inds>... ci);
+    frame<Ts...>
+    reverse_sorted(columnindex<Inds>... ci);
 
-    _row_proxy<false, Ts...> row(size_t ind);
+    _row_proxy<false, Ts...>
+    row(size_t ind);
 
-    _row_proxy<true, Ts...> row(size_t ind) const;
+    _row_proxy<true, Ts...>
+    row(size_t ind) const;
 
     template<typename Ex>
-    std::enable_if_t<is_expression<Ex>::value, frame<Ts...>> rows(Ex ex) const;
+    std::enable_if_t<is_expression<Ex>::value, frame<Ts...>>
+    rows(Ex ex) const;
 
-    void set_column_names(const std::vector<std::string>& names);
+    void
+    set_column_names(const std::vector<std::string>& names);
 
-    void set_column_names(const name_array& names);
+    void
+    set_column_names(const name_array& names);
 
     template<typename... Us>
-    void set_column_names(const Us&... colnames);
+    void
+    set_column_names(const Us&... colnames);
 
-    size_t size() const;
+    size_t
+    size() const;
 
     template<size_t... Inds>
-    void sort(columnindex<Inds>...);
+    void
+    sort(columnindex<Inds>...);
 
     template<size_t... Inds>
-    frame<Ts...> sorted(columnindex<Inds>... ci);
+    frame<Ts...>
+    sorted(columnindex<Inds>... ci);
 
-    std::vector<std::vector<std::string>> to_string() const;
+    std::vector<std::vector<std::string>>
+    to_string() const;
 
 private:
     template<size_t Ind, size_t... Inds>
-    void allow_missing_impl(uframe& uf, columnindex<Inds>... cols) const;
+    void
+    allow_missing_impl(uframe& uf, columnindex<Inds>... cols) const;
 
     template<size_t Ind, typename U, typename... Us>
-    void allow_missing_impl(uframe& uf) const;
+    void
+    allow_missing_impl(uframe& uf) const;
 
     template<size_t Ind>
-    void clear_impl();
+    void
+    clear_impl();
 
     template<size_t Ind, typename U, typename... Us>
-    useries column_impl(const std::string& colname) const;
+    useries
+    column_impl(const std::string& colname) const;
 
     template<size_t Ind>
-    void column_names_impl(std::array<std::string, sizeof...(Ts)>& out) const;
+    void
+    column_names_impl(std::array<std::string, sizeof...(Ts)>& out) const;
 
     template<typename U, typename... Us>
-    void columns_impl(uframe& f, const U& u, const Us&... us) const;
+    void
+    columns_impl(uframe& f, const U& u, const Us&... us) const;
 
     template<size_t Ind, size_t... RemInds>
-    void columns_impl(uframe& f, columnindexpack<Ind, RemInds...>) const;
+    void
+    columns_impl(uframe& f, columnindexpack<Ind, RemInds...>) const;
 
     template<size_t Ind, size_t... Inds>
-    void disallow_missing_impl(uframe& uf, columnindex<Inds>... cols) const;
+    void
+    disallow_missing_impl(uframe& uf, columnindex<Inds>... cols) const;
 
     template<size_t Ind, typename U, typename... Us>
-    void disallow_missing_impl(uframe& uf) const;
+    void
+    disallow_missing_impl(uframe& uf) const;
 
     template<size_t Ind>
-    void erase_impl(std::tuple<Ts*...>& ptrs, iterator pos);
+    void
+    erase_impl(std::tuple<Ts*...>& ptrs, iterator pos);
 
     template<size_t Ind>
-    void erase_impl(std::tuple<Ts*...>& ptrs, iterator first, iterator last);
+    void
+    erase_impl(std::tuple<Ts*...>& ptrs, iterator first, iterator last);
 
     template<size_t Ind>
-    bool eq_impl(const frame<Ts...>& other) const;
+    bool
+    eq_impl(const frame<Ts...>& other) const;
 
     template<size_t Ind, typename U, typename... Us>
-    void insert_impl(
-        std::tuple<Ts*...>& ptrs, iterator pos, size_t count, const U& u, const Us&... us);
+    void
+    insert_impl(std::tuple<Ts*...>& ptrs, iterator pos, size_t count, const U& u, const Us&... us);
 
     template<size_t Ind>
-    void insert_impl(
-        std::tuple<Ts*...>& ptrs, iterator pos, const_iterator first, const_iterator last);
+    void
+    insert_impl(std::tuple<Ts*...>& ptrs, iterator pos, const_iterator first, const_iterator last);
 
     template<size_t Ind>
-    void pop_back_impl();
+    void
+    pop_back_impl();
 
-    void populate(const std::vector<useries>& columns);
+    void
+    populate(const std::vector<useries>& columns);
 
     template<size_t Ind, typename U, typename... Us>
-    void populate_impl(const std::vector<useries>& columns);
+    void
+    populate_impl(const std::vector<useries>& columns);
 
     template<size_t Ind>
-    void push_back_multiple_empty_impl();
+    void
+    push_back_multiple_empty_impl();
 
     template<size_t Ind, typename V, typename... Vs>
-    void push_back_multiple_args_impl(V arg, const Vs&... args);
+    void
+    push_back_multiple_args_impl(V arg, const Vs&... args);
 
     template<size_t Ind, bool IsConst, template<bool, typename...> typename Row, typename... Us,
         typename... Vs>
-    void push_back_multiple_row_impl(const Row<IsConst, Us...>& fr, const Vs&... args);
+    void
+    push_back_multiple_row_impl(const Row<IsConst, Us...>& fr, const Vs&... args);
 
     template<size_t Ind, typename U, typename... Us>
-    void push_back_impl(const U& u, const Us&... us);
+    void
+    push_back_impl(const U& u, const Us&... us);
 
     template<size_t Ind>
-    void reserve_impl(size_t newsize);
+    void
+    reserve_impl(size_t newsize);
 
     template<size_t Ind>
-    void resize_impl(size_t newsize);
+    void
+    resize_impl(size_t newsize);
 
     template<size_t Ind>
-    void set_column_names_impl(const std::vector<std::string>& names);
+    void
+    set_column_names_impl(const std::vector<std::string>& names);
 
     template<size_t Ind>
-    void set_column_names_impl(const std::array<std::string, sizeof...(Ts)>& names);
+    void
+    set_column_names_impl(const std::array<std::string, sizeof...(Ts)>& names);
 
     template<size_t Ind, typename U, typename... Us>
-    void set_column_names_impl(const U& colname, const Us&... colnames);
+    void
+    set_column_names_impl(const U& colname, const Us&... colnames);
 
     template<size_t Ind, typename U, typename... Us>
-    size_t size_impl_with_check() const;
+    size_t
+    size_impl_with_check() const;
 
     template<size_t Ind, typename U, typename... Us>
-    void to_string_impl(std::vector<std::vector<std::string>>& strs) const;
+    void
+    to_string_impl(std::vector<std::vector<std::string>>& strs) const;
 
     template<size_t Ind = 0>
-    void unref();
+    void
+    unref();
 
     template<typename... Us>
-    friend std::ostream& operator<<(std::ostream&, const frame<Us...>&);
+    friend std::ostream&
+    operator<<(std::ostream&, const frame<Us...>&);
     friend class uframe;
 
     std::tuple<series<Ts>...> m_columns;

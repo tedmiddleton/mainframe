@@ -35,15 +35,6 @@ namespace mf
 {
 
 template<typename... Ts>
-frame<Ts...>
-frame<Ts...>::operator+(const frame<Ts...>& other) const
-{
-    frame<Ts...> out{ *this };
-    out.insert(out.end(), other.cbegin(), other.cend());
-    return out;
-}
-
-template<typename... Ts>
 typename frame<Ts...>::iterator
 frame<Ts...>::begin()
 {
@@ -486,6 +477,15 @@ size_t
 frame<Ts...>::num_columns() const
 {
     return sizeof...(Ts);
+}
+
+template<typename... Ts>
+frame<Ts...>
+frame<Ts...>::operator+(const frame<Ts...>& other) const
+{
+    frame<Ts...> out{ *this };
+    out.insert(out.end(), other.cbegin(), other.cend());
+    return out;
 }
 
 template<typename... Ts>

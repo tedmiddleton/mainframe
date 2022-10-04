@@ -6,7 +6,7 @@ AllowAllArgumentsOnNextLine: true
 AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortFunctionsOnASingleLine: Empty
-AlwaysBreakAfterReturnType: AllDefinitions
+AlwaysBreakAfterReturnType: All
 AlwaysBreakTemplateDeclarations: Yes
 BasedOnStyle: WebKit
 BinPackArguments: true

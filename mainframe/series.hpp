@@ -69,162 +69,226 @@ public:
     virtual ~series() = default;
 
     // operator=
-    series& operator=(series&& other);
+    series&
+    operator=(series&& other);
 
-    series& operator=(const series&) = default;
+    series&
+    operator=(const series&) = default;
 
-    series& operator=(std::initializer_list<T> init);
+    series&
+    operator=(std::initializer_list<T> init);
 
     template<typename U = T, std::enable_if_t<detail::is_missing<U>::value, bool> = true>
-    series<T> allow_missing() const;
+    series<T>
+    allow_missing() const;
 
     template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
-    series<mi<T>> allow_missing() const;
+    series<mi<T>>
+    allow_missing() const;
 
     // This requires default-construction. Can we do better?
     template<typename U = T,
         std::enable_if_t<detail::is_missing<U>::value &&
                 std::is_default_constructible<typename U::value_type>::value,
             bool>       = true>
-    series<typename U::value_type> disallow_missing() const;
+    series<typename U::value_type>
+    disallow_missing() const;
 
     template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
-    series<T> disallow_missing() const;
+    series<T>
+    disallow_missing() const;
 
     // assign
-    void assign(size_t count, const T& value);
+    void
+    assign(size_t count, const T& value);
 
     template<typename InputIt>
-    void assign(InputIt inbegin, InputIt inend);
+    void
+    assign(InputIt inbegin, InputIt inend);
 
-    void assign(std::initializer_list<T> init);
+    void
+    assign(std::initializer_list<T> init);
 
     // at
-    reference at(size_t n);
+    reference
+    at(size_t n);
 
-    const_reference at(size_t n) const;
+    const_reference
+    at(size_t n) const;
 
     // operator[]
     // It seems like this should really be an unref-ing operation, otherwise
     // there's the possibility that the user will damage multiple series.
-    reference operator[](size_t n);
+    reference
+    operator[](size_t n);
 
-    const_reference operator[](size_t n) const;
+    const_reference
+    operator[](size_t n) const;
 
     // front & back
-    reference front();
+    reference
+    front();
 
-    const_reference front() const;
+    const_reference
+    front() const;
 
-    reference back();
+    reference
+    back();
 
-    const_reference back() const;
+    const_reference
+    back() const;
 
     // data
-    T* data();
+    T*
+    data();
 
-    const T* data() const;
+    const T*
+    data() const;
 
     // begin, cbegin, end, cend
-    iterator begin();
+    iterator
+    begin();
 
-    const_iterator begin() const;
+    const_iterator
+    begin() const;
 
-    const_iterator cbegin() const;
+    const_iterator
+    cbegin() const;
 
-    iterator end();
+    iterator
+    end();
 
-    const_iterator end() const;
+    const_iterator
+    end() const;
 
-    const_iterator cend() const;
+    const_iterator
+    cend() const;
 
     // rbegin, crbegin, rend, crend
-    reverse_iterator rbegin();
+    reverse_iterator
+    rbegin();
 
-    const_reverse_iterator rbegin() const;
+    const_reverse_iterator
+    rbegin() const;
 
-    const_reverse_iterator crbegin() const;
+    const_reverse_iterator
+    crbegin() const;
 
-    reverse_iterator rend();
+    reverse_iterator
+    rend();
 
-    const_reverse_iterator rend() const;
+    const_reverse_iterator
+    rend() const;
 
-    const_reverse_iterator crend() const;
+    const_reverse_iterator
+    crend() const;
 
     // capacity & modifiers
-    bool empty() const;
+    bool
+    empty() const;
 
-    size_t size() const;
+    size_t
+    size() const;
 
-    size_t max_size() const;
+    size_t
+    max_size() const;
 
-    void reserve(size_t _size);
+    void
+    reserve(size_t _size);
 
-    size_t capacity() const;
+    size_t
+    capacity() const;
 
-    void shrink_to_fit();
+    void
+    shrink_to_fit();
 
-    void clear();
+    void
+    clear();
 
     // insert & emplace
-    iterator insert(const_iterator pos, const T& value);
+    iterator
+    insert(const_iterator pos, const T& value);
 
-    iterator insert(const_iterator pos, T&& value);
+    iterator
+    insert(const_iterator pos, T&& value);
 
-    iterator insert(const_iterator pos, size_t count, const T& value);
+    iterator
+    insert(const_iterator pos, size_t count, const T& value);
 
     template<typename InputIt>
-    iterator insert(const_iterator pos, InputIt first, InputIt last);
+    iterator
+    insert(const_iterator pos, InputIt first, InputIt last);
 
-    iterator insert(const_iterator pos, std::initializer_list<T> init);
+    iterator
+    insert(const_iterator pos, std::initializer_list<T> init);
 
     template<class... Args>
-    iterator emplace(const_iterator pos, Args&&... args);
+    iterator
+    emplace(const_iterator pos, Args&&... args);
 
     // erase
-    iterator erase(const_iterator pos);
+    iterator
+    erase(const_iterator pos);
 
-    iterator erase(const_iterator first, const_iterator last);
+    iterator
+    erase(const_iterator first, const_iterator last);
 
     // push_back, emplace_back, pop_back
-    void push_back(const T& value);
+    void
+    push_back(const T& value);
 
-    void push_back(T&& value);
+    void
+    push_back(T&& value);
 
     template<typename... Args>
-    reference emplace_back(Args&&... args);
+    reference
+    emplace_back(Args&&... args);
 
-    void pop_back();
+    void
+    pop_back();
 
     // resize
-    void resize(size_t newsize);
+    void
+    resize(size_t newsize);
 
-    void resize(size_t newsize, const T& value);
+    void
+    resize(size_t newsize, const T& value);
 
-    const std::string& name() const;
+    const std::string&
+    name() const;
 
-    void set_name(const std::string& name);
+    void
+    set_name(const std::string& name);
 
-    std::vector<std::string> to_string() const;
+    std::vector<std::string>
+    to_string() const;
 
-    series unique() const;
+    series
+    unique() const;
 
-    size_t use_count() const;
+    size_t
+    use_count() const;
 
-    bool operator==(const series<T>& other) const;
+    bool
+    operator==(const series<T>& other) const;
 
-    bool operator!=(const series<T>& other) const;
+    bool
+    operator!=(const series<T>& other) const;
 
-    void unref();
+    void
+    unref();
 
 private:
-    iterator unref(iterator it);
+    iterator
+    unref(iterator it);
 
-    const_iterator unref(const_iterator it);
+    const_iterator
+    unref(const_iterator it);
 
     friend class useries;
     template<typename U>
-    friend std::ostream& operator<<(std::ostream&, const series<U>&);
+    friend std::ostream&
+    operator<<(std::ostream&, const series<U>&);
 
     std::string m_name;
     std::shared_ptr<series_vector<T>> m_sharedvec;
