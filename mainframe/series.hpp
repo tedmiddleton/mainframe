@@ -68,83 +68,6 @@ public:
 
     virtual ~series() = default;
 
-    // operator=
-    series&
-    operator=(series&& other);
-
-    series&
-    operator=(const series&) = default;
-
-    series&
-    operator=(std::initializer_list<T> init);
-
-    template<typename U = T, std::enable_if_t<detail::is_missing<U>::value, bool> = true>
-    series<T>
-    allow_missing() const;
-
-    template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
-    series<mi<T>>
-    allow_missing() const;
-
-    // This requires default-construction. Can we do better?
-    template<typename U = T,
-        std::enable_if_t<detail::is_missing<U>::value &&
-                std::is_default_constructible<typename U::value_type>::value,
-            bool>       = true>
-    series<typename U::value_type>
-    disallow_missing() const;
-
-    template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
-    series<T>
-    disallow_missing() const;
-
-    // assign
-    void
-    assign(size_t count, const T& value);
-
-    template<typename InputIt>
-    void
-    assign(InputIt inbegin, InputIt inend);
-
-    void
-    assign(std::initializer_list<T> init);
-
-    // at
-    reference
-    at(size_t n);
-
-    const_reference
-    at(size_t n) const;
-
-    // operator[]
-    // It seems like this should really be an unref-ing operation, otherwise
-    // there's the possibility that the user will damage multiple series.
-    reference
-    operator[](size_t n);
-
-    const_reference
-    operator[](size_t n) const;
-
-    // front & back
-    reference
-    front();
-
-    const_reference
-    front() const;
-
-    reference
-    back();
-
-    const_reference
-    back() const;
-
-    // data
-    T*
-    data();
-
-    const T*
-    data() const;
-
     // begin, cbegin, end, cend
     iterator
     begin();
@@ -183,27 +106,88 @@ public:
     const_reverse_iterator
     crend() const;
 
-    // capacity & modifiers
-    bool
-    empty() const;
+    template<typename U = T, std::enable_if_t<detail::is_missing<U>::value, bool> = true>
+    series<T>
+    allow_missing() const;
 
-    size_t
-    size() const;
+    template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
+    series<mi<T>>
+    allow_missing() const;
 
-    size_t
-    max_size() const;
+    // assign
+    void
+    assign(std::initializer_list<T> init);
 
     void
-    reserve(size_t _size);
+    assign(size_t count, const T& value);
+
+    template<typename InputIt>
+    void
+    assign(InputIt inbegin, InputIt inend);
+
+    // at
+    reference
+    at(size_t n);
+
+    const_reference
+    at(size_t n) const;
+
+    reference
+    back();
+
+    const_reference
+    back() const;
 
     size_t
     capacity() const;
 
     void
-    shrink_to_fit();
-
-    void
     clear();
+
+    // data
+    T*
+    data();
+
+    const T*
+    data() const;
+
+    // This requires default-construction. Can we do better?
+    template<typename U = T,
+        std::enable_if_t<detail::is_missing<U>::value &&
+                std::is_default_constructible<typename U::value_type>::value,
+            bool>       = true>
+    series<typename U::value_type>
+    disallow_missing() const;
+
+    template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
+    series<T>
+    disallow_missing() const;
+
+    template<class... Args>
+    iterator
+    emplace(const_iterator pos, Args&&... args);
+
+    template<typename... Args>
+    reference
+    emplace_back(Args&&... args);
+
+    // capacity & modifiers
+    bool
+    empty() const;
+
+    // erase
+    iterator
+    erase(const_iterator pos);
+
+    iterator
+    erase(const_iterator first, const_iterator last);
+
+    // front & back
+    reference
+    front();
+
+    const_reference
+    front() const;
 
     // insert & emplace
     iterator
@@ -222,16 +206,36 @@ public:
     iterator
     insert(const_iterator pos, std::initializer_list<T> init);
 
-    template<class... Args>
-    iterator
-    emplace(const_iterator pos, Args&&... args);
+    size_t
+    max_size() const;
 
-    // erase
-    iterator
-    erase(const_iterator pos);
+    const std::string&
+    name() const;
 
-    iterator
-    erase(const_iterator first, const_iterator last);
+    // operator=
+    series&
+    operator=(series&& other);
+
+    series&
+    operator=(const series&) = default;
+
+    series&
+    operator=(std::initializer_list<T> init);
+
+    // operator[]
+    // It seems like this should really be an unref-ing operation, otherwise
+    // there's the possibility that the user will damage multiple series.
+    reference
+    operator[](size_t n);
+
+    const_reference
+    operator[](size_t n) const;
+
+    bool
+    operator==(const series<T>& other) const;
+
+    bool
+    operator!=(const series<T>& other) const;
 
     // push_back, emplace_back, pop_back
     void
@@ -240,12 +244,11 @@ public:
     void
     push_back(T&& value);
 
-    template<typename... Args>
-    reference
-    emplace_back(Args&&... args);
-
     void
     pop_back();
+
+    void
+    reserve(size_t _size);
 
     // resize
     void
@@ -254,11 +257,14 @@ public:
     void
     resize(size_t newsize, const T& value);
 
-    const std::string&
-    name() const;
-
     void
     set_name(const std::string& name);
+
+    void
+    shrink_to_fit();
+
+    size_t
+    size() const;
 
     std::vector<std::string>
     to_string() const;
@@ -268,12 +274,6 @@ public:
 
     size_t
     use_count() const;
-
-    bool
-    operator==(const series<T>& other) const;
-
-    bool
-    operator!=(const series<T>& other) const;
 
     void
     unref();

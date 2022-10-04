@@ -66,172 +66,6 @@ series<T>::series(std::initializer_list<T> init)
 {}
 
 template<typename T>
-series<T>&
-series<T>::operator=(series&& other)
-{
-    m_name            = other.m_name;
-    m_sharedvec       = std::move(other.m_sharedvec);
-    other.m_sharedvec = std::make_shared<series_vector<T>>();
-    return *this;
-}
-
-template<typename T>
-series<T>&
-series<T>::operator=(std::initializer_list<T> init)
-{
-    m_sharedvec = std::make_shared<series_vector<T>>(init);
-    return *this;
-}
-
-template<typename T>
-template<typename U, std::enable_if_t<detail::is_missing<U>::value, bool>>
-series<T>
-series<T>::allow_missing() const
-{
-    return *this;
-}
-
-template<typename T>
-template<typename U, std::enable_if_t<!detail::is_missing<U>::value, bool>>
-series<mi<T>>
-series<T>::allow_missing() const
-{
-    series<mi<T>> os;
-    for (auto& e : *m_sharedvec) {
-        os.push_back(e);
-    }
-    os.set_name(name());
-    return os;
-}
-
-template<typename T>
-template<typename U,
-    std::enable_if_t<detail::is_missing<U>::value &&
-            std::is_default_constructible<typename U::value_type>::value,
-        bool>>
-series<typename U::value_type>
-series<T>::disallow_missing() const
-{
-    using V = typename T::value_type;
-    series<V> s;
-    for (auto& e : *m_sharedvec) {
-        if (e.has_value()) {
-            s.push_back(*e);
-        }
-        else {
-            s.push_back(V{});
-        }
-    }
-    s.set_name(name());
-    return s;
-}
-
-template<typename T>
-template<typename U, std::enable_if_t<!detail::is_missing<U>::value, bool>>
-series<T>
-series<T>::disallow_missing() const
-{
-    return *this;
-}
-
-template<typename T>
-void
-series<T>::assign(size_t count, const T& value)
-{
-    m_sharedvec = std::make_shared<series_vector<T>>(count, value);
-}
-
-template<typename T>
-template<typename InputIt>
-void
-series<T>::assign(InputIt inbegin, InputIt inend)
-{
-    m_sharedvec = std::make_shared<series_vector<T>>(inbegin, inend);
-}
-
-template<typename T>
-void
-series<T>::assign(std::initializer_list<T> init)
-{
-    m_sharedvec = std::make_shared<series_vector<T>>(init);
-}
-
-template<typename T>
-typename series<T>::reference
-series<T>::at(size_t n)
-{
-    unref();
-    return m_sharedvec->at(n);
-}
-
-template<typename T>
-typename series<T>::const_reference
-series<T>::at(size_t n) const
-{
-    return m_sharedvec->at(n);
-}
-
-template<typename T>
-typename series<T>::reference
-series<T>::operator[](size_t n)
-{
-    unref();
-    return (*m_sharedvec)[n];
-}
-
-template<typename T>
-typename series<T>::const_reference
-series<T>::operator[](size_t n) const
-{
-    return (*m_sharedvec)[n];
-}
-
-template<typename T>
-typename series<T>::reference
-series<T>::front()
-{
-    unref();
-    return m_sharedvec->front();
-}
-
-template<typename T>
-typename series<T>::const_reference
-series<T>::front() const
-{
-    return m_sharedvec->front();
-}
-
-template<typename T>
-typename series<T>::reference
-series<T>::back()
-{
-    unref();
-    return m_sharedvec->back();
-}
-
-template<typename T>
-typename series<T>::const_reference
-series<T>::back() const
-{
-    return m_sharedvec->back();
-}
-
-template<typename T>
-T*
-series<T>::data()
-{
-    unref();
-    return m_sharedvec->data();
-}
-
-template<typename T>
-const T*
-series<T>::data() const
-{
-    return m_sharedvec->data();
-}
-
-template<typename T>
 typename series<T>::iterator
 series<T>::begin()
 {
@@ -320,31 +154,76 @@ series<T>::crend() const
 }
 
 template<typename T>
-bool
-series<T>::empty() const
+template<typename U, std::enable_if_t<detail::is_missing<U>::value, bool>>
+series<T>
+series<T>::allow_missing() const
 {
-    return m_sharedvec->empty();
+    return *this;
 }
 
 template<typename T>
-size_t
-series<T>::size() const
+template<typename U, std::enable_if_t<!detail::is_missing<U>::value, bool>>
+series<mi<T>>
+series<T>::allow_missing() const
 {
-    return m_sharedvec->size();
-}
-
-template<typename T>
-size_t
-series<T>::max_size() const
-{
-    return m_sharedvec->max_size();
+    series<mi<T>> os;
+    for (auto& e : *m_sharedvec) {
+        os.push_back(e);
+    }
+    os.set_name(name());
+    return os;
 }
 
 template<typename T>
 void
-series<T>::reserve(size_t _size)
+series<T>::assign(size_t count, const T& value)
 {
-    m_sharedvec->reserve(_size);
+    m_sharedvec = std::make_shared<series_vector<T>>(count, value);
+}
+
+template<typename T>
+template<typename InputIt>
+void
+series<T>::assign(InputIt inbegin, InputIt inend)
+{
+    m_sharedvec = std::make_shared<series_vector<T>>(inbegin, inend);
+}
+
+template<typename T>
+void
+series<T>::assign(std::initializer_list<T> init)
+{
+    m_sharedvec = std::make_shared<series_vector<T>>(init);
+}
+
+template<typename T>
+typename series<T>::reference
+series<T>::at(size_t n)
+{
+    unref();
+    return m_sharedvec->at(n);
+}
+
+template<typename T>
+typename series<T>::const_reference
+series<T>::at(size_t n) const
+{
+    return m_sharedvec->at(n);
+}
+
+template<typename T>
+typename series<T>::reference
+series<T>::back()
+{
+    unref();
+    return m_sharedvec->back();
+}
+
+template<typename T>
+typename series<T>::const_reference
+series<T>::back() const
+{
+    return m_sharedvec->back();
 }
 
 template<typename T>
@@ -356,18 +235,119 @@ series<T>::capacity() const
 
 template<typename T>
 void
-series<T>::shrink_to_fit()
-{
-    m_sharedvec->shrink_to_fit();
-}
-
-template<typename T>
-void
 series<T>::clear()
 {
     m_sharedvec = std::make_shared<series_vector<T>>();
 }
 
+template<typename T>
+T*
+series<T>::data()
+{
+    unref();
+    return m_sharedvec->data();
+}
+
+template<typename T>
+const T*
+series<T>::data() const
+{
+    return m_sharedvec->data();
+}
+
+template<typename T>
+template<typename U,
+    std::enable_if_t<detail::is_missing<U>::value &&
+            std::is_default_constructible<typename U::value_type>::value,
+        bool>>
+series<typename U::value_type>
+series<T>::disallow_missing() const
+{
+    using V = typename T::value_type;
+    series<V> s;
+    for (auto& e : *m_sharedvec) {
+        if (e.has_value()) {
+            s.push_back(*e);
+        }
+        else {
+            s.push_back(V{});
+        }
+    }
+    s.set_name(name());
+    return s;
+}
+
+template<typename T>
+template<typename U, std::enable_if_t<!detail::is_missing<U>::value, bool>>
+series<T>
+series<T>::disallow_missing() const
+{
+    return *this;
+}
+
+template<typename T>
+template<class... Args>
+typename series<T>::iterator
+series<T>::emplace(typename series<T>::const_iterator pos, Args&&... args)
+{
+    if (m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend()) {
+        pos = unref(pos);
+    }
+    return m_sharedvec->emplace(pos, std::forward<T>(args...));
+}
+
+template<typename T>
+template<typename... Args>
+typename series<T>::reference
+series<T>::emplace_back(Args&&... args)
+{
+    unref();
+    return m_sharedvec->emplace_back(std::forward<T>(args...));
+}
+
+template<typename T>
+bool
+series<T>::empty() const
+{
+    return m_sharedvec->empty();
+}
+
+template<typename T>
+typename series<T>::iterator
+series<T>::erase(typename series<T>::const_iterator pos)
+{
+    if (m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend()) {
+        pos = unref(pos);
+    }
+    return m_sharedvec->erase(pos);
+}
+
+template<typename T>
+typename series<T>::iterator
+series<T>::erase(typename series<T>::const_iterator first, typename series<T>::const_iterator last)
+{
+    if (m_sharedvec->cbegin() <= first && first < last && last <= m_sharedvec->cend()) {
+        auto diff = last - first;
+        first     = unref(first);
+        last      = first + diff;
+    }
+    return m_sharedvec->erase(first, last);
+}
+
+template<typename T>
+typename series<T>::reference
+series<T>::front()
+{
+    unref();
+    return m_sharedvec->front();
+}
+
+template<typename T>
+typename series<T>::const_reference
+series<T>::front() const
+{
+    return m_sharedvec->front();
+}
 
 template<typename T>
 typename series<T>::iterator
@@ -421,39 +401,65 @@ series<T>::insert(typename series<T>::const_iterator pos, std::initializer_list<
 }
 
 template<typename T>
-template<class... Args>
-typename series<T>::iterator
-series<T>::emplace(typename series<T>::const_iterator pos, Args&&... args)
+size_t
+series<T>::max_size() const
 {
-    if (m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend()) {
-        pos = unref(pos);
-    }
-    return m_sharedvec->emplace(pos, std::forward<T>(args...));
-}
-
-
-template<typename T>
-typename series<T>::iterator
-series<T>::erase(typename series<T>::const_iterator pos)
-{
-    if (m_sharedvec->cbegin() <= pos && pos <= m_sharedvec->cend()) {
-        pos = unref(pos);
-    }
-    return m_sharedvec->erase(pos);
+    return m_sharedvec->max_size();
 }
 
 template<typename T>
-typename series<T>::iterator
-series<T>::erase(typename series<T>::const_iterator first, typename series<T>::const_iterator last)
+const std::string&
+series<T>::name() const
 {
-    if (m_sharedvec->cbegin() <= first && first < last && last <= m_sharedvec->cend()) {
-        auto diff = last - first;
-        first     = unref(first);
-        last      = first + diff;
-    }
-    return m_sharedvec->erase(first, last);
+    return m_name;
 }
 
+template<typename T>
+series<T>&
+series<T>::operator=(series&& other)
+{
+    m_name            = other.m_name;
+    m_sharedvec       = std::move(other.m_sharedvec);
+    other.m_sharedvec = std::make_shared<series_vector<T>>();
+    return *this;
+}
+
+template<typename T>
+series<T>&
+series<T>::operator=(std::initializer_list<T> init)
+{
+    m_sharedvec = std::make_shared<series_vector<T>>(init);
+    return *this;
+}
+
+template<typename T>
+typename series<T>::reference
+series<T>::operator[](size_t n)
+{
+    unref();
+    return (*m_sharedvec)[n];
+}
+
+template<typename T>
+typename series<T>::const_reference
+series<T>::operator[](size_t n) const
+{
+    return (*m_sharedvec)[n];
+}
+
+template<typename T>
+bool
+series<T>::operator==(const series<T>& other) const
+{
+    return m_name == other.m_name && *m_sharedvec == *(other.m_sharedvec);
+}
+
+template<typename T>
+bool
+series<T>::operator!=(const series<T>& other) const
+{
+    return m_name != other.m_name || *m_sharedvec != *(other.m_sharedvec);
+}
 
 template<typename T>
 void
@@ -472,20 +478,18 @@ series<T>::push_back(T&& value)
 }
 
 template<typename T>
-template<typename... Args>
-typename series<T>::reference
-series<T>::emplace_back(Args&&... args)
-{
-    unref();
-    return m_sharedvec->emplace_back(std::forward<T>(args...));
-}
-
-template<typename T>
 void
 series<T>::pop_back()
 {
     unref();
     m_sharedvec->pop_back();
+}
+
+template<typename T>
+void
+series<T>::reserve(size_t _size)
+{
+    m_sharedvec->reserve(_size);
 }
 
 template<typename T>
@@ -509,20 +513,25 @@ series<T>::resize(size_t newsize, const T& value)
 }
 
 template<typename T>
-const std::string&
-series<T>::name() const
-{
-    return m_name;
-}
-
-
-template<typename T>
 void
 series<T>::set_name(const std::string& name)
 {
     m_name = name;
 }
 
+template<typename T>
+void
+series<T>::shrink_to_fit()
+{
+    m_sharedvec->shrink_to_fit();
+}
+
+template<typename T>
+size_t
+series<T>::size() const
+{
+    return m_sharedvec->size();
+}
 
 template<typename T>
 std::vector<std::string>
@@ -555,20 +564,6 @@ size_t
 series<T>::use_count() const
 {
     return m_sharedvec.use_count();
-}
-
-template<typename T>
-bool
-series<T>::operator==(const series<T>& other) const
-{
-    return m_name == other.m_name && *m_sharedvec == *(other.m_sharedvec);
-}
-
-template<typename T>
-bool
-series<T>::operator!=(const series<T>& other) const
-{
-    return m_name != other.m_name || *m_sharedvec != *(other.m_sharedvec);
 }
 
 template<typename T>
