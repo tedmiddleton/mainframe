@@ -20,7 +20,9 @@ if( Doxygen_FOUND )
     #Replace variables inside @@ with the current values
     configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
 
-    file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
+    #Doxygen won't create this for us
+    file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) 
+
     add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
                        DEPENDS ${MAINFRAME_PUBLIC_HEADERS}
                        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
@@ -33,13 +35,27 @@ if( Doxygen_FOUND )
 
     set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
     set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)
+    set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
 
-    add_custom_target(Sphinx 
-                      COMMAND
-                      ${SPHINX_EXECUTABLE} -b html
-                      ${SPHINX_SOURCE} ${SPHINX_BUILD}
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                      COMMENT "Generating documentation with Sphinx")
+    add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
+                       COMMAND
+                         ${SPHINX_EXECUTABLE} -b html
+                         # Tell Breathe where to find the Doxygen output
+                         -Dbreathe_projects.mainframe=${DOXYGEN_OUTPUT_DIR}/xml
+                       ${SPHINX_SOURCE} ${SPHINX_BUILD}
+                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                       DEPENDS
+                       # Other docs files you want to track should go here (or in some variable)
+                       ${CMAKE_CURRENT_SOURCE_DIR}/index.rst
+                       ${DOXYGEN_INDEX_FILE}
+                       MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
+                       COMMENT "Generating documentation with Sphinx")
+
+    # Nice named target so we can run the job easily
+    add_custom_target(Sphinx DEPENDS ${SPHINX_INDEX_FILE} ${DOXYGEN_INDEX_FILE} 
+        Doxygen)
+
+    
 endif()
 
 
