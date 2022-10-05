@@ -125,7 +125,8 @@ private:
     void
     init_impl(const frame<Ts...>& f)
     {
-        useries s = f.template column<Ind>();
+        columnindex<Ind> ci;
+        useries s = f.column(ci);
         m_columns.push_back(s);
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             init_impl<Ind + 1>(f);

@@ -161,22 +161,6 @@ frame<Ts...>::column(const std::string& colname) const
 template<typename... Ts>
 template<size_t Ind>
 series<typename detail::pack_element<Ind, Ts...>::type>&
-frame<Ts...>::column()
-{
-    return std::get<Ind>(m_columns);
-}
-
-template<typename... Ts>
-template<size_t Ind>
-const series<typename detail::pack_element<Ind, Ts...>::type>&
-frame<Ts...>::column() const
-{
-    return std::get<Ind>(m_columns);
-}
-
-template<typename... Ts>
-template<size_t Ind>
-series<typename detail::pack_element<Ind, Ts...>::type>&
 frame<Ts...>::column(columnindex<Ind>)
 {
     return std::get<Ind>(m_columns);
@@ -724,7 +708,8 @@ void
 frame<Ts...>::allow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
 {
     if constexpr (detail::contains<Ind, Inds...>::value) {
-        auto& s  = column<Ind>();
+        columnindex<Ind> ci;
+        auto& s  = column(ci);
         auto ams = s.allow_missing();
         uf.set_series(Ind, ams);
     }
@@ -818,7 +803,8 @@ void
 frame<Ts...>::disallow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
 {
     if constexpr (detail::contains<Ind, Inds...>::value) {
-        auto& s  = column<Ind>();
+        columnindex<Ind> ci;
+        auto& s  = column(ci);
         auto ams = s.disallow_missing();
         uf.set_series(Ind, ams);
     }

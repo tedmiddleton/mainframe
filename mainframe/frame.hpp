@@ -191,14 +191,6 @@ public:
     column(const std::string& colname) const;
 
     template<size_t Ind>
-    series<typename detail::pack_element<Ind, Ts...>::type>&
-    column();
-
-    template<size_t Ind>
-    const series<typename detail::pack_element<Ind, Ts...>::type>&
-    column() const;
-
-    template<size_t Ind>
     series<typename detail::pack_element<Ind, Ts...>::type>& column(columnindex<Ind>);
 
     template<size_t Ind>
