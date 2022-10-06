@@ -162,13 +162,12 @@ public:
     /// convert a column to use the missing class mi<> to represent missing
     /// elements
     ///
-    ///     frame_row<year_month, int, double> fr1;
+    ///     frame<year_month, int, double> f1;
     ///
-    ///     // fr2 is frame_row<year_month, int, mi<double>>
-    ///     auto fr2 = fr1.allow_missing(_2);
-    ///     fr1.push_back(2022_y/10, 1, 3.14);
-    ///     fr2.push_back(2022_y/11, 2, missing);
-    ///     fr2.push_back(2022_y/12, 3, 0.007297);
+    ///     frame<mi<year_month>, int, mi<double>> f2 = f1.allow_missing(_0, _2);
+    ///     f2.push_back(missing, 1, 3.14);
+    ///     f2.push_back(2022_y/11, 2, missing);
+    ///     f2.push_back(2022_y/12, 3, 0.007297);
     ///
     template<size_t... Inds>
     typename detail::add_opt<frame<Ts...>, 0, Inds...>::type
@@ -176,6 +175,15 @@ public:
 
     /// convert all columns to use the missing class mi<> to represent missing
     /// elements
+    ///
+    ///     frame<year_month_day, double, bool> f1;
+    ///     
+    ///     frame<mi<year_month_day>, mi<double>, mi<bool>> f2 = f1.allow_missing();
+    ///     f2.push_back(2022_y / January / 1, 8.9, false);
+    ///     f2.push_back(missing, 10.0, false);
+    ///     f2.push_back(2022_y / January / 3, missing, true);
+    ///     f2.push_back(2022_y / January / 4, 12.2, missing);
+    ///     f2.push_back(missing, missing, false);
     ///
     typename detail::add_all_opt<frame<Ts...>>::type
     allow_missing() const;
