@@ -75,10 +75,6 @@ target_include_directories( mainframe
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
-# Documentation ==============================================================
-
-add_subdirectory( docs )
-
 
 # cmake bric-a-brac ==========================================================
 
