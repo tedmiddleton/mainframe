@@ -1,6 +1,12 @@
 # mainframe
 
-![mainframe](docs/mainframe-medium.jpg)
+[![GitHub Latest Release](https://img.shields.io/github/v/release/tedmiddleton/mainframe)](https://github.com/tedmiddleton/mainframe/releases/latest)
+[![GitHub License](https://img.shields.io/github/license/tedmiddleton/mainframe)](https://github.com/tedmiddleton/mainframe/blob/main/LICENSE)
+![Github CMake Workflow Status](https://img.shields.io/github/workflow/status/tedmiddleton/mainframe/CMake)
+![Github Open Issues](https://img.shields.io/github/issues/tedmiddleton/mainframe)
+![Codacy Badge](https://app.codacy.com/project/badge/Grade/591c1f4b9ba949a8bd8a97cac42c181a)
+
+![mainframe](docs/img/mainframe-medium.jpg)
 
 mainframe is a C++ dataframe library. It features C++ container ergonomics like iterators, copy-on-write column data management, and a flexible expression syntax that allows for efficient row filtering and column population. 
 

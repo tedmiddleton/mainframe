@@ -6,4 +6,5 @@ _build/
 .vim/
 out/
 .vs/
+docs/html/
 *~
