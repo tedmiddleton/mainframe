@@ -43,32 +43,25 @@ jobs:
       
   docs:
 
-    # The CMake configure and build commands are platform agnostic and should 
-    # work equally well on Windows or Mac. You can convert this to a matrix 
-    # build if you need cross-platform coverage. 
     runs-on: ubuntu-latest
 
-    container: 
-      image: tedmton/mainframe_docbuild:1.0
-
     steps:
-    - name: Checkout
-      working-directory: /home/bob/
-      run: git clone https://github.com/tedmiddleton/mainframe.git
-
-    - name: Create build dir
-      run: mkdir -p /home/bob/mainframe/build
-
-    - name: Configure CMake
-      working-directory: /home/bob/mainframe/build
-      run: cmake -DCMAKE_BUILD_TYPE=Debug ..
-
-    - name: Doxygen
-      working-directory: /home/bob/mainframe/build
-      run: make Doxygen
-
-    - name: Sphinx
-      working-directory: /home/bob/mainframe/build
-      run: make Sphinx
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: set version
+        run: echo "PROJECT_NUMBER = `git describe --tags`" >> Doxyfile
+      - name: Generate Documentation
+        uses: mattnotmitt/doxygen-action@v1.9.4
+      - name: Publish generated content to GitHub Pages
+        #uses: tsunematsu21/actions-publish-gh-pages@v1.0.2
+        #with:
+        #  dir: docs/html
+        #  branch: gh-pages
+        #  token: ${{ secrets.ACCESS_TOKEN }}
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs/html
 
 
