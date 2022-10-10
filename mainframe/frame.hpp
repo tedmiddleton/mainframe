@@ -284,6 +284,15 @@ public:
     template<size_t Ind>
     double mean(columnindex<Ind>) const;
 
+    template<size_t Ind>
+    using pack_elem_pair = std::pair<
+        typename pack_element<Ind, Ts...>::type,
+        typename pack_element<Ind, Ts...>::type>;
+
+    template<size_t Ind>
+    pack_elem_pair<Ind>
+    minmax(columnindex<Ind>) const;
+
     template<typename T>
     frame<Ts..., T>
     new_series(const std::string& series_name) const;

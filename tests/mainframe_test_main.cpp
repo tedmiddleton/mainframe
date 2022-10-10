@@ -2816,6 +2816,143 @@ TEST_CASE("fill_backward", "[frame]")
     REQUIRE((it + 5)->at(_2) == false);
 }
 
+TEST_CASE("stddev", "[frame]")
+{
+    SECTION("double")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        REQUIRE(s1.stddev() == Approx(1.414213));
+
+        series<double> s2{ 2, 3, 4 };
+        REQUIRE(s2.stddev() == Approx(0.816497));
+
+        series<double> s3{ -1, -2, -3, -4, -5 };
+        REQUIRE(s3.stddev() == Approx(1.414213));
+
+        series<double> s4{ -2, -3, -4 };
+        REQUIRE(s4.stddev() == Approx(0.816497));
+    }
+
+    SECTION("int")
+    {
+        series<int> s1{ 1, 2, 3, 4, 5 };
+        REQUIRE(s1.stddev() == Approx(1.414213));
+
+        series<int> s2{ 2, 3, 4 };
+        REQUIRE(s2.stddev() == Approx(0.816497));
+
+        series<int> s3{ -1, -2, -3, -4, -5 };
+        REQUIRE(s3.stddev() == Approx(1.414213));
+
+        series<int> s4{ -2, -3, -4 };
+        REQUIRE(s4.stddev() == Approx(0.816497));
+    }
+}
+
+TEST_CASE("minmax", "[frame]")
+{
+    SECTION("double")
+    {
+        {
+            frame<double, int> s;
+            s.push_back(1, 0);
+            s.push_back(2, 0);
+            s.push_back(3, 0);
+            s.push_back(4, 0);
+            s.push_back(5, 0);
+            auto [minv, maxv] = s.minmax(_0);
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            frame<double, int> s;
+            s.push_back(5, 0);
+            s.push_back(2, 0);
+            s.push_back(3, 0);
+            s.push_back(1, 0);
+            s.push_back(4, 0);
+            auto [minv, maxv] = s.minmax(_0);
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            frame<double, int> s;
+            s.push_back(-1, 0);
+            s.push_back(-2, 0);
+            s.push_back(-3, 0);
+            s.push_back(-4, 0);
+            s.push_back(-5, 0);
+            auto [minv, maxv] = s.minmax(_0);
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+
+        {
+            frame<double, int> s;
+            s.push_back(-5, 0);
+            s.push_back(-2, 0);
+            s.push_back(-3, 0);
+            s.push_back(-1, 0);
+            s.push_back(-4, 0);
+            auto [minv, maxv] = s.minmax(_0);
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+    }
+
+    SECTION("int")
+    {
+        {
+            frame<double, int> s;
+            s.push_back(0, 1);
+            s.push_back(0, 2);
+            s.push_back(0, 3);
+            s.push_back(0, 4);
+            s.push_back(0, 5);
+            auto [minv, maxv] = s.minmax(_1);
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            frame<double, int> s;
+            s.push_back(0, 5);
+            s.push_back(0, 2);
+            s.push_back(0, 3);
+            s.push_back(0, 1);
+            s.push_back(0, 4);
+            auto [minv, maxv] = s.minmax(_1);
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            frame<double, int> s;
+            s.push_back(0, -1);
+            s.push_back(0, -2);
+            s.push_back(0, -3);
+            s.push_back(0, -4);
+            s.push_back(0, -5);
+            auto [minv, maxv] = s.minmax(_1);
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+
+        {
+            frame<double, int> s;
+            s.push_back(0, -5);
+            s.push_back(0, -2);
+            s.push_back(0, -3);
+            s.push_back(0, -1);
+            s.push_back(0, -4);
+            auto [minv, maxv] = s.minmax(_1);
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+    }
+}
 
 //template<typename Func, typename Arg>
 //struct fnobj;
