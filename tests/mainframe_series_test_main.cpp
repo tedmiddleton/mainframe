@@ -1380,3 +1380,68 @@ TEST_CASE("stddev", "[series]")
     }
 }
 
+TEST_CASE("minmax", "[series]")
+{
+    SECTION("double")
+    {
+        {
+            series<double> s{ 1, 2, 3, 4, 5 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            series<double> s{ 5, 2, 3, 1, 4 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            series<double> s{ -1, -2, -3, -4, -5 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+
+        {
+            series<double> s{ -5, -2, -3, -1, -4 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+    }
+
+    SECTION("int")
+    {
+        {
+            series<int> s{ 1, 2, 3, 4, 5 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            series<int> s{ 5, 2, 3, 1, 4 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == 1);
+            REQUIRE(maxv == 5);
+        }
+
+        {
+            series<int> s{ -1, -2, -3, -4, -5 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+
+        {
+            series<int> s{ -5, -2, -3, -1, -4 };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == -5);
+            REQUIRE(maxv == -1);
+        }
+    }
+}
+

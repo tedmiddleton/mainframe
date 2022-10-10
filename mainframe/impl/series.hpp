@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <memory>
 #include <ostream>
@@ -413,6 +414,19 @@ series<T>::mean() const
 {
     double m = detail::mean(data(), size());
     return m;
+}
+
+template<typename T>
+std::pair<T, T>
+series<T>::minmax() const
+{
+    T minval = std::numeric_limits<T>::max();
+    T maxval = std::numeric_limits<T>::lowest();
+    for ( const T& t : *m_sharedvec ) {
+        minval = std::min( minval, t );
+        maxval = std::max( maxval, t );
+    }
+    return { minval, maxval };
 }
 
 template<typename T>

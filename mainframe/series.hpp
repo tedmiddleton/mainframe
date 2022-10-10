@@ -212,6 +212,9 @@ public:
     double
     mean() const;
 
+    std::pair<T, T>
+    minmax() const;
+
     const std::string&
     name() const;
 
