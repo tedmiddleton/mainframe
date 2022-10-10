@@ -1,6 +1,6 @@
 # mainframe
 
-![mainframe](docs/img/mainframe-medium.jpg)
+![](docs/img/mainframe-medium.jpg)
 
 [![GitHub Latest Release](https://img.shields.io/badge/release-prerelease-blue)](https://github.com/tedmiddleton/mainframe/releases/latest)
 [![GitHub License](https://img.shields.io/github/license/tedmiddleton/mainframe)](https://github.com/tedmiddleton/mainframe/blob/main/LICENSE)
