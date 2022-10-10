@@ -27,15 +27,30 @@ namespace mf::detail
 {
 
 template<typename T>
-T
+double
 mean(const T* t, size_t num)
 {
     const T* e = t + num;
-    T m        = static_cast<T>(0);
+    double m        = 0.0;
     for (const T* c = t; c != e; c++) {
         m += *c;
     }
-    return static_cast<T>(m / num);
+    return m / num;
+}
+
+template<typename T>
+double
+stddev(const T* t, size_t num)
+{
+    T m = mean(t, num);
+    const T* e = t + num;
+    double sqdist = 0.0;
+    for (const T* c = t; c != e; c++) {
+        T dist = *c - m;
+        sqdist += (dist * dist);
+    }
+
+    return sqrt(sqdist / num);
 }
 
 #if defined(__AVX__)

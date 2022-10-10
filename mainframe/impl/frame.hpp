@@ -407,10 +407,8 @@ template<size_t Ind>
 double
 frame<Ts...>::mean(columnindex<Ind>) const
 {
-    using T            = typename detail::pack_element<Ind, Ts...>::type;
-    const series<T>& s = std::get<Ind>(m_columns);
-    double m           = detail::mean(s.data(), s.size());
-    return m;
+    const auto& s = std::get<Ind>(m_columns);
+    return s.mean();
 }
 
 template<typename... Ts>
@@ -689,6 +687,15 @@ frame<Ts...>::sorted(columnindex<Inds>... ci)
     frame<Ts...> out(*this);
     out.sort(ci...);
     return out;
+}
+
+template<typename... Ts>
+template<size_t Ind>
+double
+frame<Ts...>::stddev(columnindex<Ind>) const
+{
+    const auto& s = std::get<Ind>(m_columns);
+    return s.stddev();
 }
 
 template<typename... Ts>

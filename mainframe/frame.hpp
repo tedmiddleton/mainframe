@@ -177,7 +177,7 @@ public:
     /// elements
     ///
     ///     frame<year_month_day, double, bool> f1;
-    ///     
+    ///
     ///     frame<mi<year_month_day>, mi<double>, mi<bool>> f2 = f1.allow_missing();
     ///     f2.push_back(2022_y / January / 1, 8.9, false);
     ///     f2.push_back(missing, 10.0, false);
@@ -435,6 +435,9 @@ public:
     template<size_t... Inds>
     frame<Ts...>
     sorted(columnindex<Inds>... ci);
+
+    template<size_t Ind>
+    double stddev(columnindex<Ind>) const;
 
     std::vector<std::vector<std::string>>
     to_string() const;

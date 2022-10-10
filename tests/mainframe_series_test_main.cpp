@@ -1325,3 +1325,58 @@ TEST_CASE("missing", "[series]")
     REQUIRE(mim1 >= missing);
     REQUIRE(missing >= mim1);
 }
+
+TEST_CASE("mean", "[series]")
+{
+    SECTION("double")
+    {
+        series<double> s{ 1, 2, 3, 4, 5 };
+        REQUIRE(s.mean() == 3.0);
+    }
+
+    SECTION("int")
+    {
+        series<int> s{ 1, 2, 3, 4, 5 };
+        REQUIRE(s.mean() == 3.0);
+    }
+
+    SECTION("unsigned")
+    {
+        series<unsigned> s{ 1, 2, 3, 4, 5 };
+        REQUIRE(s.mean() == 3.0);
+    }
+}
+
+TEST_CASE("stddev", "[series]")
+{
+    SECTION("double")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        REQUIRE(s1.stddev() == Approx(1.414213));
+
+        series<double> s2{ 2, 3, 4 };
+        REQUIRE(s2.stddev() == Approx(0.816497));
+
+        series<double> s3{ -1, -2, -3, -4, -5 };
+        REQUIRE(s3.stddev() == Approx(1.414213));
+
+        series<double> s4{ -2, -3, -4 };
+        REQUIRE(s4.stddev() == Approx(0.816497));
+    }
+
+    SECTION("int")
+    {
+        series<int> s1{ 1, 2, 3, 4, 5 };
+        REQUIRE(s1.stddev() == Approx(1.414213));
+
+        series<int> s2{ 2, 3, 4 };
+        REQUIRE(s2.stddev() == Approx(0.816497));
+
+        series<int> s3{ -1, -2, -3, -4, -5 };
+        REQUIRE(s3.stddev() == Approx(1.414213));
+
+        series<int> s4{ -2, -3, -4 };
+        REQUIRE(s4.stddev() == Approx(0.816497));
+    }
+}
+

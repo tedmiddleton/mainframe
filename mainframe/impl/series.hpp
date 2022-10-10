@@ -408,6 +408,14 @@ series<T>::max_size() const
 }
 
 template<typename T>
+double
+series<T>::mean() const
+{
+    double m = detail::mean(data(), size());
+    return m;
+}
+
+template<typename T>
 const std::string&
 series<T>::name() const
 {
@@ -531,6 +539,14 @@ size_t
 series<T>::size() const
 {
     return m_sharedvec->size();
+}
+
+template<typename T>
+double
+series<T>::stddev() const
+{
+    double sd = detail::stddev(data(), size());
+    return sd;
 }
 
 template<typename T>

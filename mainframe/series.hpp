@@ -209,6 +209,9 @@ public:
     size_t
     max_size() const;
 
+    double
+    mean() const;
+
     const std::string&
     name() const;
 
@@ -265,6 +268,9 @@ public:
 
     size_t
     size() const;
+
+    double
+    stddev() const;
 
     std::vector<std::string>
     to_string() const;
