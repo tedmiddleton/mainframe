@@ -3,12 +3,15 @@
 ![](docs/img/mainframe-medium.jpg)
 
 [![GitHub Latest Release](https://img.shields.io/badge/release-prerelease-blue)](https://github.com/tedmiddleton/mainframe/releases/latest)
+![Releases](https://badgen.net/github/releases/tedmiddleton/mainframe)
 [![GitHub License](https://img.shields.io/github/license/tedmiddleton/mainframe)](https://github.com/tedmiddleton/mainframe/blob/main/LICENSE)
-![Github CMake Workflow Status](https://img.shields.io/github/workflow/status/tedmiddleton/mainframe/CMake)
+![Overall Checks](https://img.shields.io/github/workflow/status/tedmiddleton/mainframe/CMake)
+![Windows Checks](https://badgen.net/github/checks/tedmiddleton/mainframe/main/windows)
+![Linux Checks](https://badgen.net/github/checks/tedmiddleton/mainframe/main/ubuntu)
+![Commits](https://badgen.net/github/commits/tedmiddleton/mainframe/main)
 ![Github Open Issues](https://img.shields.io/github/issues/tedmiddleton/mainframe)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/591c1f4b9ba949a8bd8a97cac42c181a)](https://app.codacy.com/gh/tedmiddleton/mainframe)
 [![Cpp Badge](https://img.shields.io/badge/C%2B%2B%20version-17-blue?logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
-
 
 mainframe is a C++ dataframe library. It features C++ container ergonomics like iterators, copy-on-write column data management, and a flexible expression syntax that allows for efficient row filtering and column population. 
 
