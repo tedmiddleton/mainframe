@@ -285,13 +285,12 @@ public:
     double mean(columnindex<Ind>) const;
 
     template<size_t Ind>
-    using pack_elem_pair = std::pair<
-        typename pack_element<Ind, Ts...>::type,
-        typename pack_element<Ind, Ts...>::type>;
+    using pack_elem_pair =
+        std::pair<typename pack_element<Ind, Ts...>::type, typename pack_element<Ind, Ts...>::type>;
 
-    template<size_t Ind>
+    template<size_t Ind, typename _U = typename pack_element<Ind, Ts...>::type>
     pack_elem_pair<Ind>
-    minmax(columnindex<Ind>) const;
+    minmax(columnindex<Ind>, const _U& dflt = _U{}) const;
 
     template<typename T>
     frame<Ts..., T>

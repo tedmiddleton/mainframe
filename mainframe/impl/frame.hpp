@@ -412,12 +412,12 @@ frame<Ts...>::mean(columnindex<Ind>) const
 }
 
 template<typename... Ts>
-template<size_t Ind>
+template<size_t Ind, typename _U>
 typename frame<Ts...>::template pack_elem_pair<Ind>
-frame<Ts...>::minmax(columnindex<Ind>) const
+frame<Ts...>::minmax(columnindex<Ind>, const _U& dflt) const
 {
     const auto& s = std::get<Ind>(m_columns);
-    return s.minmax();
+    return s.minmax(dflt);
 }
 
 template<typename... Ts>

@@ -418,13 +418,16 @@ series<T>::mean() const
 
 template<typename T>
 std::pair<T, T>
-series<T>::minmax() const
+series<T>::minmax(const T& dflt) const
 {
-    T minval = std::numeric_limits<T>::max();
-    T maxval = std::numeric_limits<T>::lowest();
-    for ( const T& t : *m_sharedvec ) {
-        minval = std::min( minval, t );
-        maxval = std::max( maxval, t );
+    if (size() == 0) {
+        return { dflt, dflt };
+    }
+    T minval = m_sharedvec->at(0);
+    T maxval = minval;
+    for (const T& t : *m_sharedvec) {
+        minval = std::min(minval, t);
+        maxval = std::max(maxval, t);
     }
     return { minval, maxval };
 }

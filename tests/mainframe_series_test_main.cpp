@@ -1443,5 +1443,45 @@ TEST_CASE("minmax", "[series]")
             REQUIRE(maxv == -1);
         }
     }
+
+    SECTION("year_month_day")
+    {
+        {
+            series<date::year_month_day> s{ 
+                2001_y/7/8, 
+                2001_y/7/9, 
+                2001_y/7/10, 
+                2001_y/7/11, 
+                2001_y/7/12, 
+            };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == 2001_y/7/8);
+            REQUIRE(maxv == 2001_y/7/12);
+        }
+        {
+            series<date::year_month_day> s{ 
+                2001_y/7/12, 
+                2001_y/7/11, 
+                2001_y/7/10, 
+                2001_y/7/9, 
+                2001_y/7/8, 
+            };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == 2001_y/7/8);
+            REQUIRE(maxv == 2001_y/7/12);
+        }
+        {
+            series<date::year_month_day> s{ 
+                2001_y/7/10, 
+                2001_y/7/12, 
+                2001_y/7/9, 
+                2001_y/7/8, 
+                2001_y/7/11, 
+            };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == 2001_y/7/8);
+            REQUIRE(maxv == 2001_y/7/12);
+        }
+    }
 }
 

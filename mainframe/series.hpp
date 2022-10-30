@@ -155,7 +155,7 @@ public:
     template<typename _U = T,
         std::enable_if_t<detail::is_missing<_U>::value &&
                 std::is_default_constructible<typename _U::value_type>::value,
-            bool>       = true>
+            bool>        = true>
     series<typename _U::value_type>
     disallow_missing() const;
 
@@ -213,7 +213,7 @@ public:
     mean() const;
 
     std::pair<T, T>
-    minmax() const;
+    minmax(const T& dflt = T{}) const;
 
     const std::string&
     name() const;
