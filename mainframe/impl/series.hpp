@@ -155,7 +155,7 @@ series<T>::crend() const
 }
 
 template<typename T>
-template<typename U, std::enable_if_t<detail::is_missing<U>::value, bool>>
+template<typename _U, std::enable_if_t<detail::is_missing<_U>::value, bool>>
 series<T>
 series<T>::allow_missing() const
 {
@@ -163,7 +163,7 @@ series<T>::allow_missing() const
 }
 
 template<typename T>
-template<typename U, std::enable_if_t<!detail::is_missing<U>::value, bool>>
+template<typename _U, std::enable_if_t<!detail::is_missing<_U>::value, bool>>
 series<mi<T>>
 series<T>::allow_missing() const
 {
@@ -257,11 +257,11 @@ series<T>::data() const
 }
 
 template<typename T>
-template<typename U,
-    std::enable_if_t<detail::is_missing<U>::value &&
-            std::is_default_constructible<typename U::value_type>::value,
+template<typename _U,
+    std::enable_if_t<detail::is_missing<_U>::value &&
+            std::is_default_constructible<typename _U::value_type>::value,
         bool>>
-series<typename U::value_type>
+series<typename _U::value_type>
 series<T>::disallow_missing() const
 {
     using V = typename T::value_type;
@@ -279,7 +279,7 @@ series<T>::disallow_missing() const
 }
 
 template<typename T>
-template<typename U, std::enable_if_t<!detail::is_missing<U>::value, bool>>
+template<typename _U, std::enable_if_t<!detail::is_missing<_U>::value, bool>>
 series<T>
 series<T>::disallow_missing() const
 {

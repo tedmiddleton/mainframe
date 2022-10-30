@@ -106,11 +106,11 @@ public:
     const_reverse_iterator
     crend() const;
 
-    template<typename U = T, std::enable_if_t<detail::is_missing<U>::value, bool> = true>
+    template<typename _U = T, std::enable_if_t<detail::is_missing<_U>::value, bool> = true>
     series<T>
     allow_missing() const;
 
-    template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
+    template<typename _U = T, std::enable_if_t<!detail::is_missing<_U>::value, bool> = true>
     series<mi<T>>
     allow_missing() const;
 
@@ -152,14 +152,14 @@ public:
     data() const;
 
     // This requires default-construction. Can we do better?
-    template<typename U = T,
-        std::enable_if_t<detail::is_missing<U>::value &&
-                std::is_default_constructible<typename U::value_type>::value,
+    template<typename _U = T,
+        std::enable_if_t<detail::is_missing<_U>::value &&
+                std::is_default_constructible<typename _U::value_type>::value,
             bool>       = true>
-    series<typename U::value_type>
+    series<typename _U::value_type>
     disallow_missing() const;
 
-    template<typename U = T, std::enable_if_t<!detail::is_missing<U>::value, bool> = true>
+    template<typename _U = T, std::enable_if_t<!detail::is_missing<_U>::value, bool> = true>
     series<T>
     disallow_missing() const;
 
