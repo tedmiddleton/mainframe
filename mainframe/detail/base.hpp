@@ -213,6 +213,92 @@ struct rearrange<Tpl<Ts...>, IndHead>
     using type         = Tpl<indexed_type>;
 };
 
+template<typename T, typename U>
+struct combine;
+
+template<template<typename...> typename Tpl, typename... Ts, typename... Us>
+struct combine< Tpl<Ts...>, Tpl<Us...> >
+{
+    using type = Tpl<Ts..., Us...>;
+};
+
+template<size_t Ind, size_t Curr, typename Tpl>
+struct pack_upto_impl;
+
+template<size_t Matched, template<typename...> typename Tpl, typename T, typename... Ts>
+struct pack_upto_impl<Matched, Matched, Tpl<T, Ts...> >
+{
+    using type = Tpl<>;
+};
+
+template<size_t Matched, template<typename...> typename Tpl, typename... Ts>
+struct pack_upto_impl<Matched, Matched, Tpl<Ts...> >
+{
+    using type = Tpl<>;
+};
+
+template<size_t Matched, template<typename...> typename Tpl>
+struct pack_upto_impl<Matched, Matched, Tpl<> >
+{
+    using type = Tpl<>;
+};
+
+template<size_t Ind, size_t Curr, template<typename...> typename Tpl>
+struct pack_upto_impl<Ind, Curr, Tpl<> >
+{
+    using type = typename pack_upto_impl<Ind, Curr+1, Tpl<>>::type;
+};
+
+template<size_t Ind, size_t Curr, template<typename...> typename Tpl, typename T, typename... Ts>
+struct pack_upto_impl<Ind, Curr, Tpl<T, Ts...> >
+{
+    using remaining_type = typename pack_upto_impl<Ind, Curr+1, Tpl<Ts...>>::type;
+    using type = typename combine<Tpl<T>, remaining_type>::type;
+};
+
+template<size_t Ind, typename Tpl>
+using pack_upto = pack_upto_impl<Ind, 0, Tpl >;
+
+template<size_t Ind, size_t Curr, typename Tpl>
+struct pack_after_impl;
+
+template<size_t Matched, template<typename...> typename Tpl>
+struct pack_after_impl<Matched, Matched, Tpl<> >
+{
+    using type = Tpl<>;
+};
+
+template<size_t Matched, template<typename...> typename Tpl, typename T, typename... Ts>
+struct pack_after_impl<Matched, Matched, Tpl<T, Ts...> >
+{
+    using type = Tpl<Ts...>;
+};
+
+template<size_t Ind, size_t Curr, template<typename...> typename Tpl>
+struct pack_after_impl<Ind, Curr, Tpl<> >
+{
+    using type = typename pack_after_impl<Ind, Curr+1, Tpl<>>::type;
+};
+
+template<size_t Ind, size_t Curr, template<typename...> typename Tpl, typename T, typename... Ts>
+struct pack_after_impl<Ind, Curr, Tpl<T, Ts...> >
+{
+    using type = typename pack_after_impl<Ind, Curr+1, Tpl<Ts...>>::type;
+};
+
+template<size_t Ind, typename Tpl>
+using pack_after = pack_after_impl<Ind, 0, Tpl >;
+
+template<size_t Ind, typename Tpl>
+struct pack_remove;
+
+template<size_t Ind, template<typename...> typename Tpl, typename... Ts>
+struct pack_remove<Ind, Tpl<Ts...>>
+{
+    using tpl_upto = typename pack_upto<Ind, Tpl<Ts...>>::type;
+    using tpl_after = typename pack_after<Ind, Tpl<Ts...>>::type;
+    using type = typename combine<tpl_upto, tpl_after>::type;
+};
 
 } // namespace detail
 
