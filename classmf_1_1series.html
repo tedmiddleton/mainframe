@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-4-gbe39d65</span>
+   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-5-g4ed74e6</span>
    </div>
   </td>
  </tr>
@@ -184,11 +184,11 @@ const_reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>ren
 const_reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>crend</b> () const</td></tr>
 <tr class="separator:a2837450d4eced252a386453daa33982d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aecd8ae95a8d0691916bc73c4a26e3071"><td class="memTemplParams" colspan="2"><a id="aecd8ae95a8d0691916bc73c4a26e3071" name="aecd8ae95a8d0691916bc73c4a26e3071"></a>
-template&lt;typename U  = T, std::enable_if_t&lt; detail::is_missing&lt; U &gt;::value, bool &gt;  = true&gt; </td></tr>
+template&lt;typename _U  = T, std::enable_if_t&lt; detail::is_missing&lt; _U &gt;::value, bool &gt;  = true&gt; </td></tr>
 <tr class="memitem:aecd8ae95a8d0691916bc73c4a26e3071"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1series.html">series</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>allow_missing</b> () const</td></tr>
 <tr class="separator:aecd8ae95a8d0691916bc73c4a26e3071"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abadb50410926a5421580c930b07e4408"><td class="memTemplParams" colspan="2"><a id="abadb50410926a5421580c930b07e4408" name="abadb50410926a5421580c930b07e4408"></a>
-template&lt;typename U  = T, std::enable_if_t&lt;!detail::is_missing&lt; U &gt;::value, bool &gt;  = true&gt; </td></tr>
+template&lt;typename _U  = T, std::enable_if_t&lt;!detail::is_missing&lt; _U &gt;::value, bool &gt;  = true&gt; </td></tr>
 <tr class="memitem:abadb50410926a5421580c930b07e4408"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1series.html">series</a>&lt; <a class="el" href="classmf_1_1mi.html">mi</a>&lt; T &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>allow_missing</b> () const</td></tr>
 <tr class="separator:abadb50410926a5421580c930b07e4408"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae48c4773af462e3eba8b060fde1ecd46"><td class="memItemLeft" align="right" valign="top"><a id="ae48c4773af462e3eba8b060fde1ecd46" name="ae48c4773af462e3eba8b060fde1ecd46"></a>
@@ -225,12 +225,12 @@ T *&#160;</td><td class="memItemRight" valign="bottom"><b>data</b> ()</td></tr>
 <tr class="memitem:a0aa8c306c0e3d7162e7a1297a6bdc7e2"><td class="memItemLeft" align="right" valign="top"><a id="a0aa8c306c0e3d7162e7a1297a6bdc7e2" name="a0aa8c306c0e3d7162e7a1297a6bdc7e2"></a>
 const T *&#160;</td><td class="memItemRight" valign="bottom"><b>data</b> () const</td></tr>
 <tr class="separator:a0aa8c306c0e3d7162e7a1297a6bdc7e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33a616d8bd2272c18d0dd6e28328f443"><td class="memTemplParams" colspan="2"><a id="a33a616d8bd2272c18d0dd6e28328f443" name="a33a616d8bd2272c18d0dd6e28328f443"></a>
-template&lt;typename U  = T, std::enable_if_t&lt; detail::is_missing&lt; U &gt;::value &amp;&amp;std::is_default_constructible&lt; typename U::value_type &gt;::value, bool &gt;  = true&gt; </td></tr>
-<tr class="memitem:a33a616d8bd2272c18d0dd6e28328f443"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1series.html">series</a>&lt; typename U::value_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>disallow_missing</b> () const</td></tr>
-<tr class="separator:a33a616d8bd2272c18d0dd6e28328f443"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f7df7096a12239076a7823d4f74afd2"><td class="memTemplParams" colspan="2"><a id="a8f7df7096a12239076a7823d4f74afd2" name="a8f7df7096a12239076a7823d4f74afd2"></a>
+template&lt;typename _U  = T, std::enable_if_t&lt; detail::is_missing&lt; _U &gt;::value &amp;&amp;std::is_default_constructible&lt; typename _U::value_type &gt;::value, bool &gt;  = true&gt; </td></tr>
+<tr class="memitem:a8f7df7096a12239076a7823d4f74afd2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1series.html">series</a>&lt; typename _U::value_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>disallow_missing</b> () const</td></tr>
+<tr class="separator:a8f7df7096a12239076a7823d4f74afd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c3b1b8b7f2fe82e2370bf105dad79ce"><td class="memTemplParams" colspan="2"><a id="a5c3b1b8b7f2fe82e2370bf105dad79ce" name="a5c3b1b8b7f2fe82e2370bf105dad79ce"></a>
-template&lt;typename U  = T, std::enable_if_t&lt;!detail::is_missing&lt; U &gt;::value, bool &gt;  = true&gt; </td></tr>
+template&lt;typename _U  = T, std::enable_if_t&lt;!detail::is_missing&lt; _U &gt;::value, bool &gt;  = true&gt; </td></tr>
 <tr class="memitem:a5c3b1b8b7f2fe82e2370bf105dad79ce"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1series.html">series</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>disallow_missing</b> () const</td></tr>
 <tr class="separator:a5c3b1b8b7f2fe82e2370bf105dad79ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5e3e104582add9ff944e5cff06f3e0e"><td class="memTemplParams" colspan="2"><a id="ac5e3e104582add9ff944e5cff06f3e0e" name="ac5e3e104582add9ff944e5cff06f3e0e"></a>
