@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-6-g189acdc</span>
+   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-7-g86edaf0</span>
    </div>
   </td>
  </tr>
@@ -121,10 +121,10 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b> = <a 
 <tr class="memitem:a557b99ae1f922e1e82ab455864382535"><td class="memItemLeft" align="right" valign="top"><a id="a557b99ae1f922e1e82ab455864382535" name="a557b99ae1f922e1e82ab455864382535"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>const_value_type</b> = <a class="el" href="classmf_1_1__row__proxy.html">_row_proxy</a>&lt; true, Ts... &gt;</td></tr>
 <tr class="separator:a557b99ae1f922e1e82ab455864382535"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7262da888fc211cd332da24fb7737016"><td class="memTemplParams" colspan="2"><a id="a7262da888fc211cd332da24fb7737016" name="a7262da888fc211cd332da24fb7737016"></a>
+<tr class="memitem:a2a8baebc589ef56c32d1be9d51de2333"><td class="memTemplParams" colspan="2"><a id="a2a8baebc589ef56c32d1be9d51de2333" name="a2a8baebc589ef56c32d1be9d51de2333"></a>
 template&lt;size_t Ind&gt; </td></tr>
-<tr class="memitem:a7262da888fc211cd332da24fb7737016"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>pack_elem_pair</b> = std::pair&lt; typename pack_element&lt; Ind, Ts... &gt;::type, typename pack_element&lt; Ind, Ts... &gt;::type &gt;</td></tr>
-<tr class="separator:a7262da888fc211cd332da24fb7737016"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a8baebc589ef56c32d1be9d51de2333"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>pack_elem_pair</b> = std::pair&lt; typename pack_element&lt; Ind, Ts... &gt;::type, typename pack_element&lt; Ind, Ts... &gt;::type &gt;</td></tr>
+<tr class="separator:a2a8baebc589ef56c32d1be9d51de2333"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -248,10 +248,10 @@ template&lt;typename... Us&gt; </td></tr>
 template&lt;size_t Ind&gt; </td></tr>
 <tr class="memitem:aba04b42d730dde12e0ed27904fb16ab0"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><b>mean</b> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;) const</td></tr>
 <tr class="separator:aba04b42d730dde12e0ed27904fb16ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplParams" colspan="2"><a id="a51c9efa1913ec7575cd59cb712c16b00" name="a51c9efa1913ec7575cd59cb712c16b00"></a>
-template&lt;size_t Ind&gt; </td></tr>
-<tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplItemLeft" align="right" valign="top">pack_elem_pair&lt; Ind &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>minmax</b> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;) const</td></tr>
-<tr class="separator:a51c9efa1913ec7575cd59cb712c16b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c6b4177e57c7f757d7ddcd9c60c82b9"><td class="memTemplParams" colspan="2"><a id="a4c6b4177e57c7f757d7ddcd9c60c82b9" name="a4c6b4177e57c7f757d7ddcd9c60c82b9"></a>
+template&lt;size_t Ind, typename _U  = typename pack_element&lt;Ind, Ts...&gt;::type&gt; </td></tr>
+<tr class="memitem:a4c6b4177e57c7f757d7ddcd9c60c82b9"><td class="memTemplItemLeft" align="right" valign="top">pack_elem_pair&lt; Ind &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>minmax</b> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;, const _U &amp;dflt=_U{}) const</td></tr>
+<tr class="separator:a4c6b4177e57c7f757d7ddcd9c60c82b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ce9d546cd9edbeec480d3b268c59cb2"><td class="memTemplParams" colspan="2"><a id="a5ce9d546cd9edbeec480d3b268c59cb2" name="a5ce9d546cd9edbeec480d3b268c59cb2"></a>
 template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a5ce9d546cd9edbeec480d3b268c59cb2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>new_series</b> (const std::string &amp;series_name) const</td></tr>
