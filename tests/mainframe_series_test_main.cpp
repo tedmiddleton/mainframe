@@ -1380,6 +1380,28 @@ TEST_CASE("stddev", "[series]")
     }
 }
 
+struct no_default_ctor
+{
+    no_default_ctor() = delete;
+    explicit no_default_ctor(int n)
+        : num( n )
+    {}
+
+    //int val() const { return num; }
+    bool operator<(const no_default_ctor& other) const
+    {
+        return num < other.num;
+    }
+
+    bool operator==(const no_default_ctor& other) const
+    {
+        return num == other.num;
+    }
+
+private:
+    int num;
+};
+
 TEST_CASE("minmax", "[series]")
 {
     SECTION("double")
@@ -1481,6 +1503,25 @@ TEST_CASE("minmax", "[series]")
             auto [minv, maxv] = s.minmax();
             REQUIRE(minv == 2001_y/7/8);
             REQUIRE(maxv == 2001_y/7/12);
+        }
+    }
+    SECTION("no_default_ctor")
+    {
+        {
+            series<no_default_ctor> s{ 
+                no_default_ctor(10), 
+                no_default_ctor(12), 
+                no_default_ctor(9), 
+                no_default_ctor(8), 
+                no_default_ctor(11), 
+            };
+            auto [minv, maxv] = s.minmax();
+            REQUIRE(minv == no_default_ctor(8));
+            REQUIRE(maxv == no_default_ctor(12));
+        }
+        {
+            series<no_default_ctor> s{};
+            REQUIRE_THROWS(s.minmax());
         }
     }
 }

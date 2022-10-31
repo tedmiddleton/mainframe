@@ -213,7 +213,7 @@ public:
     mean() const;
 
     std::pair<T, T>
-    minmax(const T& dflt = T{}) const;
+    minmax() const;
 
     const std::string&
     name() const;

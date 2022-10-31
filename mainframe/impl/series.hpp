@@ -418,10 +418,15 @@ series<T>::mean() const
 
 template<typename T>
 std::pair<T, T>
-series<T>::minmax(const T& dflt) const
+series<T>::minmax() const
 {
     if (size() == 0) {
-        return { dflt, dflt };
+        if constexpr (!std::is_default_constructible<T>::value) {
+            throw std::out_of_range{ "series is empty and no default constructor" };
+        }
+        else {
+            return { T(), T() };
+        }
     }
     T minval = m_sharedvec->at(0);
     T maxval = minval;

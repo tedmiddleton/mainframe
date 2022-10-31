@@ -288,9 +288,9 @@ public:
     using pack_elem_pair =
         std::pair<typename pack_element<Ind, Ts...>::type, typename pack_element<Ind, Ts...>::type>;
 
-    template<size_t Ind, typename _U = typename pack_element<Ind, Ts...>::type>
+    template<size_t Ind>
     pack_elem_pair<Ind>
-    minmax(columnindex<Ind>, const _U& dflt = _U{}) const;
+    minmax(columnindex<Ind>) const;
 
     template<typename T>
     frame<Ts..., T>
