@@ -1389,20 +1389,20 @@ TEST_CASE("corr", "[frame]")
             au[i] = static_cast<unsigned>(i + 1);
         }
 
-        double adm = mf::detail::mean<double>(ad, NUMELEMS);
+        double adm = mf::detail::mean(ad, NUMELEMS);
         REQUIRE(adm == Approx(500.5));
         double admv = mf::detail::mean(ad, NUMELEMS);
         REQUIRE(admv == Approx(500.5));
 
-        float afm = mf::detail::mean<float>(af, NUMELEMS);
-        REQUIRE(afm == Approx(500.5f));
-        float afmv = mf::detail::mean(af, NUMELEMS);
+        double afm = mf::detail::mean(af, NUMELEMS);
+        REQUIRE(afm == Approx(500.5));
+        double afmv = mf::detail::mean(af, NUMELEMS);
         REQUIRE(afmv == Approx(500.5));
 
-        int aim = mf::detail::mean(ai, NUMELEMS);
-        REQUIRE(aim == Approx(500));
-        int aum = mf::detail::mean(au, NUMELEMS);
-        REQUIRE(aum == Approx(500U));
+        double aim = mf::detail::mean(ai, NUMELEMS);
+        REQUIRE(aim == Approx(500.5));
+        double aum = mf::detail::mean(au, NUMELEMS);
+        REQUIRE(aum == Approx(500.5));
     }
 
     SECTION("detail::correlate_pearson")

@@ -42,11 +42,11 @@ template<typename T>
 double
 stddev(const T* t, size_t num)
 {
-    T m = mean(t, num);
+    double m = mean(t, num);
     const T* e = t + num;
     double sqdist = 0.0;
     for (const T* c = t; c != e; c++) {
-        T dist = *c - m;
+        double dist = *c - m;
         sqdist += (dist * dist);
     }
 
@@ -93,26 +93,26 @@ mean(const double* t, size_t num)
 #endif
 
 template<typename A, typename B>
-auto
-correlate_pearson(const A* a, const B* b, size_t num) -> decltype(a[0] * b[0])
+double
+correlate_pearson(const A* a, const B* b, size_t num)
 {
     using T        = decltype(a[0] * b[0]);
-    A amean        = mean(a, num);
-    B bmean        = mean(b, num);
+    double amean        = mean(a, num);
+    double bmean        = mean(b, num);
     const A* aend  = a + num;
     const A* acurr = a;
     const B* bcurr = b;
-    A aaccum       = static_cast<A>(0);
-    B baccum       = static_cast<B>(0);
+    double aaccum       = static_cast<A>(0);
+    double baccum       = static_cast<B>(0);
     double cov     = 0.0;
     for (; acurr != aend; ++acurr, ++bcurr) {
         A xa      = *acurr;
         B xb      = *bcurr;
-        A adiff   = xa - amean;
-        B bdiff   = xb - bmean;
-        A adiffsq = adiff * adiff;
-        B bdiffsq = bdiff * bdiff;
-        T abdiff  = adiff * bdiff;
+        double adiff   = xa - amean;
+        double bdiff   = xb - bmean;
+        double adiffsq = adiff * adiff;
+        double bdiffsq = bdiff * bdiff;
+        double abdiff  = adiff * bdiff;
         aaccum += adiffsq;
         baccum += bdiffsq;
         cov += abdiff;
