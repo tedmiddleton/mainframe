@@ -353,7 +353,7 @@ private:
         std::vector<useries> us;
         vectorize_result_columns<0>(result_columns, us);
         for (auto s : us) {
-            ufr.add_series(s);
+            ufr.add_column(s);
         }
         return ufr;
     }

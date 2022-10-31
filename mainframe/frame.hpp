@@ -288,9 +288,14 @@ public:
     using pack_elem_pair =
         std::pair<typename pack_element<Ind, Ts...>::type, typename pack_element<Ind, Ts...>::type>;
 
+    /// Calculate the minimum and maximum value in a column, and return them in
+    /// a std::pair<>
+    ///
+    /// If the frame is empty and the type of the column doesn't support default
+    /// construction, this will throw std::out_of_range
+    ///
     template<size_t Ind>
-    pack_elem_pair<Ind>
-    minmax(columnindex<Ind>) const;
+    pack_elem_pair<Ind> minmax(columnindex<Ind>) const;
 
     template<typename T>
     frame<Ts..., T>
@@ -395,6 +400,13 @@ public:
     template<typename U, typename... Us>
     void
     push_back(U first_arg, Us... args);
+
+    template<size_t Ind>
+    using frame_without_indexed_column = typename detail::pack_remove<Ind, frame<Ts...>>::type;
+
+    /// Return a frame without the column at Ind index
+    template<size_t Ind>
+    frame_without_indexed_column<Ind> remove_column(columnindex<Ind>);
 
     void
     reserve(size_t newsize);

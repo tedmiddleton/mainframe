@@ -368,7 +368,7 @@ frame<Ts...>::hcat(frame<Us...> other) const
     uframe out(self);
     uframe uother(other);
     for (size_t c = 0; c < other.num_columns(); ++c) {
-        out.add_series(uother.column(c));
+        out.add_column(uother.column(c));
     }
 
     return out;
@@ -429,7 +429,7 @@ frame<Ts...>::new_series(const std::string& series_name) const
     series<T> ns(size());
     ns.set_name(series_name);
     useries us(ns);
-    plust.add_series(us);
+    plust.add_column(us);
     return plust;
 }
 
@@ -442,7 +442,7 @@ frame<Ts...>::new_series(const std::string& series_name, Ex expr) const
     series<T> ns(size());
     ns.set_name(series_name);
     useries us(ns);
-    plust.add_series(us);
+    plust.add_column(us);
     frame<Ts..., T> out = plust;
     auto b              = out.begin();
     auto e              = out.end();
@@ -567,6 +567,15 @@ void
 frame<Ts...>::push_back(U first_arg, Us... args)
 {
     push_back_impl<0, U, Us...>(first_arg, args...);
+}
+
+template<typename... Ts>
+template<size_t Ind>
+typename frame<Ts...>::template frame_without_indexed_column<Ind> frame<Ts...>::remove_column(columnindex<Ind>)
+{
+    uframe u(*this);
+    u.remove_column(Ind);
+    return u;
 }
 
 template<typename... Ts>
@@ -727,7 +736,7 @@ frame<Ts...>::allow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
         columnindex<Ind> ci;
         auto& s  = column(ci);
         auto ams = s.allow_missing();
-        uf.set_series(Ind, ams);
+        uf.set_column(Ind, ams);
     }
     if constexpr (Ind + 1 < sizeof...(Ts)) {
         allow_missing_impl<Ind + 1, Inds...>(uf, cols...);
@@ -741,7 +750,7 @@ frame<Ts...>::allow_missing_impl(uframe& uf) const
 {
     const series<U>& s = std::get<Ind>(m_columns);
     auto os            = s.allow_missing();
-    uf.add_series(os);
+    uf.add_column(os);
     if constexpr (sizeof...(Us) > 0) {
         allow_missing_impl<Ind + 1, Us...>(uf);
     }
@@ -793,7 +802,7 @@ void
 frame<Ts...>::columns_impl(uframe& f, const U& u, const Us&... us) const
 {
     useries s = column(u);
-    f.add_series(s);
+    f.add_column(s);
     if constexpr (sizeof...(Us) > 0) {
         columns_impl(f, us...);
     }
@@ -806,7 +815,7 @@ frame<Ts...>::columns_impl(uframe& f, columnindexpack<Ind, RemInds...>) const
 {
     columnindex<Ind> ci;
     useries s = column(ci);
-    f.add_series(s);
+    f.add_column(s);
     if constexpr (sizeof...(RemInds) > 0) {
         columnindexpack<RemInds...> remcis;
         columns_impl(f, remcis);
@@ -822,7 +831,7 @@ frame<Ts...>::disallow_missing_impl(uframe& uf, columnindex<Inds>... cols) const
         columnindex<Ind> ci;
         auto& s  = column(ci);
         auto ams = s.disallow_missing();
-        uf.set_series(Ind, ams);
+        uf.set_column(Ind, ams);
     }
     if constexpr (Ind + 1 < sizeof...(Ts)) {
         disallow_missing_impl<Ind + 1, Inds...>(uf, cols...);
@@ -836,7 +845,7 @@ frame<Ts...>::disallow_missing_impl(uframe& uf) const
 {
     const series<U>& s = std::get<Ind>(m_columns);
     auto os            = s.disallow_missing();
-    uf.add_series(os);
+    uf.add_column(os);
     if constexpr (sizeof...(Us) > 0) {
         disallow_missing_impl<Ind + 1, Us...>(uf);
     }

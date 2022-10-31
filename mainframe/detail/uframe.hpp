@@ -50,14 +50,14 @@ public:
     }
 
     void
-    add_series(const useries& s)
+    add_column(const useries& s)
     {
         m_columns.push_back(s);
     }
 
     template<typename T>
     void
-    add_series(const std::string& colname)
+    add_column(const std::string& colname)
     {
         series<T> s;
         s.set_name(colname);
@@ -100,7 +100,13 @@ public:
     }
 
     void
-    set_series(size_t idx, const useries& s)
+    remove_column(size_t ind)
+    {
+        m_columns.erase(m_columns.begin()+ind);
+    }
+
+    void
+    set_column(size_t idx, const useries& s)
     {
         m_columns.at(idx) = s;
     }

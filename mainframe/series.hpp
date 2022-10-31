@@ -30,6 +30,25 @@
 namespace mf
 {
 
+///
+/// series class
+///
+/// The series class is the column type for the @ref frame class. series
+/// features a sort of copy-on-write semantics - series instances can be copied
+/// cheaply because they contain a reference to an underlying ref-counted array
+/// which isn't copied. When a series instance needs to be mutated, however, the
+/// underlying array will be copied if it is also referenced by other series
+/// instances. For example
+///
+///     series<int> s1;
+///     auto s2 = s1; // s2 and s1 now reference the same underlying array
+///     assert( s1.use_count() == 2 );
+///     assert( s2.use_count() == 2 );
+///     // iterator can mutate, so the array is copied or "unref"'ed
+///     series<int>::iterator it = s2.begin();
+///     assert( s1.use_count() == 1 );
+///     assert( s2.use_count() == 1 );
+///
 template<typename T>
 class series
 {
@@ -212,6 +231,12 @@ public:
     double
     mean() const;
 
+    /// Calculate the minimum and maximum value in the series, and return them in
+    /// a std::pair<>
+    ///
+    /// If the series is empty and the series type doesn't support default
+    /// construction, this will throw std::out_of_range
+    ///
     std::pair<T, T>
     minmax() const;
 
