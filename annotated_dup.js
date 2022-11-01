@@ -10,7 +10,7 @@ var annotated_dup =
       [ "group< index_defn< GroupInds... >, Ts... >", "classmf_1_1group_3_01index__defn_3_01GroupInds_8_8_8_01_4_00_01Ts_8_8_8_01_4.html", null ],
       [ "index_defn", "structmf_1_1index__defn.html", null ],
       [ "mi", "classmf_1_1mi.html", null ],
-      [ "series", "classmf_1_1series.html", null ],
+      [ "series", "classmf_1_1series.html", "classmf_1_1series" ],
       [ "terminal", "structmf_1_1terminal.html", null ]
     ] ],
     [ "std", null, [

@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-9-g388f46d</span>
+   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-10-g3f70599</span>
    </div>
   </td>
  </tr>
@@ -125,6 +125,10 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>const_value_type</b>
 template&lt;size_t Ind&gt; </td></tr>
 <tr class="memitem:a2a8baebc589ef56c32d1be9d51de2333"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>pack_elem_pair</b> = std::pair&lt; typename pack_element&lt; Ind, Ts... &gt;::type, typename pack_element&lt; Ind, Ts... &gt;::type &gt;</td></tr>
 <tr class="separator:a2a8baebc589ef56c32d1be9d51de2333"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a881461a62ac44b3b1a931df0fc8e2f8c"><td class="memTemplParams" colspan="2"><a id="a881461a62ac44b3b1a931df0fc8e2f8c" name="a881461a62ac44b3b1a931df0fc8e2f8c"></a>
+template&lt;size_t Ind&gt; </td></tr>
+<tr class="memitem:a881461a62ac44b3b1a931df0fc8e2f8c"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>frame_without_indexed_column</b> = typename detail::pack_remove&lt; Ind, <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type</td></tr>
+<tr class="separator:a881461a62ac44b3b1a931df0fc8e2f8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -248,9 +252,8 @@ template&lt;typename... Us&gt; </td></tr>
 template&lt;size_t Ind&gt; </td></tr>
 <tr class="memitem:aba04b42d730dde12e0ed27904fb16ab0"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><b>mean</b> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;) const</td></tr>
 <tr class="separator:aba04b42d730dde12e0ed27904fb16ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplParams" colspan="2"><a id="a51c9efa1913ec7575cd59cb712c16b00" name="a51c9efa1913ec7575cd59cb712c16b00"></a>
-template&lt;size_t Ind&gt; </td></tr>
-<tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplItemLeft" align="right" valign="top">pack_elem_pair&lt; Ind &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>minmax</b> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;) const</td></tr>
+<tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplParams" colspan="2">template&lt;size_t Ind&gt; </td></tr>
+<tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplItemLeft" align="right" valign="top">pack_elem_pair&lt; Ind &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a51c9efa1913ec7575cd59cb712c16b00">minmax</a> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;) const</td></tr>
 <tr class="separator:a51c9efa1913ec7575cd59cb712c16b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ce9d546cd9edbeec480d3b268c59cb2"><td class="memTemplParams" colspan="2"><a id="a5ce9d546cd9edbeec480d3b268c59cb2" name="a5ce9d546cd9edbeec480d3b268c59cb2"></a>
 template&lt;typename T &gt; </td></tr>
@@ -295,6 +298,11 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>pop_back</b> ()</td><
 <tr class="memitem:ac13cce0d00233880af794e79624765ff"><td class="memTemplParams" colspan="2">template&lt;typename U , typename... Us&gt; </td></tr>
 <tr class="memitem:ac13cce0d00233880af794e79624765ff"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ac13cce0d00233880af794e79624765ff">push_back</a> (U first_arg, Us... args)</td></tr>
 <tr class="separator:ac13cce0d00233880af794e79624765ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96b9210d609ee21874e3e1147cdedec8"><td class="memTemplParams" colspan="2"><a id="a96b9210d609ee21874e3e1147cdedec8" name="a96b9210d609ee21874e3e1147cdedec8"></a>
+template&lt;size_t Ind&gt; </td></tr>
+<tr class="memitem:a96b9210d609ee21874e3e1147cdedec8"><td class="memTemplItemLeft" align="right" valign="top">frame_without_indexed_column&lt; Ind &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>remove_column</b> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;)</td></tr>
+<tr class="memdesc:a96b9210d609ee21874e3e1147cdedec8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a frame without the column at Ind index. <br /></td></tr>
+<tr class="separator:a96b9210d609ee21874e3e1147cdedec8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a944cbf2a354daead0267302003f114a4"><td class="memItemLeft" align="right" valign="top"><a id="a944cbf2a354daead0267302003f114a4" name="a944cbf2a354daead0267302003f114a4"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>reserve</b> (size_t newsize)</td></tr>
 <tr class="separator:a944cbf2a354daead0267302003f114a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -671,6 +679,30 @@ template&lt;typename... Ts&gt; </div>
       </table>
 </div><div class="memdoc">
 <p >Requests a row iterator pointing just past the last row of the frame. </p>
+
+</div>
+</div>
+<a id="a51c9efa1913ec7575cd59cb712c16b00" name="a51c9efa1913ec7575cd59cb712c16b00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51c9efa1913ec7575cd59cb712c16b00">&#9670;&nbsp;</a></span>minmax()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Ts&gt; </div>
+<div class="memtemplate">
+template&lt;size_t Ind&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">pack_elem_pair&lt; Ind &gt; <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::minmax </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Calculate the minimum and maximum value in a column, and return them in a std::pair&lt;&gt;</p>
+<p >If the frame is empty and the type of the column doesn't support default construction, this will throw std::out_of_range </p>
 
 </div>
 </div>
