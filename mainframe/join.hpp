@@ -15,6 +15,12 @@ template<typename... Ts, size_t Ind1, typename... Us, size_t Ind2>
 frame<Ts..., Us...>
 innerjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<Ind2>)
 {
+    // These should be comparable
+    using LT = typename detail::pack_element<Ind1, Ts...>::type;
+    using RT = typename detail::pack_element<Ind2, Us...>::type;
+    static_assert(detail::is_equality_comparable<LT, RT>::value,
+        "Column types to join on must be equality comparable");
+
     const frame_indexer<index_defn<Ind1>, Ts...> ileft{ left };
     const frame_indexer<index_defn<Ind2>, Us...> iright{ right };
     ileft.build_index();
@@ -59,6 +65,12 @@ template<typename... Ts, size_t Ind1, typename... Us, size_t Ind2>
 frame<Ts..., Us...>
 leftjoin(frame<Ts...> left, columnindex<Ind1>, frame<Us...> right, columnindex<Ind2>)
 {
+    // These should be comparable
+    using LT = typename detail::pack_element<Ind1, Ts...>::type;
+    using RT = typename detail::pack_element<Ind2, Us...>::type;
+    static_assert(detail::is_equality_comparable<LT, RT>::value,
+        "Column types to join on must be equality comparable");
+
     const frame_indexer<index_defn<Ind1>, Ts...> ileft{ left };
     const frame_indexer<index_defn<Ind2>, Us...> iright{ right };
     ileft.build_index();

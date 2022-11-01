@@ -300,6 +300,18 @@ struct pack_remove<Ind, Tpl<Ts...>>
     using type = typename combine<tpl_upto, tpl_after>::type;
 };
 
+template<typename T, typename U>
+using equality_comparison_t = decltype(std::declval<T&>() == std::declval<U&>());
+
+template<typename T, typename U, typename = void>
+struct is_equality_comparable : std::false_type
+{};
+
+template<typename T, typename U>
+struct is_equality_comparable<T, U, std::void_t<equality_comparison_t<T, U>>>
+    : std::is_same<equality_comparison_t<T, U>, bool>
+{};
+
 } // namespace detail
 
 } // namespace mf
