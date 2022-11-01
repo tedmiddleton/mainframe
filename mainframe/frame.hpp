@@ -66,7 +66,7 @@ template<typename... Ts>
 class frame
 {
     template<size_t Ind, typename... Us>
-    using pack_element = detail::pack_element<Ind, Us...>;
+    using pack_element = typename detail::pack_element<Ind, Us...>;
 
 public:
     using iterator               = frame_iterator<Ts...>;
@@ -80,7 +80,7 @@ public:
 
     frame()             = default;
     frame(const frame&) = default;
-    explicit frame(const series<typename pack_element<0, Ts...>::type>&);
+    explicit frame(const series<typename detail::pack_element<0, Ts...>::type>&);
     frame(frame&&)      = default;
     frame&
     operator=(const frame&) = default;

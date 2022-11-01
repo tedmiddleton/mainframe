@@ -35,7 +35,7 @@ namespace mf
 {
 
 template<typename... Ts>
-frame<Ts...>::frame(const series<typename frame<Ts...>::pack_element<0, Ts...>::type>& s)
+frame<Ts...>::frame(const series<typename detail::pack_element<0, Ts...>::type>& s)
 {
     std::get<0>(m_columns) = s;
 }
