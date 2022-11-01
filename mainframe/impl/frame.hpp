@@ -423,7 +423,7 @@ frame<Ts...>::minmax(columnindex<Ind>) const
 template<typename... Ts>
 template<typename T>
 frame<Ts..., T>
-frame<Ts...>::new_series(const std::string& series_name) const
+frame<Ts...>::new_column(const std::string& series_name) const
 {
     uframe plust(*this);
     series<T> ns(size());
@@ -436,7 +436,7 @@ frame<Ts...>::new_series(const std::string& series_name) const
 template<typename... Ts>
 template<typename T, typename Ex>
 frame<Ts..., T>
-frame<Ts...>::new_series(const std::string& series_name, Ex expr) const
+frame<Ts...>::new_column(const std::string& series_name, Ex expr) const
 {
     uframe plust(*this);
     series<T> ns(size());

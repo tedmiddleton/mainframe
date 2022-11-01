@@ -159,6 +159,9 @@ public:
     const_reverse_iterator
     crend() const;
 
+    template<size_t... Inds>
+    using frame_with_missing_columns = typename detail::add_opt<frame<Ts...>, 0, Inds...>::type;
+    
     /// convert a column to use the missing class mi<> to represent missing
     /// elements
     ///
@@ -170,8 +173,10 @@ public:
     ///     f2.push_back(2022_y/12, 3, 0.007297);
     ///
     template<size_t... Inds>
-    typename detail::add_opt<frame<Ts...>, 0, Inds...>::type
+    frame_with_missing_columns<Inds...>
     allow_missing(columnindex<Inds>... cols) const;
+
+    using frame_with_all_missing_columns = typename detail::add_all_opt<frame<Ts...>>::type;
 
     /// convert all columns to use the missing class mi<> to represent missing
     /// elements
@@ -185,7 +190,7 @@ public:
     ///     f2.push_back(2022_y / January / 4, 12.2, missing);
     ///     f2.push_back(missing, missing, false);
     ///
-    typename detail::add_all_opt<frame<Ts...>>::type
+    frame_with_all_missing_columns
     allow_missing() const;
 
     /// Remove all rows/data from the dataframe
@@ -225,6 +230,9 @@ public:
     template<size_t Ind1, size_t Ind2>
     double corr(terminal<expr_column<Ind1>>, terminal<expr_column<Ind2>>) const;
 
+    template<size_t... Inds>
+    using frame_without_missing_columns = typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type;
+
     /// convert a column to NOT use the missing class mi<> to represent missing
     /// elements
     ///
@@ -237,13 +245,23 @@ public:
     ///     fr2.push_back(2022_y/12, 3, 0.007297);
     ///
     template<size_t... Inds>
-    typename detail::remove_opt<frame<Ts...>, 0, Inds...>::type
+    frame_without_missing_columns<Inds...>
     disallow_missing(columnindex<Inds>... cols) const;
+
+    using frame_without_any_missing_columns = typename detail::remove_all_opt<frame<Ts...>>::type;
 
     /// convert all columns to NOT use the missing class mi<> to represent
     /// missing elements
     ///
-    typename detail::remove_all_opt<frame<Ts...>>::type
+    ///     frame_row<mi<year_month>, int, mi<double>> fr1;
+    ///
+    ///     // fr2 is frame_row<year_month, int, double>
+    ///     auto fr2 = fr1.disallow_missing();
+    ///     fr1.push_back(2022_y/10, 1, 3.14);
+    ///     //fr2.push_back(missing, 2, missing); this won't compile
+    ///     fr2.push_back(2022_y/12, 3, 0.007297);
+    ///
+    frame_without_any_missing_columns
     disallow_missing() const;
 
     frame<Ts...>
@@ -299,11 +317,11 @@ public:
 
     template<typename T>
     frame<Ts..., T>
-    new_series(const std::string& series_name) const;
+    new_column(const std::string& column_name) const;
 
     template<typename T, typename Ex>
     frame<Ts..., T>
-    new_series(const std::string& series_name, Ex expr) const;
+    new_column(const std::string& column_name, Ex expr) const;
 
     size_t
     num_columns() const;
