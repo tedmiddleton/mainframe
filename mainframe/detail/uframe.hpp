@@ -50,14 +50,14 @@ public:
     }
 
     void
-    add_column(const useries& s)
+    append_column(const useries& s)
     {
         m_columns.push_back(s);
     }
 
     template<typename T>
     void
-    add_column(const std::string& colname)
+    append_column(const std::string& colname)
     {
         series<T> s;
         s.set_name(colname);
@@ -97,6 +97,22 @@ public:
         frame<Ts...> out;
         out.populate(m_columns);
         return out;
+    }
+
+    void
+    prepend_column(const useries& s)
+    {
+        m_columns.insert(m_columns.begin(), s);
+    }
+
+    template<typename T>
+    void
+    prepend_column(const std::string& colname)
+    {
+        series<T> s;
+        s.set_name(colname);
+        s.resize(size());
+        m_columns.insert(m_columns.begin(), s);
     }
 
     void

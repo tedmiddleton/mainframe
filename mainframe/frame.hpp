@@ -193,6 +193,14 @@ public:
     frame_with_all_missing_columns
     allow_missing() const;
 
+    template<typename T>
+    frame<Ts..., T>
+    append_column(const std::string& column_name) const;
+
+    template<typename T, typename Ex>
+    frame<Ts..., T>
+    append_column(const std::string& column_name, Ex expr) const;
+
     /// Remove all rows/data from the dataframe
     ///
     void
@@ -315,14 +323,6 @@ public:
     template<size_t Ind>
     pack_elem_pair<Ind> minmax(columnindex<Ind>) const;
 
-    template<typename T>
-    frame<Ts..., T>
-    new_column(const std::string& column_name) const;
-
-    template<typename T, typename Ex>
-    frame<Ts..., T>
-    new_column(const std::string& column_name, Ex expr) const;
-
     size_t
     num_columns() const;
 
@@ -382,6 +382,14 @@ public:
 
     void
     pop_back();
+
+    template<typename T>
+    frame<T, Ts...>
+    prepend_column(const std::string& column_name) const;
+
+    template<typename T, typename Ex>
+    frame<T, Ts...>
+    prepend_column(const std::string& column_name, Ex expr) const;
 
     ///
     /// Append a row from another frame to the end of this frame.

@@ -145,6 +145,49 @@ frame<Ts...>::allow_missing() const
 }
 
 template<typename... Ts>
+template<typename T>
+frame<Ts..., T>
+frame<Ts...>::append_column(const std::string& series_name) const
+{
+    uframe plust(*this);
+    series<T> ns(size());
+    ns.set_name(series_name);
+    useries us(ns);
+    plust.append_column(us);
+    return plust;
+}
+
+template<typename... Ts>
+template<typename T, typename Ex>
+frame<Ts..., T>
+frame<Ts...>::append_column(const std::string& series_name, Ex expr) const
+{
+    uframe plust(*this);
+    series<T> ns(size());
+    ns.set_name(series_name);
+    useries us(ns);
+    plust.append_column(us);
+    frame<Ts..., T> out = plust;
+    auto b              = out.begin();
+    auto e              = out.end();
+    auto it             = b;
+    if constexpr (detail::is_missing<T>::value) {
+        for (; it != e; ++it) {
+            auto val                         = expr(b, it, e);
+            it->template at<sizeof...(Ts)>() = val;
+        }
+    }
+    else {
+        for (; it != e; ++it) {
+            auto val                         = expr(b, it, e);
+            auto uval                        = detail::unwrap_missing<decltype(val)>::unwrap(val);
+            it->template at<sizeof...(Ts)>() = uval;
+        }
+    }
+    return out;
+}
+
+template<typename... Ts>
 void
 frame<Ts...>::clear()
 {
@@ -368,7 +411,7 @@ frame<Ts...>::hcat(frame<Us...> other) const
     uframe out(self);
     uframe uother(other);
     for (size_t c = 0; c < other.num_columns(); ++c) {
-        out.add_column(uother.column(c));
+        out.append_column(uother.column(c));
     }
 
     return out;
@@ -418,49 +461,6 @@ frame<Ts...>::minmax(columnindex<Ind>) const
 {
     const auto& s = std::get<Ind>(m_columns);
     return s.minmax();
-}
-
-template<typename... Ts>
-template<typename T>
-frame<Ts..., T>
-frame<Ts...>::new_column(const std::string& series_name) const
-{
-    uframe plust(*this);
-    series<T> ns(size());
-    ns.set_name(series_name);
-    useries us(ns);
-    plust.add_column(us);
-    return plust;
-}
-
-template<typename... Ts>
-template<typename T, typename Ex>
-frame<Ts..., T>
-frame<Ts...>::new_column(const std::string& series_name, Ex expr) const
-{
-    uframe plust(*this);
-    series<T> ns(size());
-    ns.set_name(series_name);
-    useries us(ns);
-    plust.add_column(us);
-    frame<Ts..., T> out = plust;
-    auto b              = out.begin();
-    auto e              = out.end();
-    auto it             = b;
-    if constexpr (detail::is_missing<T>::value) {
-        for (; it != e; ++it) {
-            auto val                         = expr(b, it, e);
-            it->template at<sizeof...(Ts)>() = val;
-        }
-    }
-    else {
-        for (; it != e; ++it) {
-            auto val                         = expr(b, it, e);
-            auto uval                        = detail::unwrap_missing<decltype(val)>::unwrap(val);
-            it->template at<sizeof...(Ts)>() = uval;
-        }
-    }
-    return out;
 }
 
 template<typename... Ts>
@@ -543,6 +543,49 @@ void
 frame<Ts...>::pop_back()
 {
     pop_back_impl<0>();
+}
+
+template<typename... Ts>
+template<typename T>
+frame<T, Ts...>
+frame<Ts...>::prepend_column(const std::string& series_name) const
+{
+    uframe plust(*this);
+    series<T> ns(size());
+    ns.set_name(series_name);
+    useries us(ns);
+    plust.prepend_column(us);
+    return plust;
+}
+
+template<typename... Ts>
+template<typename T, typename Ex>
+frame<T, Ts...>
+frame<Ts...>::prepend_column(const std::string& series_name, Ex expr) const
+{
+    uframe plust(*this);
+    series<T> ns(size());
+    ns.set_name(series_name);
+    useries us(ns);
+    plust.prepend_column(us);
+    frame<Ts..., T> out = plust;
+    auto b              = out.begin();
+    auto e              = out.end();
+    auto it             = b;
+    if constexpr (detail::is_missing<T>::value) {
+        for (; it != e; ++it) {
+            auto val                         = expr(b, it, e);
+            it->template at<sizeof...(Ts)>() = val;
+        }
+    }
+    else {
+        for (; it != e; ++it) {
+            auto val                         = expr(b, it, e);
+            auto uval                        = detail::unwrap_missing<decltype(val)>::unwrap(val);
+            it->template at<sizeof...(Ts)>() = uval;
+        }
+    }
+    return out;
 }
 
 template<typename... Ts>
@@ -750,7 +793,7 @@ frame<Ts...>::allow_missing_impl(uframe& uf) const
 {
     const series<U>& s = std::get<Ind>(m_columns);
     auto os            = s.allow_missing();
-    uf.add_column(os);
+    uf.append_column(os);
     if constexpr (sizeof...(Us) > 0) {
         allow_missing_impl<Ind + 1, Us...>(uf);
     }
@@ -802,7 +845,7 @@ void
 frame<Ts...>::columns_impl(uframe& f, const U& u, const Us&... us) const
 {
     useries s = column(u);
-    f.add_column(s);
+    f.append_column(s);
     if constexpr (sizeof...(Us) > 0) {
         columns_impl(f, us...);
     }
@@ -815,7 +858,7 @@ frame<Ts...>::columns_impl(uframe& f, columnindexpack<Ind, RemInds...>) const
 {
     columnindex<Ind> ci;
     useries s = column(ci);
-    f.add_column(s);
+    f.append_column(s);
     if constexpr (sizeof...(RemInds) > 0) {
         columnindexpack<RemInds...> remcis;
         columns_impl(f, remcis);
@@ -845,7 +888,7 @@ frame<Ts...>::disallow_missing_impl(uframe& uf) const
 {
     const series<U>& s = std::get<Ind>(m_columns);
     auto os            = s.disallow_missing();
-    uf.add_column(os);
+    uf.append_column(os);
     if constexpr (sizeof...(Us) > 0) {
         disallow_missing_impl<Ind + 1, Us...>(uf);
     }
