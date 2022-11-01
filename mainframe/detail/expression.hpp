@@ -423,9 +423,9 @@ struct binary_expr
     operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
         const Iter<IsConst, IsReverse, Ts...>& curr,
         const Iter<IsConst, IsReverse, Ts...>& end) const
-        -> decltype(Op::exec(detail::quickval<L>::value.
+        -> decltype(Op::exec(std::declval<L&>().
                              operator()(begin, curr, end),
-            detail::quickval<R>::value.
+            std::declval<R&>().
             operator()(begin, curr, end)))
     {
         return Op::exec(l.operator()(begin, curr, end), r.operator()(begin, curr, end));
@@ -454,7 +454,7 @@ struct unary_expr
     operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
         const Iter<IsConst, IsReverse, Ts...>& curr,
         const Iter<IsConst, IsReverse, Ts...>& end) const
-        -> decltype(Op::exec(detail::quickval<T>::value.
+        -> decltype(Op::exec(std::declval<T&>().
                              operator()(curr)))
     {
         return Op::exec(t.operator()(begin, curr, end));
