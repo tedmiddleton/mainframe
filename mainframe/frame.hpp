@@ -80,6 +80,7 @@ public:
 
     frame()             = default;
     frame(const frame&) = default;
+    explicit frame(const series<typename pack_element<0, Ts...>::type>&);
     frame(frame&&)      = default;
     frame&
     operator=(const frame&) = default;
