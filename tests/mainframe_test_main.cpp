@@ -1078,6 +1078,101 @@ TEST_CASE("append_column()", "[frame]")
     }
 }
 
+TEST_CASE("prepend_column()", "[frame]")
+{
+    SECTION("default")
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names("date", "temperature", "rain");
+        f1.push_back(2022_y / January / 2, 10.0, false);
+        f1.push_back(2022_y / January / 3, 11.1, true);
+        f1.push_back(2022_y / January / 4, 12.2, false);
+        f1.push_back(2022_y / January / 5, 13.3, false);
+        f1.push_back(2022_y / January / 6, 14.4, true);
+        f1.push_back(2022_y / January / 7, 15.5, false);
+        auto f2 = f1.prepend_column<int>("index");
+
+        auto it = f2.begin();
+        REQUIRE((*it)[_1] == 2022_y / January / 2);
+        REQUIRE((*it)[_2] == 10.0);
+        REQUIRE((*it)[_3] == false);
+        REQUIRE((*it)[_0] == 0);
+        it++;
+        REQUIRE((*it)[_1] == 2022_y / January / 3);
+        REQUIRE((*it)[_2] == 11.1);
+        REQUIRE((*it)[_3] == true);
+        REQUIRE((*it)[_0] == 0);
+        it++;
+        REQUIRE((*it)[_1] == 2022_y / January / 4);
+        REQUIRE((*it)[_2] == 12.2);
+        REQUIRE((*it)[_3] == false);
+        REQUIRE((*it)[_0] == 0);
+        it++;
+        REQUIRE((*it)[_1] == 2022_y / January / 5);
+        REQUIRE((*it)[_2] == 13.3);
+        REQUIRE((*it)[_3] == false);
+        REQUIRE((*it)[_0] == 0);
+        it++;
+        REQUIRE((*it)[_1] == 2022_y / January / 6);
+        REQUIRE((*it)[_2] == 14.4);
+        REQUIRE((*it)[_3] == true);
+        REQUIRE((*it)[_0] == 0);
+        it++;
+        REQUIRE((*it)[_1] == 2022_y / January / 7);
+        REQUIRE((*it)[_2] == 15.5);
+        REQUIRE((*it)[_3] == false);
+        REQUIRE((*it)[_0] == 0);
+    }
+
+    SECTION("expression")
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names("date", "temperature", "rain");
+        f1.push_back(2022_y / January / 2, 10.0, false);
+        f1.push_back(2022_y / January / 3, 11.1, true);
+        f1.push_back(2022_y / January / 4, 12.2, false);
+        f1.push_back(2022_y / January / 5, 13.3, false);
+        f1.push_back(2022_y / January / 6, 14.4, true);
+        f1.push_back(2022_y / January / 7, 15.5, false);
+        auto f2 = f1.prepend_column<year_month_day>("index", _0 + years(1));
+        auto f3 = f1.prepend_column<year_month_day>("index", [](auto&, auto& c, auto&) {
+            auto& col1val = c->at(_0);
+            return col1val + years(1);
+        });
+        REQUIRE(f2 == f3);
+
+        REQUIRE((f2.begin() + 0)->at(_1) == 2022_y / January / 2);
+        REQUIRE((f2.begin() + 0)->at(_2) == 10.0);
+        REQUIRE((f2.begin() + 0)->at(_3) == false);
+        REQUIRE((f2.begin() + 0)->at(_0) == 2023_y / January / 2);
+                                       
+        REQUIRE((f2.begin() + 1)->at(_1) == 2022_y / January / 3);
+        REQUIRE((f2.begin() + 1)->at(_2) == 11.1);
+        REQUIRE((f2.begin() + 1)->at(_3) == true);
+        REQUIRE((f2.begin() + 1)->at(_0) == 2023_y / January / 3);
+                                       
+        REQUIRE((f2.begin() + 2)->at(_1) == 2022_y / January / 4);
+        REQUIRE((f2.begin() + 2)->at(_2) == 12.2);
+        REQUIRE((f2.begin() + 2)->at(_3) == false);
+        REQUIRE((f2.begin() + 2)->at(_0) == 2023_y / January / 4);
+                                       
+        REQUIRE((f2.begin() + 3)->at(_1) == 2022_y / January / 5);
+        REQUIRE((f2.begin() + 3)->at(_2) == 13.3);
+        REQUIRE((f2.begin() + 3)->at(_3) == false);
+        REQUIRE((f2.begin() + 3)->at(_0) == 2023_y / January / 5);
+                                       
+        REQUIRE((f2.begin() + 4)->at(_1) == 2022_y / January / 6);
+        REQUIRE((f2.begin() + 4)->at(_2) == 14.4);
+        REQUIRE((f2.begin() + 4)->at(_3) == true);
+        REQUIRE((f2.begin() + 4)->at(_0) == 2023_y / January / 6);
+
+        REQUIRE((f2.begin() + 5)->at(_1) == 2022_y / January / 7);
+        REQUIRE((f2.begin() + 5)->at(_2) == 15.5);
+        REQUIRE((f2.begin() + 5)->at(_3) == false);
+        REQUIRE((f2.begin() + 5)->at(_0) == 2023_y / January / 7);
+    }
+}
+
 TEST_CASE("operator<<()", "[frame]")
 {
     frame<year_month_day, double, bool> f1;

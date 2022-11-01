@@ -568,21 +568,24 @@ frame<Ts...>::prepend_column(const std::string& series_name, Ex expr) const
     ns.set_name(series_name);
     useries us(ns);
     plust.prepend_column(us);
-    frame<Ts..., T> out = plust;
-    auto b              = out.begin();
-    auto e              = out.end();
-    auto it             = b;
+    frame<T, Ts...> out = plust;
+    auto ib             = begin();
+    auto ie             = end();
+    auto ob             = out.begin();
+    auto oe             = out.end();
+    auto iit            = ib;
+    auto oit             = ob;
     if constexpr (detail::is_missing<T>::value) {
-        for (; it != e; ++it) {
-            auto val                         = expr(b, it, e);
-            it->template at<sizeof...(Ts)>() = val;
+        for (; oit != oe; ++oit, ++iit) {
+            auto val                         = expr(ib, iit, ie);
+            oit->template at<0>() = val;
         }
     }
     else {
-        for (; it != e; ++it) {
-            auto val                         = expr(b, it, e);
+        for (; oit != oe; ++oit, ++iit) {
+            auto val                         = expr(ib, iit, ie);
             auto uval                        = detail::unwrap_missing<decltype(val)>::unwrap(val);
-            it->template at<sizeof...(Ts)>() = uval;
+            oit->template at<0>() = uval;
         }
     }
     return out;
