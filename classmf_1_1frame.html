@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-10-g3f70599</span>
+   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.7.0-11-gebb987c</span>
    </div>
   </td>
  </tr>
@@ -121,6 +121,20 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b> = <a 
 <tr class="memitem:a557b99ae1f922e1e82ab455864382535"><td class="memItemLeft" align="right" valign="top"><a id="a557b99ae1f922e1e82ab455864382535" name="a557b99ae1f922e1e82ab455864382535"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>const_value_type</b> = <a class="el" href="classmf_1_1__row__proxy.html">_row_proxy</a>&lt; true, Ts... &gt;</td></tr>
 <tr class="separator:a557b99ae1f922e1e82ab455864382535"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa639d4c0c435bd498d2e192305e5ded6"><td class="memTemplParams" colspan="2"><a id="aa639d4c0c435bd498d2e192305e5ded6" name="aa639d4c0c435bd498d2e192305e5ded6"></a>
+template&lt;size_t... Inds&gt; </td></tr>
+<tr class="memitem:aa639d4c0c435bd498d2e192305e5ded6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>frame_with_missing_columns</b> = typename detail::add_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt;, 0, Inds... &gt;::type</td></tr>
+<tr class="separator:aa639d4c0c435bd498d2e192305e5ded6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab035ce8d575c632c4c89497df65f3503"><td class="memItemLeft" align="right" valign="top"><a id="ab035ce8d575c632c4c89497df65f3503" name="ab035ce8d575c632c4c89497df65f3503"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>frame_with_all_missing_columns</b> = typename detail::add_all_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type</td></tr>
+<tr class="separator:ab035ce8d575c632c4c89497df65f3503"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ebc82e0aa04e3cf249e7c00bd93aeb3"><td class="memTemplParams" colspan="2"><a id="a3ebc82e0aa04e3cf249e7c00bd93aeb3" name="a3ebc82e0aa04e3cf249e7c00bd93aeb3"></a>
+template&lt;size_t... Inds&gt; </td></tr>
+<tr class="memitem:a3ebc82e0aa04e3cf249e7c00bd93aeb3"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>frame_without_missing_columns</b> = typename detail::remove_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt;, 0, Inds... &gt;::type</td></tr>
+<tr class="separator:a3ebc82e0aa04e3cf249e7c00bd93aeb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a796d07899d7effa723205ba96c7d2a19"><td class="memItemLeft" align="right" valign="top"><a id="a796d07899d7effa723205ba96c7d2a19" name="a796d07899d7effa723205ba96c7d2a19"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>frame_without_any_missing_columns</b> = typename detail::remove_all_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type</td></tr>
+<tr class="separator:a796d07899d7effa723205ba96c7d2a19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a8baebc589ef56c32d1be9d51de2333"><td class="memTemplParams" colspan="2"><a id="a2a8baebc589ef56c32d1be9d51de2333" name="a2a8baebc589ef56c32d1be9d51de2333"></a>
 template&lt;size_t Ind&gt; </td></tr>
 <tr class="memitem:a2a8baebc589ef56c32d1be9d51de2333"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>pack_elem_pair</b> = std::pair&lt; typename pack_element&lt; Ind, Ts... &gt;::type, typename pack_element&lt; Ind, Ts... &gt;::type &gt;</td></tr>
@@ -168,11 +182,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ab016f6288b9ec5a88f0dec8b9dfe2c8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac70a15f4e945a74084d7c7c7a215977f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1base__frame__iterator.html">const_reverse_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ac70a15f4e945a74084d7c7c7a215977f">crend</a> () const</td></tr>
 <tr class="separator:ac70a15f4e945a74084d7c7c7a215977f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdcd8879adea8ff4a2d957d8dfba0104"><td class="memTemplParams" colspan="2">template&lt;size_t... Inds&gt; </td></tr>
-<tr class="memitem:acdcd8879adea8ff4a2d957d8dfba0104"><td class="memTemplItemLeft" align="right" valign="top">detail::add_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt;, 0, Inds... &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#acdcd8879adea8ff4a2d957d8dfba0104">allow_missing</a> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Inds &gt;... cols) const</td></tr>
-<tr class="separator:acdcd8879adea8ff4a2d957d8dfba0104"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4f0a644a70b7c17510afee045a39e72"><td class="memItemLeft" align="right" valign="top">detail::add_all_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#af4f0a644a70b7c17510afee045a39e72">allow_missing</a> () const</td></tr>
-<tr class="separator:af4f0a644a70b7c17510afee045a39e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec1ca67f0855165deec1d07804c4029a"><td class="memTemplParams" colspan="2">template&lt;size_t... Inds&gt; </td></tr>
+<tr class="memitem:aec1ca67f0855165deec1d07804c4029a"><td class="memTemplItemLeft" align="right" valign="top">frame_with_missing_columns&lt; Inds... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#aec1ca67f0855165deec1d07804c4029a">allow_missing</a> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Inds &gt;... cols) const</td></tr>
+<tr class="separator:aec1ca67f0855165deec1d07804c4029a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb953a866abd48f287bf1495b2ee0de6"><td class="memItemLeft" align="right" valign="top">frame_with_all_missing_columns&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#afb953a866abd48f287bf1495b2ee0de6">allow_missing</a> () const</td></tr>
+<tr class="separator:afb953a866abd48f287bf1495b2ee0de6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2183dab3a14f030c443382e8f081702c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a2183dab3a14f030c443382e8f081702c">clear</a> ()</td></tr>
 <tr class="separator:a2183dab3a14f030c443382e8f081702c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a634010b6b6ab8cfa6ccc450382e011ad"><td class="memItemLeft" align="right" valign="top">useries&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a634010b6b6ab8cfa6ccc450382e011ad">column</a> (const std::string &amp;colname) const</td></tr>
@@ -208,11 +222,11 @@ template&lt;typename... Us&gt; </td></tr>
 template&lt;size_t Ind1, size_t Ind2&gt; </td></tr>
 <tr class="memitem:a88de84f1248ca456138af0e35b338435"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><b>corr</b> (<a class="el" href="structmf_1_1terminal.html">terminal</a>&lt; <a class="el" href="structmf_1_1expr__column.html">expr_column</a>&lt; Ind1 &gt; &gt;, <a class="el" href="structmf_1_1terminal.html">terminal</a>&lt; <a class="el" href="structmf_1_1expr__column.html">expr_column</a>&lt; Ind2 &gt; &gt;) const</td></tr>
 <tr class="separator:a88de84f1248ca456138af0e35b338435"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac04060580e9d60f08f6eb1e078b13af4"><td class="memTemplParams" colspan="2">template&lt;size_t... Inds&gt; </td></tr>
-<tr class="memitem:ac04060580e9d60f08f6eb1e078b13af4"><td class="memTemplItemLeft" align="right" valign="top">detail::remove_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt;, 0, Inds... &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ac04060580e9d60f08f6eb1e078b13af4">disallow_missing</a> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Inds &gt;... cols) const</td></tr>
-<tr class="separator:ac04060580e9d60f08f6eb1e078b13af4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7767ad61a825d41cb7d1f33431e8a79"><td class="memItemLeft" align="right" valign="top">detail::remove_all_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#aa7767ad61a825d41cb7d1f33431e8a79">disallow_missing</a> () const</td></tr>
-<tr class="separator:aa7767ad61a825d41cb7d1f33431e8a79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af281f09453456b422c6239015549d5c4"><td class="memTemplParams" colspan="2">template&lt;size_t... Inds&gt; </td></tr>
+<tr class="memitem:af281f09453456b422c6239015549d5c4"><td class="memTemplItemLeft" align="right" valign="top">frame_without_missing_columns&lt; Inds... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#af281f09453456b422c6239015549d5c4">disallow_missing</a> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Inds &gt;... cols) const</td></tr>
+<tr class="separator:af281f09453456b422c6239015549d5c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7bcfaf512bd6773b412efbcf746bb89"><td class="memItemLeft" align="right" valign="top">frame_without_any_missing_columns&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#aa7bcfaf512bd6773b412efbcf746bb89">disallow_missing</a> () const</td></tr>
+<tr class="separator:aa7bcfaf512bd6773b412efbcf746bb89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae5ba8d0955b5d7ef2a575fe7cee470c7"><td class="memItemLeft" align="right" valign="top"><a id="ae5ba8d0955b5d7ef2a575fe7cee470c7" name="ae5ba8d0955b5d7ef2a575fe7cee470c7"></a>
 <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>drop_missing</b> () const</td></tr>
 <tr class="separator:ae5ba8d0955b5d7ef2a575fe7cee470c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -255,14 +269,14 @@ template&lt;size_t Ind&gt; </td></tr>
 <tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplParams" colspan="2">template&lt;size_t Ind&gt; </td></tr>
 <tr class="memitem:a51c9efa1913ec7575cd59cb712c16b00"><td class="memTemplItemLeft" align="right" valign="top">pack_elem_pair&lt; Ind &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a51c9efa1913ec7575cd59cb712c16b00">minmax</a> (<a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Ind &gt;) const</td></tr>
 <tr class="separator:a51c9efa1913ec7575cd59cb712c16b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ce9d546cd9edbeec480d3b268c59cb2"><td class="memTemplParams" colspan="2"><a id="a5ce9d546cd9edbeec480d3b268c59cb2" name="a5ce9d546cd9edbeec480d3b268c59cb2"></a>
+<tr class="memitem:a7fa17416a79c2e8a203477357ea301eb"><td class="memTemplParams" colspan="2"><a id="a7fa17416a79c2e8a203477357ea301eb" name="a7fa17416a79c2e8a203477357ea301eb"></a>
 template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a5ce9d546cd9edbeec480d3b268c59cb2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>new_series</b> (const std::string &amp;series_name) const</td></tr>
-<tr class="separator:a5ce9d546cd9edbeec480d3b268c59cb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada81bfa9bb87f4c90933621727ab278e"><td class="memTemplParams" colspan="2"><a id="ada81bfa9bb87f4c90933621727ab278e" name="ada81bfa9bb87f4c90933621727ab278e"></a>
+<tr class="memitem:a7fa17416a79c2e8a203477357ea301eb"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>new_column</b> (const std::string &amp;column_name) const</td></tr>
+<tr class="separator:a7fa17416a79c2e8a203477357ea301eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad57f1f1ba80a5e1d4a847df1da684e4d"><td class="memTemplParams" colspan="2"><a id="ad57f1f1ba80a5e1d4a847df1da684e4d" name="ad57f1f1ba80a5e1d4a847df1da684e4d"></a>
 template&lt;typename T , typename Ex &gt; </td></tr>
-<tr class="memitem:ada81bfa9bb87f4c90933621727ab278e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>new_series</b> (const std::string &amp;series_name, Ex expr) const</td></tr>
-<tr class="separator:ada81bfa9bb87f4c90933621727ab278e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad57f1f1ba80a5e1d4a847df1da684e4d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>new_column</b> (const std::string &amp;column_name, Ex expr) const</td></tr>
+<tr class="separator:ad57f1f1ba80a5e1d4a847df1da684e4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a865575b2c2834b34a59cd449f1a21173"><td class="memItemLeft" align="right" valign="top"><a id="a865575b2c2834b34a59cd449f1a21173" name="a865575b2c2834b34a59cd449f1a21173"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>num_columns</b> () const</td></tr>
 <tr class="separator:a865575b2c2834b34a59cd449f1a21173"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -377,8 +391,8 @@ class mf::frame&lt; Ts &gt;</div><p >dataframe class</p>
 <p ><a class="el" href="classmf_1_1frame.html">frame</a> is mostly a column/<a class="el" href="classmf_1_1series.html">series</a> (the two terms are interchangeable in the mainframe library) container. The <a class="el" href="classmf_1_1frame.html">frame</a> <code>f</code> in the above declaration contains 3 <a class="el" href="classmf_1_1series.html">series</a> objects. <a class="el" href="classmf_1_1series.html">series</a> objects themselves point to reference-counted copy-on-write arrays which means a <a class="el" href="classmf_1_1frame.html">frame</a>, as a <a class="el" href="classmf_1_1series.html">series</a> container, also points to reference-counted copy-on-write arrays and as such can be copied and moved cheaply.</p>
 <p >Any mutating operation on a <a class="el" href="classmf_1_1frame.html">frame</a> - requesting a non-const iterator or calling <a class="el" href="classmf_1_1frame.html#a345aa3638da1bdfb656f27584d39864e">push_back()</a> or erase() for example - will trigger an "unref" where the underlying array is copied if it's ref-count is greater than 1. Depending on the size of the data set, this could be expensive. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="af4f0a644a70b7c17510afee045a39e72" name="af4f0a644a70b7c17510afee045a39e72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4f0a644a70b7c17510afee045a39e72">&#9670;&nbsp;</a></span>allow_missing() <span class="overload">[1/2]</span></h2>
+<a id="afb953a866abd48f287bf1495b2ee0de6" name="afb953a866abd48f287bf1495b2ee0de6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb953a866abd48f287bf1495b2ee0de6">&#9670;&nbsp;</a></span>allow_missing() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -386,7 +400,7 @@ class mf::frame&lt; Ts &gt;</div><p >dataframe class</p>
 template&lt;typename... Ts&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">detail::add_all_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::allow_missing </td>
+          <td class="memname">frame_with_all_missing_columns <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::allow_missing </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -404,8 +418,8 @@ f2.push_back(missing, missing, false);
 </pre> 
 </div>
 </div>
-<a id="acdcd8879adea8ff4a2d957d8dfba0104" name="acdcd8879adea8ff4a2d957d8dfba0104"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acdcd8879adea8ff4a2d957d8dfba0104">&#9670;&nbsp;</a></span>allow_missing() <span class="overload">[2/2]</span></h2>
+<a id="aec1ca67f0855165deec1d07804c4029a" name="aec1ca67f0855165deec1d07804c4029a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec1ca67f0855165deec1d07804c4029a">&#9670;&nbsp;</a></span>allow_missing() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -415,7 +429,7 @@ template&lt;typename... Ts&gt; </div>
 template&lt;size_t... Inds&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">detail::add_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt;, 0, Inds... &gt;::type <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::allow_missing </td>
+          <td class="memname">frame_with_missing_columns&lt; Inds... &gt; <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::allow_missing </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Inds &gt;...&#160;</td>
           <td class="paramname"><em>cols</em></td><td>)</td>
@@ -593,8 +607,8 @@ template&lt;typename... Ts&gt; </div>
 
 </div>
 </div>
-<a id="aa7767ad61a825d41cb7d1f33431e8a79" name="aa7767ad61a825d41cb7d1f33431e8a79"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7767ad61a825d41cb7d1f33431e8a79">&#9670;&nbsp;</a></span>disallow_missing() <span class="overload">[1/2]</span></h2>
+<a id="aa7bcfaf512bd6773b412efbcf746bb89" name="aa7bcfaf512bd6773b412efbcf746bb89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7bcfaf512bd6773b412efbcf746bb89">&#9670;&nbsp;</a></span>disallow_missing() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -602,19 +616,25 @@ template&lt;typename... Ts&gt; </div>
 template&lt;typename... Ts&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">detail::remove_all_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::disallow_missing </td>
+          <td class="memname">frame_without_any_missing_columns <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::disallow_missing </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >convert all columns to NOT use the missing class mi&lt;&gt; to represent missing elements </p>
+<p >convert all columns to NOT use the missing class mi&lt;&gt; to represent missing elements </p><pre class="fragment">frame_row&lt;mi&lt;year_month&gt;, int, mi&lt;double&gt;&gt; fr1;
 
+// fr2 is frame_row&lt;year_month, int, double&gt;
+auto fr2 = fr1.disallow_missing();
+fr1.push_back(2022_y/10, 1, 3.14);
+//fr2.push_back(missing, 2, missing); this won't compile
+fr2.push_back(2022_y/12, 3, 0.007297);
+</pre> 
 </div>
 </div>
-<a id="ac04060580e9d60f08f6eb1e078b13af4" name="ac04060580e9d60f08f6eb1e078b13af4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac04060580e9d60f08f6eb1e078b13af4">&#9670;&nbsp;</a></span>disallow_missing() <span class="overload">[2/2]</span></h2>
+<a id="af281f09453456b422c6239015549d5c4" name="af281f09453456b422c6239015549d5c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af281f09453456b422c6239015549d5c4">&#9670;&nbsp;</a></span>disallow_missing() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -624,7 +644,7 @@ template&lt;typename... Ts&gt; </div>
 template&lt;size_t... Inds&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">detail::remove_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt;, 0, Inds... &gt;::type <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::disallow_missing </td>
+          <td class="memname">frame_without_missing_columns&lt; Inds... &gt; <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::disallow_missing </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structmf_1_1terminal.html">columnindex</a>&lt; Inds &gt;...&#160;</td>
           <td class="paramname"><em>cols</em></td><td>)</td>
