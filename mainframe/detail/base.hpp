@@ -306,6 +306,21 @@ struct is_equality_comparable<T, U, std::void_t<equality_comparison_t<T, U>>>
     : std::is_same<equality_comparison_t<T, U>, bool>
 {};
 
+template<typename Func>
+struct get_return_type;
+
+template<typename Ret, typename... Args>
+struct get_return_type<Ret(Args...)>
+{
+    using type = Ret;
+};
+
+template<typename Ret, typename... Args>
+struct get_return_type<Ret(Args...) noexcept>
+{
+    using type = Ret;
+};
+
 } // namespace detail
 
 } // namespace mf

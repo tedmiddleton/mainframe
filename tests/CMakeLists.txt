@@ -10,7 +10,7 @@ option( ENABLE_SIMD_IN_TESTS "Enable SIMD optimizations in tests (default)" ON )
 
 if (ENABLE_SIMD_IN_TESTS)
     if (MSVC)
-        add_compile_options(/arch:AVX)
+        add_compile_options(/arch:AVX /bigobj)
     else()
         add_compile_options(-march=native)
     endif()

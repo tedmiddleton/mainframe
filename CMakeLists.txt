@@ -27,7 +27,7 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
-set( version 0.7.0 )
+set( version 0.8.0 )
 
 # mainframe ==================================================================
 

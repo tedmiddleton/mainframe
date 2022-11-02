@@ -1173,6 +1173,98 @@ TEST_CASE("prepend_column()", "[frame]")
     }
 }
 
+TEST_CASE("expression fn", "[frame]")
+{
+    frame<year_month_day, double, bool> f1;
+    f1.set_column_names("date", "temperature", "rain");
+    f1.push_back(2022_y / January / 2, 10.0, false);
+    f1.push_back(2022_y / January / 3, 11.1, true);
+    f1.push_back(2022_y / January / 4, 12.2, false);
+    f1.push_back(2022_y / January / 5, 13.3, false);
+    f1.push_back(2022_y / January / 6, 14.4, true);
+    f1.push_back(2022_y / January / 7, 15.5, false);
+    auto f2 = f1.append_column<double>( "tempceil", fn<double(double)>( ceil, _1 ) )
+        .append_column<double>( "temptrunc", fn<double(double)>( trunc, _1 ) )
+        .append_column<double>( "temptruncp.5", fn<double(double)>( trunc, _1+0.5 ) )
+        .append_column<double>( "temptruncp.5p", fn<double(double)>( trunc, _1 ) +0.5 )
+        .append_column<double>( "max", fn<double(double,double)>( ::fmax, _5, _6 ) );
+    dout << "expression fn f2:\n";
+    dout << f2;
+    auto it = f2.cbegin();
+
+    // Same as before
+    REQUIRE((it + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((it + 0)->at(_1) == 10.0);
+    REQUIRE((it + 0)->at(_2) == false);
+    REQUIRE((it + 1)->at(_0) == 2022_y / January / 3);
+    REQUIRE((it + 1)->at(_1) == 11.1);
+    REQUIRE((it + 1)->at(_2) == true);
+    REQUIRE((it + 2)->at(_0) == 2022_y / January / 4);
+    REQUIRE((it + 2)->at(_1) == 12.2);
+    REQUIRE((it + 2)->at(_2) == false);
+    REQUIRE((it + 3)->at(_0) == 2022_y / January / 5);
+    REQUIRE((it + 3)->at(_1) == 13.3);
+    REQUIRE((it + 3)->at(_2) == false);
+    REQUIRE((it + 4)->at(_0) == 2022_y / January / 6);
+    REQUIRE((it + 4)->at(_1) == 14.4);
+    REQUIRE((it + 4)->at(_2) == true);
+    REQUIRE((it + 5)->at(_0) == 2022_y / January / 7);
+    REQUIRE((it + 5)->at(_1) == 15.5);
+    REQUIRE((it + 5)->at(_2) == false);
+
+    // clang-format off
+    //  |         _0 |          _1 |    _2 |       _3 |        _4 |           _5 |            _6 |   _7
+    //  |       date | temperature |  rain | tempceil | temptrunc | temptruncp.5 | temptruncp.5p |  max
+    //__|____________|_____________|_______|__________|___________|______________|_______________|______
+    // 0| 2022-01-02 |          10 | false |       10 |        10 |           10 |          10.5 | 10.5
+    // 1| 2022-01-03 |        11.1 |  true |       12 |        11 |           11 |          11.5 | 11.5
+    // 2| 2022-01-04 |        12.2 | false |       13 |        12 |           12 |          12.5 | 12.5
+    // 3| 2022-01-05 |        13.3 | false |       14 |        13 |           13 |          13.5 | 13.5
+    // 4| 2022-01-06 |        14.4 |  true |       15 |        14 |           14 |          14.5 | 14.5
+    // 5| 2022-01-07 |        15.5 | false |       16 |        15 |           16 |          15.5 |   16
+    // clang-format on
+
+    // tempceil
+    REQUIRE((it + 0)->at(_3) == 10.0);
+    REQUIRE((it + 1)->at(_3) == 12.0);
+    REQUIRE((it + 2)->at(_3) == 13.0);
+    REQUIRE((it + 3)->at(_3) == 14.0);
+    REQUIRE((it + 4)->at(_3) == 15.0);
+    REQUIRE((it + 5)->at(_3) == 16.0);
+
+    // temptrunc
+    REQUIRE((it + 0)->at(_4) == 10.0);
+    REQUIRE((it + 1)->at(_4) == 11.0);
+    REQUIRE((it + 2)->at(_4) == 12.0);
+    REQUIRE((it + 3)->at(_4) == 13.0);
+    REQUIRE((it + 4)->at(_4) == 14.0);
+    REQUIRE((it + 5)->at(_4) == 15.0);
+
+    // temptruncp.5
+    REQUIRE((it + 0)->at(_5) == 10.0);
+    REQUIRE((it + 1)->at(_5) == 11.0);
+    REQUIRE((it + 2)->at(_5) == 12.0);
+    REQUIRE((it + 3)->at(_5) == 13.0);
+    REQUIRE((it + 4)->at(_5) == 14.0);
+    REQUIRE((it + 5)->at(_5) == 16.0);
+
+    // temptruncp.5p
+    REQUIRE((it + 0)->at(_6) == 10.5);
+    REQUIRE((it + 1)->at(_6) == 11.5);
+    REQUIRE((it + 2)->at(_6) == 12.5);
+    REQUIRE((it + 3)->at(_6) == 13.5);
+    REQUIRE((it + 4)->at(_6) == 14.5);
+    REQUIRE((it + 5)->at(_6) == 15.5);
+
+    // max
+    REQUIRE((it + 0)->at(_7) == 10.5);
+    REQUIRE((it + 1)->at(_7) == 11.5);
+    REQUIRE((it + 2)->at(_7) == 12.5);
+    REQUIRE((it + 3)->at(_7) == 13.5);
+    REQUIRE((it + 4)->at(_7) == 14.5);
+    REQUIRE((it + 5)->at(_7) == 16.0);
+}
+
 TEST_CASE("operator<<()", "[frame]")
 {
     frame<year_month_day, double, bool> f1;

@@ -175,6 +175,9 @@ struct unary_expr;
 template<typename Op, typename L, typename R>
 struct binary_expr;
 
+template<typename Func, typename... As>
+struct func_expr;
+
 template<typename T>
 struct is_complex_expression : std::false_type
 {};
@@ -185,6 +188,10 @@ struct is_complex_expression<unary_expr<Op, T>> : std::true_type
 
 template<typename Op, typename L, typename R>
 struct is_complex_expression<binary_expr<Op, L, R>> : std::true_type
+{};
+
+template<typename Func, typename... As>
+struct is_complex_expression<func_expr<Func, As...>> : std::true_type
 {};
 
 template<size_t Ind>
@@ -405,6 +412,34 @@ struct terminal<frame_length>
     }
 };
 
+// Op is a member type in expr_op
+// T must be either terminal<>, unary_expr<>, or binary_expr<> (no
+// unwrapped types - that's why make_unary_expr exists)
+template<typename Op, typename T>
+struct unary_expr
+{
+    using is_expr = void;
+    static_assert(is_expression<T>::value, "unary expression must contain expression");
+
+    explicit unary_expr(T _t)
+        : t(_t)
+    {}
+
+    template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
+        typename... Ts>
+    auto
+    operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
+        const Iter<IsConst, IsReverse, Ts...>& curr,
+        const Iter<IsConst, IsReverse, Ts...>& end) const
+        -> decltype(Op::exec(std::declval<T&>().
+                             operator()(curr)))
+    {
+        return Op::exec(t.operator()(begin, curr, end));
+    }
+
+    T t;
+};
+
 template<typename Op, typename L, typename R>
 struct binary_expr
 {
@@ -435,32 +470,46 @@ struct binary_expr
     R r;
 };
 
-// Op is a member type in expr_op
-// T must be either terminal<>, unary_expr<>, or binary_expr<> (no
-// unwrapped types - that's why make_unary_expr exists)
-template<typename Op, typename T>
-struct unary_expr
+template<typename Func, typename... As>
+struct func_expr
 {
+    func_expr() = default;
+    func_expr(Func& f, As... a) : func(&f), args(a...) {}
+    
     using is_expr = void;
-    static_assert(is_expression<T>::value, "unary expression must contain expression");
 
-    explicit unary_expr(T _t)
-        : t(_t)
-    {}
+    template<typename Iter>
+    using applied_args = std::tuple<decltype(std::declval<As&>()(
+            std::declval<Iter&>(), std::declval<Iter&>(), std::declval<Iter&>())) ... >;
+
+    using return_type = typename detail::get_return_type<Func>::type;
 
     template<template<bool, bool, typename...> typename Iter, bool IsConst, bool IsReverse,
         typename... Ts>
-    auto
+    return_type
     operator()(const Iter<IsConst, IsReverse, Ts...>& begin,
         const Iter<IsConst, IsReverse, Ts...>& curr,
         const Iter<IsConst, IsReverse, Ts...>& end) const
-        -> decltype(Op::exec(std::declval<T&>().
-                             operator()(curr)))
     {
-        return Op::exec(t.operator()(begin, curr, end));
+        applied_args<Iter<IsConst, IsReverse, Ts...> > results;
+        get_val<0>( begin, curr, end, results );
+        return std::apply( func, results );
     }
 
-    T t;
+    template< size_t Ind, template<bool, bool, typename...> typename Iter, bool IsConst, 
+        bool IsReverse, typename... Ts >
+    void get_val( const Iter<IsConst, IsReverse, Ts...>& begin, 
+        const Iter<IsConst, IsReverse, Ts...>& curr, const Iter<IsConst, IsReverse, Ts...>& end,
+        applied_args<Iter<IsConst, IsReverse, Ts...>> & results ) const
+    {
+        std::get<Ind>(results) = std::get<Ind>(args)(begin, curr, end);
+        if constexpr (Ind+1 < sizeof...(As)) {
+            get_val<Ind+1>(begin, curr, end, results);
+        }
+    }
+
+    Func* func = nullptr;
+    std::tuple<As...> args;
 };
 
 // If T is terminal<U>, unary_expr<Op,U> or binary_expr<Op,L,R>, just return T.
@@ -514,6 +563,18 @@ struct maybe_wrap<binary_expr<Op, L, R>>
     }
 };
 
+template<typename Func, typename... As>
+struct maybe_wrap<func_expr<Func, As...>>
+{
+    maybe_wrap() = delete;
+    using type   = func_expr<Func, As...>;
+    static type
+    wrap(const func_expr<Func, As...>& t)
+    {
+        return t;
+    }
+};
+
 template<typename Op, typename T>
 struct make_unary_expr
 {
@@ -541,6 +602,26 @@ struct make_binary_expr
         return out;
     }
 };
+
+template<typename Func, typename... Args>
+struct make_func_expr
+{
+    make_func_expr() = delete;
+    using type = func_expr< Func, typename maybe_wrap< Args >::type ... >;
+
+    static type 
+    create( Func& func, Args... args )
+    {
+        type out( func, maybe_wrap<Args>::wrap(args)... );
+        return out;
+    }
+};
+
+template<typename Func, typename... Args>
+typename make_func_expr<Func, Args...>::type fn( Func& func, Args... args )
+{
+    return make_func_expr<Func, Args...>::create( func, args... );
+}
 
 template<typename L, typename R>
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value,
