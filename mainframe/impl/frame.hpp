@@ -649,6 +649,7 @@ frame<Ts...>
 frame<Ts...>::reversed() const
 {
     frame<Ts...> out;
+    out.set_column_names(column_names());
     for (auto it(crbegin()); it != crend(); ++it) {
         out.push_back(*it);
     }
@@ -670,6 +671,7 @@ frame<Ts...>
 frame<Ts...>::reverse_sorted(columnindex<Inds>... ci)
 {
     frame<Ts...> out(*this);
+    out.set_column_names(column_names());
     out.reverse_sort(ci...);
     return out;
 }
@@ -755,6 +757,7 @@ frame<Ts...>
 frame<Ts...>::sorted(columnindex<Inds>... ci)
 {
     frame<Ts...> out(*this);
+    out.set_column_names(column_names());
     out.sort(ci...);
     return out;
 }
