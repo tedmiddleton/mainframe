@@ -194,6 +194,17 @@ frame<Ts...>::append_column(const std::string& series_name, Ex expr) const
 }
 
 template<typename... Ts>
+template<typename T>
+frame<Ts..., T>
+frame<Ts...>::append_series(const series<T>& s) const
+{
+    uframe plust(*this);
+    useries us(s);
+    plust.append_column(us);
+    return plust;
+}
+
+template<typename... Ts>
 void
 frame<Ts...>::clear()
 {
@@ -595,6 +606,17 @@ frame<Ts...>::prepend_column(const std::string& series_name, Ex expr) const
         }
     }
     return out;
+}
+
+template<typename... Ts>
+template<typename T>
+frame<T, Ts...>
+frame<Ts...>::prepend_series(const series<T>& s) const
+{
+    uframe plust(*this);
+    useries us(s);
+    plust.prepend_column(us);
+    return plust;
 }
 
 template<typename... Ts>

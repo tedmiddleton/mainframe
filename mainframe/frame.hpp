@@ -194,6 +194,21 @@ public:
     frame_with_all_missing_columns
     allow_missing() const;
 
+    /// Add a new column to the end of the frame with type T
+    ///
+    ///     frame<year_month, int> f1;
+    ///     f1.set_column_names({"month", "length"});
+    ///     f1.push_back(2022_y/1, 1);
+    ///     f1.push_back(2022_y/2, 2);
+    ///     f1.push_back(2022_y/3, 3);
+    ///     frame<year_month, int, double> f2 = f1.append_column<double>("depth");
+    ///     // f2 is now 
+    ///     //   |   month | length | depth
+    ///     // __|_________|________|_______
+    ///     //  0| 2022-01 |      1 |   0.0
+    ///     //  1| 2022-02 |      2 |   0.0
+    ///     //  2| 2022-03 |      3 |   0.0
+    ///
     template<typename T>
     frame<Ts..., T>
     append_column(const std::string& column_name) const;
@@ -201,6 +216,31 @@ public:
     template<typename T, typename Ex>
     frame<Ts..., T>
     append_column(const std::string& column_name, Ex expr) const;
+
+    /// Add an existing series to the frame as a column to the end of the frame 
+    ///
+    ///     frame<year_month, int> f1;
+    ///     f1.set_column_names({"month", "length"});
+    ///     f1.push_back(2022_y/1, 1);
+    ///     f1.push_back(2022_y/2, 2);
+    ///     f1.push_back(2022_y/3, 3);
+    ///     series<double> s1 = {1.1, 2.2};
+    ///     s1.set_name("depth");
+    ///     series<double> s2 = {3.3, 4.4, 5.5, 6.6};
+    ///     s2.set_name("height");
+    ///     frame<year_month, int, double> f2 = f1.append_series(s1);
+    ///     frame<year_month, int, double, double> f3 = f1.append_series(s2);
+    ///     // f3 is now
+    ///     //   |   month | length | depth | height
+    ///     // __|_________|________|_______|________
+    ///     //  0| 2022-01 |      1 |   1.1 |    3.3
+    ///     //  1| 2022-02 |      2 |   2.2 |    4.4
+    ///     //  2| 2022-03 |      3 |   0.0 |    5.5
+    ///     //  3| 0000-00 |      0 |   0.0 |    6.6
+    ///
+    template<typename T>
+    frame<Ts..., T>
+    append_series(const series<T>& s) const;
 
     /// Remove all rows/data from the dataframe
     ///
@@ -384,6 +424,21 @@ public:
     void
     pop_back();
 
+    /// Add a new column to the beginning of the frame with type T
+    ///
+    ///     frame<year_month, int> f1;
+    ///     f1.set_column_names({"month", "length"});
+    ///     f1.push_back(2022_y/1, 1);
+    ///     f1.push_back(2022_y/2, 2);
+    ///     f1.push_back(2022_y/3, 3);
+    ///     frame<double, year_month, int> f2 = f1.prepend_column<double>("depth");
+    ///     // f2 is now 
+    ///     //   | depth |   month | length 
+    ///     // __|_______|_________|________
+    ///     //  0|   0.0 | 2022-01 |      1 
+    ///     //  1|   0.0 | 2022-02 |      2 
+    ///     //  2|   0.0 | 2022-03 |      3 
+    ///
     template<typename T>
     frame<T, Ts...>
     prepend_column(const std::string& column_name) const;
@@ -391,6 +446,31 @@ public:
     template<typename T, typename Ex>
     frame<T, Ts...>
     prepend_column(const std::string& column_name, Ex expr) const;
+
+    /// Add an existing series to the frame as a column to the beginning of the frame 
+    ///
+    ///     frame<year_month, int> f1;
+    ///     f1.set_column_names({"month", "length"});
+    ///     f1.push_back(2022_y/1, 1);
+    ///     f1.push_back(2022_y/2, 2);
+    ///     f1.push_back(2022_y/3, 3);
+    ///     series<double> s1 = {1.1, 2.2};
+    ///     s1.set_name("depth");
+    ///     series<double> s2 = {3.3, 4.4, 5.5, 6.6};
+    ///     s2.set_name("height");
+    ///     frame<double, year_month, int> f2 = f1.prepend_series(s1);
+    ///     frame<double, double, year_month, int> f3 = f1.prepend_series(s2);
+    ///     // f3 is now
+    ///     //   | height | depth |   month | length 
+    ///     // __|________|_______|_________|________
+    ///     //  0|    3.3 |   1.1 | 2022-01 |      1 
+    ///     //  1|    4.4 |   2.2 | 2022-02 |      2 
+    ///     //  2|    5.5 |   0.0 | 2022-03 |      3 
+    ///     //  3|    6.6 |   0.0 | 0000-00 |      0 
+    ///
+    template<typename T>
+    frame<T, Ts...>
+    prepend_series(const series<T>& s) const;
 
     ///
     /// Append a row from another frame to the end of this frame.

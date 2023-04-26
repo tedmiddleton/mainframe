@@ -53,6 +53,7 @@ public:
     append_column(const useries& s)
     {
         m_columns.push_back(s);
+        expand_consistent();
     }
 
     template<typename T>
@@ -103,6 +104,7 @@ public:
     prepend_column(const useries& s)
     {
         m_columns.insert(m_columns.begin(), s);
+        expand_consistent();
     }
 
     template<typename T>
@@ -125,6 +127,7 @@ public:
     set_column(size_t idx, const useries& s)
     {
         m_columns.at(idx) = s;
+        expand_consistent();
     }
 
     size_t
@@ -152,6 +155,21 @@ private:
         m_columns.push_back(s);
         if constexpr (Ind + 1 < sizeof...(Ts)) {
             init_impl<Ind + 1>(f);
+        }
+    }
+
+    void
+    expand_consistent()
+    {
+        if (m_columns.size() == 0) {
+            return;
+        }
+        size_t sz = 0U;
+        for (auto& s : m_columns) {
+            sz = std::max(sz, s.size());
+        }
+        for (auto& s : m_columns) {
+            s.resize(sz);
         }
     }
 

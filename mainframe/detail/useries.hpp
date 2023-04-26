@@ -71,6 +71,12 @@ public:
     }
 
     void
+    resize(size_t n)
+    {
+        m_data->resize(n);
+    }
+
+    void
     set_name(const std::string& name)
     {
         m_name = name;

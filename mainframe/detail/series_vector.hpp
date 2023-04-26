@@ -32,6 +32,7 @@ public:
     virtual ~iseries_vector() = default;
 
     virtual size_t size() const     = 0;
+    virtual void resize(size_t n)   = 0;
     virtual bool empty() const      = 0;
     virtual size_t max_size() const = 0;
     virtual size_t capacity() const = 0;

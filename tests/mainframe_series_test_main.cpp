@@ -5,6 +5,9 @@
 
 #include <iostream>
 #include <ostream>
+#include <cmath>
+#include <limits>
+#include <complex>
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
@@ -22,6 +25,26 @@ using namespace mf;
 
 template<class T>
 class TD;
+
+template<typename T>
+std::ostream& operator<<( std::ostream& o, const std::vector<T>& v )
+{
+    o << "[";
+    unsigned i = 0;
+    for ( const auto& e : v ) {
+        if ( i++ != 0 ) { o << ","; }
+        o << e;
+    }
+    o << "]";
+    return o;
+}
+
+template<typename T>
+std::ostream& operator<<( std::ostream& o, const std::complex<T>& c )
+{
+    o << "{" << c.real() << "," << c.imag() << "}";
+    return o;
+}
 
 static char*
 mystrdup(const char* s)
