@@ -21,6 +21,9 @@ using namespace date::literals;
 using namespace date;
 using namespace mf;
 using namespace mf::placeholders;
+using mf::function::real;
+using mf::function::imag;
+using mf::function::cmplx;
 
 
 namespace std
@@ -3275,6 +3278,124 @@ TEST_CASE("minmax", "[frame]")
         }
     }
 
+}
+
+TEST_CASE("complex", "[frame]")
+{
+    SECTION("cmplx")
+    {
+        frame<double, year_month_day, double> f1;
+        f1.set_column_names("real", "date", "imag");
+        f1.push_back( 8.9, 2022_y / January / 1, 10.2);
+        f1.push_back(10.2, 2022_y / January / 2, 10.2);
+        f1.push_back(11.1, 2022_y / January / 3,  7.7);
+        f1.push_back(12.2, 2022_y / January / 4, 10.2);
+        f1.push_back(13.3, 2022_y / January / 5, 10.2);
+        f1.push_back(14.4, 2022_y / January / 6,  7.7);
+        f1.push_back(15.5, 2022_y / January / 7, 10.2);
+        f1.push_back( 9.1, 2022_y / January / 8,  7.7);
+        f1.push_back( 9.3, 2022_y / January / 9, 10.2);
+
+        auto f2 = f1.prepend_column<complex<double>>("cmplx", cmplx<double>(_0, _2));
+        auto it = f2.cbegin();
+        REQUIRE((it + 0)->at(_0) ==  8.9 + 10.2i);
+        REQUIRE((it + 1)->at(_0) == 10.0 + 10.2i);
+        REQUIRE((it + 2)->at(_0) == 11.1 +  7.7i);
+        REQUIRE((it + 3)->at(_0) == 12.2 + 10.2i);
+        REQUIRE((it + 4)->at(_0) == 13.3 + 10.2i);
+        REQUIRE((it + 5)->at(_0) == 14.4 +  7.7i);
+        REQUIRE((it + 6)->at(_0) == 15.5 + 10.2i);
+        REQUIRE((it + 7)->at(_0) ==  9.1 +  7.7i);
+        REQUIRE((it + 8)->at(_0) ==  9.3 + 10.2i);
+
+        REQUIRE((it + 0)->at(_1) ==  8.9);
+        REQUIRE((it + 1)->at(_1) == 10.0);
+        REQUIRE((it + 2)->at(_1) == 11.1);
+        REQUIRE((it + 3)->at(_1) == 12.2);
+        REQUIRE((it + 4)->at(_1) == 13.3);
+        REQUIRE((it + 5)->at(_1) == 14.4);
+        REQUIRE((it + 6)->at(_1) == 15.5);
+        REQUIRE((it + 7)->at(_1) ==  9.1);
+        REQUIRE((it + 8)->at(_1) ==  9.3);
+
+        REQUIRE((it + 0)->at(_2) == 2022_y / January / 1);
+        REQUIRE((it + 1)->at(_2) == 2022_y / January / 2);
+        REQUIRE((it + 2)->at(_2) == 2022_y / January / 3);
+        REQUIRE((it + 3)->at(_2) == 2022_y / January / 4);
+        REQUIRE((it + 4)->at(_2) == 2022_y / January / 5);
+        REQUIRE((it + 5)->at(_2) == 2022_y / January / 6);
+        REQUIRE((it + 6)->at(_2) == 2022_y / January / 7);
+        REQUIRE((it + 7)->at(_2) == 2022_y / January / 8);
+        REQUIRE((it + 8)->at(_2) == 2022_y / January / 9);
+
+        REQUIRE((it + 0)->at(_3) == 10.2);
+        REQUIRE((it + 1)->at(_3) == 10.2);
+        REQUIRE((it + 2)->at(_3) ==  7.7);
+        REQUIRE((it + 3)->at(_3) == 10.2);
+        REQUIRE((it + 4)->at(_3) == 10.2);
+        REQUIRE((it + 5)->at(_3) ==  7.7);
+        REQUIRE((it + 6)->at(_3) == 10.2);
+        REQUIRE((it + 7)->at(_3) ==  7.7);
+        REQUIRE((it + 8)->at(_3) == 10.2);
+    }
+
+    SECTION("realimag")
+    {
+        frame<complex<double>, year_month_day> f1;
+        f1.set_column_names("cmplx", "date");
+        f1.push_back( 8.9 + 10.2i, 2022_y / January / 1);
+        f1.push_back(10.2 + 10.2i, 2022_y / January / 2);
+        f1.push_back(11.1 +  7.7i, 2022_y / January / 3);
+        f1.push_back(12.2 + 10.2i, 2022_y / January / 4);
+        f1.push_back(13.3 + 10.2i, 2022_y / January / 5);
+        f1.push_back(14.4 +  7.7i, 2022_y / January / 6);
+        f1.push_back(15.5 + 10.2i, 2022_y / January / 7);
+        f1.push_back( 9.1 +  7.7i, 2022_y / January / 8);
+        f1.push_back( 9.3 + 10.2i, 2022_y / January / 9);
+
+        auto f2 = f1.append_column<double>("real", real<double>(_0));
+        auto f3 = f2.append_column<double>("imag", imag<double>(_0));
+        auto it = f3.cbegin();
+        REQUIRE((it + 0)->at(_0) ==  8.9 + 10.2i);
+        REQUIRE((it + 1)->at(_0) == 10.0 + 10.2i);
+        REQUIRE((it + 2)->at(_0) == 11.1 +  7.7i);
+        REQUIRE((it + 3)->at(_0) == 12.2 + 10.2i);
+        REQUIRE((it + 4)->at(_0) == 13.3 + 10.2i);
+        REQUIRE((it + 5)->at(_0) == 14.4 +  7.7i);
+        REQUIRE((it + 6)->at(_0) == 15.5 + 10.2i);
+        REQUIRE((it + 7)->at(_0) ==  9.1 +  7.7i);
+        REQUIRE((it + 8)->at(_0) ==  9.3 + 10.2i);
+
+        REQUIRE((it + 0)->at(_1) == 2022_y / January / 1);
+        REQUIRE((it + 1)->at(_1) == 2022_y / January / 2);
+        REQUIRE((it + 2)->at(_1) == 2022_y / January / 3);
+        REQUIRE((it + 3)->at(_1) == 2022_y / January / 4);
+        REQUIRE((it + 4)->at(_1) == 2022_y / January / 5);
+        REQUIRE((it + 5)->at(_1) == 2022_y / January / 6);
+        REQUIRE((it + 6)->at(_1) == 2022_y / January / 7);
+        REQUIRE((it + 7)->at(_1) == 2022_y / January / 8);
+        REQUIRE((it + 8)->at(_1) == 2022_y / January / 9);
+
+        REQUIRE((it + 0)->at(_2) ==  8.9);
+        REQUIRE((it + 1)->at(_2) == 10.0);
+        REQUIRE((it + 2)->at(_2) == 11.1);
+        REQUIRE((it + 3)->at(_2) == 12.2);
+        REQUIRE((it + 4)->at(_2) == 13.3);
+        REQUIRE((it + 5)->at(_2) == 14.4);
+        REQUIRE((it + 6)->at(_2) == 15.5);
+        REQUIRE((it + 7)->at(_2) ==  9.1);
+        REQUIRE((it + 8)->at(_2) ==  9.3);
+
+        REQUIRE((it + 0)->at(_3) == 10.2);
+        REQUIRE((it + 1)->at(_3) == 10.2);
+        REQUIRE((it + 2)->at(_3) ==  7.7);
+        REQUIRE((it + 3)->at(_3) == 10.2);
+        REQUIRE((it + 4)->at(_3) == 10.2);
+        REQUIRE((it + 5)->at(_3) ==  7.7);
+        REQUIRE((it + 6)->at(_3) == 10.2);
+        REQUIRE((it + 7)->at(_3) ==  7.7);
+        REQUIRE((it + 8)->at(_3) == 10.2);
+    }
 }
 
 TEST_CASE("remove_column", "[frame]")

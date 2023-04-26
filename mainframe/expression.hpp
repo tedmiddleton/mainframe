@@ -6,6 +6,7 @@
 #ifndef INCLUDED_mainframe_expression_hpp
 #define INCLUDED_mainframe_expression_hpp
 
+#include <complex>
 #include <string>
 
 #include "mainframe/frame_iterator.hpp"

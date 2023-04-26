@@ -6,6 +6,7 @@
 #ifndef INCLUDED_mainframe_detail_expression_hpp
 #define INCLUDED_mainframe_detail_expression_hpp
 
+#include <complex>
 #include <string>
 
 #include "mainframe/frame_iterator.hpp"
@@ -622,6 +623,100 @@ typename make_func_expr<Func, Args...>::type fn( Func& func, Args... args )
 {
     return make_func_expr<Func, Args...>::create( func, args... );
 }
+
+namespace function
+{
+
+///
+/// real function object
+///
+/// real let's you pull the real value out of a std::complex value in an expression as if you
+/// called std::real() on it. For example:
+///
+///     frame<double> f1;
+///     f1.set_column_names("complex");
+///     f1.push_back(1.1 + 3.1i);
+///     f1.push_back(2.1 + 3.2i);
+///     f1.push_back(3.1 + 3.3i);
+///     frame<double, complex<double>> f2 =
+///         f1.append_column<complex<double>>("imaginary", real<double>(_0));
+///
+///     // f2 is now
+///     //   |    complex | real 
+///     // __|____________|______
+///     //  0| (1.1, 3.1) |  1.1 
+///     //  1| (2.1, 3.2) |  2.1 
+///     //  2| (3.1, 3.3) |  3.1 
+///
+template<typename T, typename Arg>
+typename make_func_expr<T(const std::complex<T>&), Arg>::type real( Arg c )
+{
+    return make_func_expr<T(const std::complex<T>&), Arg>::create( std::real, c );
+}
+
+///
+/// imag function object
+///
+/// imag let's you pull the imaginary value out of a std::complex value in an expression as if you
+/// called std::imag() on it. For example:
+///
+///     frame<double> f1;
+///     f1.set_column_names("complex");
+///     f1.push_back(1.1 + 3.1i);
+///     f1.push_back(2.1 + 3.2i);
+///     f1.push_back(3.1 + 3.3i);
+///     frame<double, complex<double>> f2 =
+///         f1.append_column<complex<double>>("imaginary", imag<double>(_0));
+///
+///     // f2 is now
+///     //   |    complex | imaginary 
+///     // __|____________|___________
+///     //  0| (1.1, 3.1) |       3.1 
+///     //  1| (2.1, 3.2) |       3.2 
+///     //  2| (3.1, 3.3) |       3.3 
+///
+template<typename T, typename Arg>
+typename make_func_expr<T(const std::complex<T>&), Arg>::type imag( Arg c )
+{
+    return make_func_expr<T(const std::complex<T>&), Arg>::create( std::imag, c );
+}
+
+template<typename T>
+std::complex<T>
+mkcomplex( const T& r, const T& i )
+{
+    return std::complex<T>(r,i);
+}
+
+///
+/// cmplx function object
+///
+/// cmplx let's you build a std::complex value from a couple of expression 
+/// objects in an expression. For example:
+///
+///     frame<float, float> f1;
+///     f1.set_column_names("real", "imaginary");
+///     f1.push_back(1.1f, 3.1f);
+///     f1.push_back(2.1f, 3.2f);
+///     f1.push_back(3.1f, 3.3f);
+///     frame<float, float, complex<float>> f2 = 
+///         f1.append_column<complex<float>>("complex", cmplx<float>(_0, _1));
+///
+///     // f2 is now 
+///     //   | real | imaginary |    complex
+///     // __|______|___________|____________
+///     //  0|  1.1 |       3.1 | (1.1, 3.1)
+///     //  1|  2.1 |       3.2 | (2.1, 3.2)
+///     //  2|  3.1 |       3.3 | (3.1, 3.3)
+///
+template<typename T, typename Arg1, typename Arg2>
+typename make_func_expr<std::complex<T>(const T&, const T&), Arg1, Arg2>::type cmplx( Arg1 r, Arg2 i )
+{
+    return make_func_expr<std::complex<T>(const T&, const T&), Arg1, Arg2>::create( mkcomplex, r, i );
+}
+
+} // namespace function
+
 
 template<typename L, typename R>
 typename std::enable_if<std::disjunction<is_expression<L>, is_expression<R>>::value,
