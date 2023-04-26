@@ -2,6 +2,8 @@ var classmf_1_1frame =
 [
     [ "allow_missing", "classmf_1_1frame.html#afb953a866abd48f287bf1495b2ee0de6", null ],
     [ "allow_missing", "classmf_1_1frame.html#aec1ca67f0855165deec1d07804c4029a", null ],
+    [ "append_column", "classmf_1_1frame.html#ac856c8c99b265f47b235dbeb4efe256a", null ],
+    [ "append_series", "classmf_1_1frame.html#a82ac502f49a7c3a5d30bc941513914d6", null ],
     [ "begin", "classmf_1_1frame.html#a028a45d5de7990b3aec349723b799fb2", null ],
     [ "begin", "classmf_1_1frame.html#a7a17ac4d73dedf8c7d2dc0622830b096", null ],
     [ "cbegin", "classmf_1_1frame.html#a9d4ae0827260312be8e89d914ddf98f8", null ],
@@ -16,6 +18,8 @@ var classmf_1_1frame =
     [ "end", "classmf_1_1frame.html#a6ab1ec4db75fa83ff7fa5e4772b726b6", null ],
     [ "minmax", "classmf_1_1frame.html#a51c9efa1913ec7575cd59cb712c16b00", null ],
     [ "operator+", "classmf_1_1frame.html#ab77a0c3c0245478fbbf0990602502a12", null ],
+    [ "prepend_column", "classmf_1_1frame.html#a260b0aaf0bb7d8e660225b99766f456a", null ],
+    [ "prepend_series", "classmf_1_1frame.html#afc51e14e008957f5f85735612057f1e1", null ],
     [ "push_back", "classmf_1_1frame.html#a345aa3638da1bdfb656f27584d39864e", null ],
     [ "push_back", "classmf_1_1frame.html#a7803f9e7fd6d355270fce348e0113bfe", null ],
     [ "push_back", "classmf_1_1frame.html#ac13cce0d00233880af794e79624765ff", null ],
