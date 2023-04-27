@@ -384,6 +384,19 @@ public:
     bool
     operator==(const frame<Ts...>& other) const;
 
+    /// Dereference the first row of a single-column frame
+    ///
+    /// This is a convenience operator for the common case of a single-column
+    /// frame. It allows you to write
+    ///
+    ///     frame_row<year_month, int, double> fr1;
+    ///     fr1.push_back(2022_y/11, 1, 3.14);
+    ///     year_month x = *(fr1[_0]);
+    ///
+    template<size_t Num=sizeof...(Ts)>
+    typename std::enable_if<Num == 1, typename detail::pack_element<0, Ts...>::type>::type
+    operator*() const;
+
     // row-selector operator[]. One tricky bit is that rows(Ex) which it calls
     // only requires is_expression<Ex> whereas here we require
     // is_complex_expression<Ex>. This means that if we have a column (say

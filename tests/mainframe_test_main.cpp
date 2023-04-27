@@ -3299,7 +3299,7 @@ TEST_CASE("complex", "[frame]")
         auto f2 = f1.prepend_column<complex<double>>("cmplx", cmplx<double>(_0, _2));
         auto it = f2.cbegin();
         REQUIRE((it + 0)->at(_0) ==  8.9 + 10.2i);
-        REQUIRE((it + 1)->at(_0) == 10.0 + 10.2i);
+        REQUIRE((it + 1)->at(_0) == 10.2 + 10.2i);
         REQUIRE((it + 2)->at(_0) == 11.1 +  7.7i);
         REQUIRE((it + 3)->at(_0) == 12.2 + 10.2i);
         REQUIRE((it + 4)->at(_0) == 13.3 + 10.2i);
@@ -3309,7 +3309,7 @@ TEST_CASE("complex", "[frame]")
         REQUIRE((it + 8)->at(_0) ==  9.3 + 10.2i);
 
         REQUIRE((it + 0)->at(_1) ==  8.9);
-        REQUIRE((it + 1)->at(_1) == 10.0);
+        REQUIRE((it + 1)->at(_1) == 10.2);
         REQUIRE((it + 2)->at(_1) == 11.1);
         REQUIRE((it + 3)->at(_1) == 12.2);
         REQUIRE((it + 4)->at(_1) == 13.3);
@@ -3357,7 +3357,7 @@ TEST_CASE("complex", "[frame]")
         auto f3 = f2.append_column<double>("imag", imag<double>(_0));
         auto it = f3.cbegin();
         REQUIRE((it + 0)->at(_0) ==  8.9 + 10.2i);
-        REQUIRE((it + 1)->at(_0) == 10.0 + 10.2i);
+        REQUIRE((it + 1)->at(_0) == 10.2 + 10.2i);
         REQUIRE((it + 2)->at(_0) == 11.1 +  7.7i);
         REQUIRE((it + 3)->at(_0) == 12.2 + 10.2i);
         REQUIRE((it + 4)->at(_0) == 13.3 + 10.2i);
@@ -3377,7 +3377,7 @@ TEST_CASE("complex", "[frame]")
         REQUIRE((it + 8)->at(_1) == 2022_y / January / 9);
 
         REQUIRE((it + 0)->at(_2) ==  8.9);
-        REQUIRE((it + 1)->at(_2) == 10.0);
+        REQUIRE((it + 1)->at(_2) == 10.2);
         REQUIRE((it + 2)->at(_2) == 11.1);
         REQUIRE((it + 3)->at(_2) == 12.2);
         REQUIRE((it + 4)->at(_2) == 13.3);
@@ -3482,6 +3482,49 @@ TEST_CASE("remove_column", "[frame]")
         REQUIRE((it + 8)->at(_1) == 9.3);
     }
 }
+
+TEST_CASE("operator*", "[frame]")
+{
+    SECTION("legitimate")
+    {
+        frame<double, year_month_day, double> f1;
+        f1.set_column_names("real", "date", "imag");
+        f1.push_back( 8.9, 2022_y / January / 1, 10.2);
+
+        REQUIRE(*f1[_0] == 8.9);
+        REQUIRE(*f1[_1] == 2022_y / January / 1);
+        REQUIRE(*f1[_2] == 10.2);
+
+        f1.push_back(10.2, 2022_y / January / 2, 10.2);
+        f1.push_back(11.1, 2022_y / January / 3,  7.7);
+        f1.push_back(12.2, 2022_y / January / 4, 10.2);
+        f1.push_back(13.3, 2022_y / January / 5, 10.2);
+        f1.push_back(14.4, 2022_y / January / 6,  7.7);
+
+        REQUIRE(*f1[_0] == 8.9);
+        REQUIRE(*f1[_1] == 2022_y / January / 1);
+        REQUIRE(*f1[_2] == 10.2);
+
+        REQUIRE(*f1[_0][3] == 12.2);
+        REQUIRE(*f1[_1][3] == 2022_y / January / 4);
+        REQUIRE(*f1[_2][3] == 10.2);
+
+        REQUIRE(*f1[3][_0] == 12.2);
+        REQUIRE(*f1[3][_1] == 2022_y / January / 4);
+        REQUIRE(*f1[3][_2] == 10.2);
+    }
+
+    SECTION("invalid")
+    {
+        frame<double, year_month_day, double> f1;
+        f1.set_column_names("real", "date", "imag");
+
+        REQUIRE_THROWS_AS(*f1[_0], std::out_of_range);
+        REQUIRE_THROWS_AS(*f1[_1], std::out_of_range);
+        REQUIRE_THROWS_AS(*f1[_2], std::out_of_range);
+    }
+}
+
 
 //template<typename Func, typename Arg>
 //struct fnobj;

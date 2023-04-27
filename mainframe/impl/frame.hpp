@@ -504,6 +504,17 @@ frame<Ts...>::operator==(const frame<Ts...>& other) const
 }
 
 template<typename... Ts>
+template<size_t Num>
+typename std::enable_if<Num == 1, typename detail::pack_element<0, Ts...>::type>::type
+frame<Ts...>::operator*() const
+{
+    if (size() == 0) {
+        throw std::out_of_range("Cannot dereference empty frame");
+    }
+    return std::get<0>(m_columns).at(0);
+}
+
+template<typename... Ts>
 template<typename Ex>
 std::enable_if_t<is_complex_expression<Ex>::value, frame<Ts...>>
 frame<Ts...>::operator[](Ex ex) const
