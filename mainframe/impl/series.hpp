@@ -492,6 +492,286 @@ series<T>::operator!=(const series<T>& other) const
 }
 
 template<typename T>
+template<typename U>
+void
+series<T>::operator+=(const U& value)
+{
+    unref();
+    for (T& t : *m_sharedvec) {
+        t += value;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator-=(const U& value)
+{
+    unref();
+    for (T& t : *m_sharedvec) {
+        t -= value;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator*=(const U& value)
+{
+    unref();
+    for (T& t : *m_sharedvec) {
+        t *= value;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator/=(const U& value)
+{
+    unref();
+    for (T& t : *m_sharedvec) {
+        t /= value;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator%=(const U& value)
+{
+    unref();
+    for (T& t : *m_sharedvec) {
+        t %= value;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator+=(const series<U>& other)
+{
+    unref();
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        *it1 += *it2;
+        ++it1;
+        ++it2;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator-=(const series<U>& other)
+{
+    unref();
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        *it1 -= *it2;
+        ++it1;
+        ++it2;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator*=(const series<U>& other)
+{
+    unref();
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        *it1 *= *it2;
+        ++it1;
+        ++it2;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator/=(const series<U>& other)
+{
+    unref();
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        *it1 /= *it2;
+        ++it1;
+        ++it2;
+    }
+}
+
+template<typename T>
+template<typename U>
+void
+series<T>::operator%=(const series<U>& other)
+{
+    unref();
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        *it1 %= *it2;
+        ++it1;
+        ++it2;
+    }
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() + std::declval<U>())>
+series<T>::operator+(const U& value) const
+{
+    using V = decltype(std::declval<T>() + std::declval<U>());
+    series<V> result;
+    for (const T& t : *m_sharedvec) {
+        result.m_sharedvec->push_back(t + value);
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() - std::declval<U>())>
+series<T>::operator-(const U& value) const
+{
+    using V = decltype(std::declval<T>() - std::declval<U>());
+    series<V> result;
+    for (const T& t : *m_sharedvec) {
+        result.m_sharedvec->push_back(t - value);
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() * std::declval<U>())>
+series<T>::operator*(const U& value) const
+{
+    using V = decltype(std::declval<T>() * std::declval<U>());
+    series<V> result;
+    for (const T& t : *m_sharedvec) {
+        result.m_sharedvec->push_back(t * value);
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() / std::declval<U>())>
+series<T>::operator/(const U& value) const
+{
+    using V = decltype(std::declval<T>() / std::declval<U>());
+    series<V> result;
+    for (const T& t : *m_sharedvec) {
+        result.m_sharedvec->push_back(t / value);
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() % std::declval<U>())>
+series<T>::operator%(const U& value) const
+{
+    using V = decltype(std::declval<T>() % std::declval<U>());
+    series<V> result;
+    for (const T& t : *m_sharedvec) {
+        result.m_sharedvec->push_back(t % value);
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() + std::declval<U>())>
+series<T>::operator+(const series<U>& other) const
+{
+    using V = decltype(std::declval<T>() + std::declval<U>());
+    series<V> result;
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        result.m_sharedvec->push_back(*it1 + *it2);
+        ++it1;
+        ++it2;
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() - std::declval<U>())>
+series<T>::operator-(const series<U>& other) const
+{
+    using V = decltype(std::declval<T>() - std::declval<U>());
+    series<V> result;
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        result.m_sharedvec->push_back(*it1 - *it2);
+        ++it1;
+        ++it2;
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() * std::declval<U>())>
+series<T>::operator*(const series<U>& other) const
+{
+    using V = decltype(std::declval<T>() * std::declval<U>());
+    series<V> result;
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        result.m_sharedvec->push_back(*it1 * *it2);
+        ++it1;
+        ++it2;
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() / std::declval<U>())>
+series<T>::operator/(const series<U>& other) const
+{
+    using V = decltype(std::declval<T>() / std::declval<U>());
+    series<V> result;
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        result.m_sharedvec->push_back(*it1 / *it2);
+        ++it1;
+        ++it2;
+    }
+    return result;
+}
+
+template<typename T>
+template<typename U>
+series<decltype(std::declval<T>() % std::declval<U>())>
+series<T>::operator%(const series<U>& other) const
+{
+    using V = decltype(std::declval<T>() % std::declval<U>());
+    series<V> result;
+    auto it1 = m_sharedvec->begin();
+    auto it2 = other.m_sharedvec->begin();
+    while (it1 != m_sharedvec->end() && it2 != other.m_sharedvec->end()) {
+        result.m_sharedvec->push_back(*it1 % *it2);
+        ++it1;
+        ++it2;
+    }
+    return result;
+} 
+
+template<typename T>
 void
 series<T>::push_back(const T& value)
 {

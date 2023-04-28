@@ -1549,3 +1549,429 @@ TEST_CASE("minmax", "[series]")
     }
 }
 
+TEST_CASE("arithmetic", "[series]")
+{
+    SECTION("plus eq scalar")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        unsigned int i = 11;
+        s1 += i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s1[0] == 12.0);
+        REQUIRE(s1[1] == 13.0);
+        REQUIRE(s1[2] == 14.0);
+        REQUIRE(s1[3] == 15.0);
+        REQUIRE(s1[4] == 16.0);
+    }
+
+    SECTION("minus eq scalar")
+    {
+        series<int> s1{ 1, 2, 3, 4, 5 };
+        double i = 11.0;
+        s1 -= i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s1[0] == -10);
+        REQUIRE(s1[1] ==  -9);
+        REQUIRE(s1[2] ==  -8);
+        REQUIRE(s1[3] ==  -7);
+        REQUIRE(s1[4] ==  -6);
+    }
+
+    SECTION("multiply eq scalar")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        unsigned int i = 11;
+        s1 *= i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s1[0] == 11.0);
+        REQUIRE(s1[1] == 22.0);
+        REQUIRE(s1[2] == 33.0);
+        REQUIRE(s1[3] == 44.0);
+        REQUIRE(s1[4] == 55.0);
+    }
+
+    SECTION("divide eq scalar")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        unsigned int i = 10;
+        s1 /= i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s1[0] == Approx(0.1));
+        REQUIRE(s1[1] == Approx(0.2));
+        REQUIRE(s1[2] == Approx(0.3));
+        REQUIRE(s1[3] == Approx(0.4));
+        REQUIRE(s1[4] == Approx(0.5));
+    }
+
+    SECTION("modulus eq scalar")
+    {
+        series<int> s0{ 1, 2, 3, 4, 5 };
+        series<int> s1 = s0;
+        int i = 3;
+        s1 %= i;
+        REQUIRE(s0.size() == 5);
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s0[0] == 1);
+        REQUIRE(s0[1] == 2);
+        REQUIRE(s0[2] == 3);
+        REQUIRE(s0[3] == 4);
+        REQUIRE(s0[4] == 5);
+        REQUIRE(s1[0] == 1);
+        REQUIRE(s1[1] == 2);
+        REQUIRE(s1[2] == 0);
+        REQUIRE(s1[3] == 1);
+        REQUIRE(s1[4] == 2);
+    }
+
+    SECTION("plus eq vector")
+    {
+        series<double> s0{ 1, 2, 3, 4, 5 };
+        series<double> s1 = s0;
+        series<double> s2{ 10, 20, 30, 40, 50 };
+        s1 += s2;
+        REQUIRE(s0.size() == 5);
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s0[0] ==  1.0);
+        REQUIRE(s0[1] ==  2.0);
+        REQUIRE(s0[2] ==  3.0);
+        REQUIRE(s0[3] ==  4.0);
+        REQUIRE(s0[4] ==  5.0);
+        REQUIRE(s1[0] == 11.0);
+        REQUIRE(s1[1] == 22.0);
+        REQUIRE(s1[2] == 33.0);
+        REQUIRE(s1[3] == 44.0);
+        REQUIRE(s1[4] == 55.0);
+        REQUIRE(s2[0] == 10.0);
+        REQUIRE(s2[1] == 20.0);
+        REQUIRE(s2[2] == 30.0);
+        REQUIRE(s2[3] == 40.0);
+        REQUIRE(s2[4] == 50.0);
+    }
+
+    SECTION("minus eq vector")
+    {
+        series<double> s0{ 10, 20, 30, 40, 50 };
+        series<double> s1 = s0;
+        series<double> s2{ 1, 2, 3, 4, 5 };
+        s1 -= s2;
+        REQUIRE(s0.size() == 5);
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s0[0] == 10.0);
+        REQUIRE(s0[1] == 20.0);
+        REQUIRE(s0[2] == 30.0);
+        REQUIRE(s0[3] == 40.0);
+        REQUIRE(s0[4] == 50.0);
+        REQUIRE(s1[0] ==  9.0);
+        REQUIRE(s1[1] == 18.0);
+        REQUIRE(s1[2] == 27.0);
+        REQUIRE(s1[3] == 36.0);
+        REQUIRE(s1[4] == 45.0);
+        REQUIRE(s2[0] ==  1.0);
+        REQUIRE(s2[1] ==  2.0);
+        REQUIRE(s2[2] ==  3.0);
+        REQUIRE(s2[3] ==  4.0);
+        REQUIRE(s2[4] ==  5.0);
+    }
+
+    SECTION("multiply eq vector")
+    {
+        series<double> s0{ 1, 2, 3, 4, 5 };
+        series<double> s1 = s0;
+        series<double> s2{ 10, 20, 30, 40, 50 };
+        s1 *= s2;
+        REQUIRE(s0.size() == 5);
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s0[0] ==   1.0);
+        REQUIRE(s0[1] ==   2.0);
+        REQUIRE(s0[2] ==   3.0);
+        REQUIRE(s0[3] ==   4.0);
+        REQUIRE(s0[4] ==   5.0);
+        REQUIRE(s1[0] ==  10.0);
+        REQUIRE(s1[1] ==  40.0);
+        REQUIRE(s1[2] ==  90.0);
+        REQUIRE(s1[3] == 160.0);
+        REQUIRE(s1[4] == 250.0);
+        REQUIRE(s2[0] ==  10.0);
+        REQUIRE(s2[1] ==  20.0);
+        REQUIRE(s2[2] ==  30.0);
+        REQUIRE(s2[3] ==  40.0);
+        REQUIRE(s2[4] ==  50.0);
+    }
+
+    SECTION("divide eq vector")
+    {
+        series<double> s0{ 1, 2, 3, 4, 5 };
+        series<double> s1 = s0;
+        series<double> s2{ 10, 20, 30, 40, 50 };
+        s1 /= s2;
+        REQUIRE(s0.size() == 5);
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s0[0] ==  1.0);
+        REQUIRE(s0[1] ==  2.0);
+        REQUIRE(s0[2] ==  3.0);
+        REQUIRE(s0[3] ==  4.0);
+        REQUIRE(s0[4] ==  5.0);
+        REQUIRE(s1[0] ==  0.1);
+        REQUIRE(s1[1] ==  0.1);
+        REQUIRE(s1[2] ==  0.1);
+        REQUIRE(s1[3] ==  0.1);
+        REQUIRE(s1[4] ==  0.1);
+        REQUIRE(s2[0] == 10.0);
+        REQUIRE(s2[1] == 20.0);
+        REQUIRE(s2[2] == 30.0);
+        REQUIRE(s2[3] == 40.0);
+        REQUIRE(s2[4] == 50.0);
+    }
+
+    SECTION("modulus eq vector")
+    {
+        series<int> s0{ 11, 13, 17, 19, 23 };
+        series<int> s1 = s0;
+        series<int> s2{ 1, 2, 3, 5, 8 };
+        s1 %= s2;
+        REQUIRE(s0.size() == 5);
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s0[0] == 11);
+        REQUIRE(s0[1] == 13);
+        REQUIRE(s0[2] == 17);
+        REQUIRE(s0[3] == 19);
+        REQUIRE(s0[4] == 23);
+        REQUIRE(s1[0] == 0);
+        REQUIRE(s1[1] == 1);
+        REQUIRE(s1[2] == 2);
+        REQUIRE(s1[3] == 4);
+        REQUIRE(s1[4] == 7);
+        REQUIRE(s2[0] == 1);
+        REQUIRE(s2[1] == 2);
+        REQUIRE(s2[2] == 3);
+        REQUIRE(s2[3] == 5);
+        REQUIRE(s2[4] == 8);
+    }
+
+    SECTION("plus scalar")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        unsigned int i = 11;
+        series<double> s2 = s1 + i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s1[0] ==  1.0);
+        REQUIRE(s1[1] ==  2.0);
+        REQUIRE(s1[2] ==  3.0);
+        REQUIRE(s1[3] ==  4.0);
+        REQUIRE(s1[4] ==  5.0);
+        REQUIRE(s2[0] == 12.0);
+        REQUIRE(s2[1] == 13.0);
+        REQUIRE(s2[2] == 14.0);
+        REQUIRE(s2[3] == 15.0);
+        REQUIRE(s2[4] == 16.0);
+    }
+
+    SECTION("minus scalar")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        unsigned int i = 11;
+        series<double> s2 = s1 - i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s1[0] ==  1.0);
+        REQUIRE(s1[1] ==  2.0);
+        REQUIRE(s1[2] ==  3.0);
+        REQUIRE(s1[3] ==  4.0);
+        REQUIRE(s1[4] ==  5.0);
+        REQUIRE(s2[0] == -10.0);
+        REQUIRE(s2[1] ==  -9.0);
+        REQUIRE(s2[2] ==  -8.0);
+        REQUIRE(s2[3] ==  -7.0);
+        REQUIRE(s2[4] ==  -6.0);
+    }
+
+    SECTION("multiply scalar")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        unsigned int i = 11;
+        series<double> s2 = s1 * i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s1[0] ==  1.0);
+        REQUIRE(s1[1] ==  2.0);
+        REQUIRE(s1[2] ==  3.0);
+        REQUIRE(s1[3] ==  4.0);
+        REQUIRE(s1[4] ==  5.0);
+        REQUIRE(s2[0] == 11.0);
+        REQUIRE(s2[1] == 22.0);
+        REQUIRE(s2[2] == 33.0);
+        REQUIRE(s2[3] == 44.0);
+        REQUIRE(s2[4] == 55.0);
+    }
+
+    SECTION("divide scalar")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        unsigned int i = 10;
+        series<double> s2 = s1 / i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s1[0] == 1.0);
+        REQUIRE(s1[1] == 2.0);
+        REQUIRE(s1[2] == 3.0);
+        REQUIRE(s1[3] == 4.0);
+        REQUIRE(s1[4] == 5.0);
+        REQUIRE(s2[0] == Approx(0.1));
+        REQUIRE(s2[1] == Approx(0.2));
+        REQUIRE(s2[2] == Approx(0.3));
+        REQUIRE(s2[3] == Approx(0.4));
+        REQUIRE(s2[4] == Approx(0.5));
+    }
+
+    SECTION("modulus scalar")
+    {
+        series<int> s1{ 1, 2, 3, 4, 5 };
+        int i = 3;
+        series<int> s2 = s1 % i;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s1[0] == 1);
+        REQUIRE(s1[1] == 2);
+        REQUIRE(s1[2] == 3);
+        REQUIRE(s1[3] == 4);
+        REQUIRE(s1[4] == 5);
+        REQUIRE(s2[0] == 1);
+        REQUIRE(s2[1] == 2);
+        REQUIRE(s2[2] == 0);
+        REQUIRE(s2[3] == 1);
+        REQUIRE(s2[4] == 2);
+    }
+
+    SECTION("plus vector")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        series<double> s2{ 10, 20, 30, 40, 50 };
+        auto s3 = s1 + s2;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s3.size() == 5);
+        REQUIRE(s1[0] ==  1.0);
+        REQUIRE(s1[1] ==  2.0);
+        REQUIRE(s1[2] ==  3.0);
+        REQUIRE(s1[3] ==  4.0);
+        REQUIRE(s1[4] ==  5.0);
+        REQUIRE(s2[0] == 10.0);
+        REQUIRE(s2[1] == 20.0);
+        REQUIRE(s2[2] == 30.0);
+        REQUIRE(s2[3] == 40.0);
+        REQUIRE(s2[4] == 50.0);
+        REQUIRE(s3[0] == 11.0);
+        REQUIRE(s3[1] == 22.0);
+        REQUIRE(s3[2] == 33.0);
+        REQUIRE(s3[3] == 44.0);
+        REQUIRE(s3[4] == 55.0);
+    }
+
+    SECTION("minus vector")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        series<double> s2{ 10, 20, 30, 40, 50 };
+        auto s3 = s2 - s1;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s3.size() == 5);
+        REQUIRE(s1[0] ==  1.0);
+        REQUIRE(s1[1] ==  2.0);
+        REQUIRE(s1[2] ==  3.0);
+        REQUIRE(s1[3] ==  4.0);
+        REQUIRE(s1[4] ==  5.0);
+        REQUIRE(s2[0] == 10.0);
+        REQUIRE(s2[1] == 20.0);
+        REQUIRE(s2[2] == 30.0);
+        REQUIRE(s2[3] == 40.0);
+        REQUIRE(s2[4] == 50.0);
+        REQUIRE(s3[0] ==  9.0);
+        REQUIRE(s3[1] == 18.0);
+        REQUIRE(s3[2] == 27.0);
+        REQUIRE(s3[3] == 36.0);
+        REQUIRE(s3[4] == 45.0);
+    }
+
+    SECTION("multiply vector")
+    {
+        series<float> s1{ 1, 2, 3, 4, 5 };
+        series<float> s2{ 10, 20, 30, 40, 50 };
+        series<float> s3 = s1 * s2;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s3.size() == 5);
+        REQUIRE(s1[0] ==   1.0);
+        REQUIRE(s1[1] ==   2.0);
+        REQUIRE(s1[2] ==   3.0);
+        REQUIRE(s1[3] ==   4.0);
+        REQUIRE(s1[4] ==   5.0);
+        REQUIRE(s2[0] ==  10.0);
+        REQUIRE(s2[1] ==  20.0);
+        REQUIRE(s2[2] ==  30.0);
+        REQUIRE(s2[3] ==  40.0);
+        REQUIRE(s2[4] ==  50.0);
+        REQUIRE(s3[0] ==  10.0);
+        REQUIRE(s3[1] ==  40.0);
+        REQUIRE(s3[2] ==  90.0);
+        REQUIRE(s3[3] == 160.0);
+        REQUIRE(s3[4] == 250.0);
+    }
+
+    SECTION("divide vector")
+    {
+        series<double> s1{ 1, 2, 3, 4, 5 };
+        series<double> s2{ 10, 20, 30, 40, 50 };
+        series<double> s3 = s1 / s2;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s3.size() == 5);
+        REQUIRE(s1[0] ==  1.0);
+        REQUIRE(s1[1] ==  2.0);
+        REQUIRE(s1[2] ==  3.0);
+        REQUIRE(s1[3] ==  4.0);
+        REQUIRE(s1[4] ==  5.0);
+        REQUIRE(s2[0] == 10.0);
+        REQUIRE(s2[1] == 20.0);
+        REQUIRE(s2[2] == 30.0);
+        REQUIRE(s2[3] == 40.0);
+        REQUIRE(s2[4] == 50.0);
+        REQUIRE(s3[0] ==  0.1);
+        REQUIRE(s3[1] ==  0.1);
+        REQUIRE(s3[2] ==  0.1);
+        REQUIRE(s3[3] ==  0.1);
+        REQUIRE(s3[4] ==  0.1);
+    }
+
+    SECTION("modulus vector")
+    {
+        series<int> s1{ 11, 13, 17, 19, 23 };
+        series<int> s2{ 1, 2, 3, 5, 8 };
+        series<int> s3 = s1 % s2;
+        REQUIRE(s1.size() == 5);
+        REQUIRE(s2.size() == 5);
+        REQUIRE(s3.size() == 5);
+        REQUIRE(s1[0] == 11);
+        REQUIRE(s1[1] == 13);
+        REQUIRE(s1[2] == 17);
+        REQUIRE(s1[3] == 19);
+        REQUIRE(s1[4] == 23);
+        REQUIRE(s2[0] == 1);
+        REQUIRE(s2[1] == 2);
+        REQUIRE(s2[2] == 3);
+        REQUIRE(s2[3] == 5);
+        REQUIRE(s2[4] == 8);
+        REQUIRE(s3[0] == 0);
+        REQUIRE(s3[1] == 1);
+        REQUIRE(s3[2] == 2);
+        REQUIRE(s3[3] == 4);
+        REQUIRE(s3[4] == 7);
+    }
+}
+
+

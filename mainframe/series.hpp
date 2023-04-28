@@ -268,6 +268,86 @@ public:
     bool
     operator!=(const series<T>& other) const;
 
+    template<typename U>
+    void
+    operator+=(const U& value);
+
+    template<typename U>
+    void
+    operator-=(const U& value);
+
+    template<typename U>
+    void
+    operator*=(const U& value);
+
+    template<typename U>
+    void
+    operator/=(const U& value);
+
+    template<typename U>
+    void
+    operator%=(const U& value);
+
+    template<typename U>
+    void
+    operator+=(const series<U>& other);
+
+    template<typename U>
+    void
+    operator-=(const series<U>& other);
+
+    template<typename U>
+    void
+    operator*=(const series<U>& other);
+
+    template<typename U>
+    void
+    operator/=(const series<U>& other);
+
+    template<typename U>
+    void
+    operator%=(const series<U>& other);
+
+    template<typename U>
+    series<decltype(std::declval<T>() + std::declval<U>())>
+    operator+(const U& value) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() - std::declval<U>())>
+    operator-(const U& value) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() * std::declval<U>())>
+    operator*(const U& value) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() / std::declval<U>())>
+    operator/(const U& value) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() % std::declval<U>())>
+    operator%(const U& value) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() + std::declval<U>())>
+    operator+(const series<U>& other) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() - std::declval<U>())>
+    operator-(const series<U>& other) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() * std::declval<U>())>
+    operator*(const series<U>& other) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() / std::declval<U>())>
+    operator/(const series<U>& other) const;
+
+    template<typename U>
+    series<decltype(std::declval<T>() % std::declval<U>())>
+    operator%(const series<U>& other) const;
+
     // push_back, emplace_back, pop_back
     void
     push_back(const T& value);
