@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.8.0-3-g72a5d86</span>
+   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.8.0-4-g4a8e2b2</span>
    </div>
   </td>
  </tr>
@@ -290,6 +290,9 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>num_columns</b> () 
 <tr class="memitem:a38be2e69236f0fc483d9ff56605c57a0"><td class="memItemLeft" align="right" valign="top"><a id="a38be2e69236f0fc483d9ff56605c57a0" name="a38be2e69236f0fc483d9ff56605c57a0"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &amp;other) const</td></tr>
 <tr class="separator:a38be2e69236f0fc483d9ff56605c57a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94caa80858b4cdc63da3d3a4c975e146"><td class="memTemplParams" colspan="2">template&lt;size_t Num = sizeof...(Ts)&gt; </td></tr>
+<tr class="memitem:a94caa80858b4cdc63da3d3a4c975e146"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; Num==1, typenamedetail::pack_element&lt; 0, Ts... &gt;::type &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a94caa80858b4cdc63da3d3a4c975e146">operator*</a> () const</td></tr>
+<tr class="separator:a94caa80858b4cdc63da3d3a4c975e146"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab250d554f08595b1159ba63cb2c571c3"><td class="memTemplParams" colspan="2"><a id="ab250d554f08595b1159ba63cb2c571c3" name="ab250d554f08595b1159ba63cb2c571c3"></a>
 template&lt;typename Ex &gt; </td></tr>
 <tr class="memitem:ab250d554f08595b1159ba63cb2c571c3"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if_t&lt; is_complex_expression&lt; Ex &gt;::value, <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator[]</b> (Ex ex) const</td></tr>
@@ -813,6 +816,31 @@ template&lt;size_t Ind&gt; </div>
 <p >Calculate the minimum and maximum value in a column, and return them in a std::pair&lt;&gt;</p>
 <p >If the frame is empty and the type of the column doesn't support default construction, this will throw std::out_of_range </p>
 
+</div>
+</div>
+<a id="a94caa80858b4cdc63da3d3a4c975e146" name="a94caa80858b4cdc63da3d3a4c975e146"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94caa80858b4cdc63da3d3a4c975e146">&#9670;&nbsp;</a></span>operator*()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Ts&gt; </div>
+<div class="memtemplate">
+template&lt;size_t Num = sizeof...(Ts)&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::enable_if&lt; Num==1, typenamedetail::pack_element&lt; 0, Ts... &gt;::type &gt;::type <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Dereference the first row of a single-column frame</p>
+<p >This is a convenience operator for the common case of a single-column frame. It allows you to write </p><pre class="fragment">frame_row&lt;year_month, int, double&gt; fr1;
+fr1.push_back(2022_y/11, 1, 3.14);
+year_month x = *(fr1[_0]);
+</pre> 
 </div>
 </div>
 <a id="ab77a0c3c0245478fbbf0990602502a12" name="ab77a0c3c0245478fbbf0990602502a12"></a>
