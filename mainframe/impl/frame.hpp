@@ -805,6 +805,16 @@ frame<Ts...>::stddev(columnindex<Ind>) const
 }
 
 template<typename... Ts>
+template<typename T, typename Ex>
+series<T>
+frame<Ts...>::to_series(const std::string& series_name, Ex expr) const
+{
+    frame<Ts..., T> plust = append_column<T>(series_name, expr);
+    columnindex<sizeof...(Ts)> ci;
+    return plust.column(ci);
+}
+
+template<typename... Ts>
 std::vector<std::vector<std::string>>
 frame<Ts...>::to_string() const
 {
