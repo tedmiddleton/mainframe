@@ -17,6 +17,7 @@ var classmf_1_1frame =
     [ "end", "classmf_1_1frame.html#a0b7e3194f365c744c9beb29c0e19efd9", null ],
     [ "end", "classmf_1_1frame.html#a6ab1ec4db75fa83ff7fa5e4772b726b6", null ],
     [ "minmax", "classmf_1_1frame.html#a51c9efa1913ec7575cd59cb712c16b00", null ],
+    [ "operator std::enable_if_t< NumColumns==1, series< typename pack_element< 0, Ts... >::type > >", "classmf_1_1frame.html#a8b58e820ce42c697397013b1d77052d0", null ],
     [ "operator*", "classmf_1_1frame.html#a94caa80858b4cdc63da3d3a4c975e146", null ],
     [ "operator+", "classmf_1_1frame.html#ab77a0c3c0245478fbbf0990602502a12", null ],
     [ "prepend_column", "classmf_1_1frame.html#a260b0aaf0bb7d8e660225b99766f456a", null ],
