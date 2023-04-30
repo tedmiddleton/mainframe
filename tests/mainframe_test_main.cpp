@@ -1081,6 +1081,35 @@ TEST_CASE("append_column()", "[frame]")
     }
 }
 
+TEST_CASE("make_series()", "[frame]")
+{
+    SECTION("expression")
+    {
+        frame<year_month_day, double, bool> f1;
+        f1.set_column_names("date", "temperature", "rain");
+        f1.push_back(2022_y / January / 2, 10.0, false);
+        f1.push_back(2022_y / January / 3, 11.1, true);
+        f1.push_back(2022_y / January / 4, 12.2, false);
+        f1.push_back(2022_y / January / 5, 13.3, false);
+        f1.push_back(2022_y / January / 6, 14.4, true);
+        f1.push_back(2022_y / January / 7, 15.5, false);
+        auto s2 = f1.make_series<year_month_day>("index", _0 + years(1));
+        auto s3 = f1.make_series<year_month_day>("index", 
+            [](auto&, auto& c, auto&) {
+                auto& col1val = c->at(_0);
+                return col1val + years(1);
+            });
+        REQUIRE(s2 == s3);
+
+        REQUIRE(s2[0] == 2023_y / January / 2);
+        REQUIRE(s2[1] == 2023_y / January / 3);
+        REQUIRE(s2[2] == 2023_y / January / 4);
+        REQUIRE(s2[3] == 2023_y / January / 5);
+        REQUIRE(s2[4] == 2023_y / January / 6);
+        REQUIRE(s2[5] == 2023_y / January / 7);
+    }
+}
+
 template<typename T>
 class TD;
 

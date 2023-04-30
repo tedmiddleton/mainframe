@@ -348,6 +348,10 @@ public:
     iterator
     insert(iterator pos, size_t count, const Ts&... ts);
 
+    template<typename T, typename Ex>
+    series<T>
+    make_series(const std::string& column_name, Ex expr) const;
+
     template<size_t Ind>
     double mean(columnindex<Ind>) const;
 
@@ -592,10 +596,6 @@ public:
 
     template<size_t Ind>
     double stddev(columnindex<Ind>) const;
-
-    template<typename T, typename Ex>
-    series<T>
-    to_series(const std::string& column_name, Ex expr) const;
 
     std::vector<std::vector<std::string>>
     to_string() const;

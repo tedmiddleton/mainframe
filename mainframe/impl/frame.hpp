@@ -463,6 +463,16 @@ frame<Ts...>::insert(typename frame<Ts...>::iterator pos, size_t count, const Ts
 }
 
 template<typename... Ts>
+template<typename T, typename Ex>
+series<T>
+frame<Ts...>::make_series(const std::string& series_name, Ex expr) const
+{
+    frame<Ts..., T> plust = append_column<T>(series_name, expr);
+    columnindex<sizeof...(Ts)> ci;
+    return plust.column(ci);
+}
+
+template<typename... Ts>
 template<size_t Ind>
 double
 frame<Ts...>::mean(columnindex<Ind>) const
@@ -809,16 +819,6 @@ frame<Ts...>::stddev(columnindex<Ind>) const
 {
     const auto& s = std::get<Ind>(m_columns);
     return s.stddev();
-}
-
-template<typename... Ts>
-template<typename T, typename Ex>
-series<T>
-frame<Ts...>::to_series(const std::string& series_name, Ex expr) const
-{
-    frame<Ts..., T> plust = append_column<T>(series_name, expr);
-    columnindex<sizeof...(Ts)> ci;
-    return plust.column(ci);
 }
 
 template<typename... Ts>
