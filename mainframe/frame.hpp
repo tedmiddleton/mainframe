@@ -384,6 +384,20 @@ public:
     bool
     operator==(const frame<Ts...>& other) const;
 
+    /// Cast to series<> if the frame has only one column
+    ///
+    /// This is a convenience operator for the common case of a single-column
+    /// frame. It allows you to write
+    ///
+    ///    void takes_a_series(const series<double>& s);
+    ///
+    ///    frame_row<year_month, int, double> fr1;
+    ///    fr1.push_back(2022_y/11, 1, 3.14);
+    ///    takes_a_series(fr1[_2]);
+    ///
+    template<size_t NumColumns = sizeof...(Ts)>
+    operator std::enable_if_t<NumColumns == 1, series<typename pack_element<0, Ts...>::type>>() const;
+
     /// Dereference the first row of a single-column frame
     ///
     /// This is a convenience operator for the common case of a single-column

@@ -3525,6 +3525,31 @@ TEST_CASE("operator*", "[frame]")
     }
 }
 
+TEST_CASE("operator()", "[frame]")
+{
+    SECTION("legitimate")
+    {
+        auto func = [](const series<year_month_day>& s) { 
+            REQUIRE(s.size() == 5);
+            REQUIRE(s.name() == "date");
+            REQUIRE(s[0] == 2022_y / January / 1);
+            REQUIRE(s[1] == 2022_y / January / 2);
+            REQUIRE(s[2] == 2022_y / January / 3);
+            REQUIRE(s[3] == 2022_y / January / 4);
+            REQUIRE(s[4] == 2022_y / January / 5);
+        };
+        
+        frame<double, year_month_day, double> f1;
+        f1.set_column_names("real", "date", "imag");
+        f1.push_back( 8.9, 2022_y / January / 1, 10.2);
+        f1.push_back(10.2, 2022_y / January / 2, 10.2);
+        f1.push_back(11.1, 2022_y / January / 3,  7.7);
+        f1.push_back(12.2, 2022_y / January / 4, 10.2);
+        f1.push_back(13.3, 2022_y / January / 5, 10.2);
+
+        func(f1[_1]);
+    }
+}
 
 //template<typename Func, typename Arg>
 //struct fnobj;
