@@ -146,8 +146,7 @@ TEST_CASE("ctor"
     REQUIRE(f1.size() == 0);
 }
 
-TEST_CASE("ctor( const& )"
-          "[frame]")
+TEST_CASE("ctor( const& )", "[frame]")
 {
     frame<year_month_day, double, bool> f1;
     REQUIRE(f1.size() == 0);
@@ -161,8 +160,7 @@ TEST_CASE("ctor( const& )"
     REQUIRE(f2.size() == 4);
 }
 
-TEST_CASE("ctor( && )"
-          "[frame]")
+TEST_CASE("ctor( && )", "[frame]")
 {
     frame<year_month_day, double, bool> f1;
     REQUIRE(f1.size() == 0);
@@ -174,6 +172,24 @@ TEST_CASE("ctor( && )"
     frame<year_month_day, double, bool> f2(std::move(f1));
     REQUIRE(f1.size() == 0);
     REQUIRE(f2.size() == 4);
+}
+
+TEST_CASE("ctor( series )", "[frame]")
+{
+    series<year_month_day> s1;
+    REQUIRE(s1.size() == 0);
+    s1.push_back(2022_y / January / 2);
+    s1.push_back(2022_y / January / 3);
+    s1.push_back(2022_y / January / 4);
+    s1.push_back(2022_y / January / 5);
+    REQUIRE(s1.size() == 4);
+    frame<year_month_day> f1(s1);
+    REQUIRE(s1.size() == 4);
+    REQUIRE(f1.size() == 4);
+    REQUIRE((f1.begin() + 0)->at(_0) == 2022_y / January / 2);
+    REQUIRE((f1.begin() + 1)->at(_0) == 2022_y / January / 3);
+    REQUIRE((f1.begin() + 2)->at(_0) == 2022_y / January / 4);
+    REQUIRE((f1.begin() + 3)->at(_0) == 2022_y / January / 5);
 }
 
 TEST_CASE("begin()/end()", "[frame]")
