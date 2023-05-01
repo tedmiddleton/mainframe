@@ -515,7 +515,7 @@ frame<Ts...>::operator==(const frame<Ts...>& other) const
 
 template<typename... Ts>
 template<size_t NumColumns>
-frame<Ts...>::operator std::enable_if_t<NumColumns == 1, series<typename pack_element<0, Ts...>::type>>() const
+frame<Ts...>::operator std::enable_if_t<NumColumns == 1, series<typename detail::pack_element<0, Ts...>::type>>() const
 {
     return std::get<0>(m_columns);
 }

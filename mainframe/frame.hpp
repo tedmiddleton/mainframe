@@ -357,7 +357,7 @@ public:
 
     template<size_t Ind>
     using pack_elem_pair =
-        std::pair<typename pack_element<Ind, Ts...>::type, typename pack_element<Ind, Ts...>::type>;
+        std::pair<typename pack_element<Ind, Ts...>::type, typename detail::pack_element<Ind, Ts...>::type>;
 
     /// Calculate the minimum and maximum value in a column, and return them in
     /// a std::pair<>

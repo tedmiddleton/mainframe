@@ -1567,7 +1567,7 @@ TEST_CASE("arithmetic", "[series]")
     SECTION("minus eq scalar")
     {
         series<int> s1{ 1, 2, 3, 4, 5 };
-        double i = 11.0;
+        int i = 11;
         s1 -= i;
         REQUIRE(s1.size() == 5);
         REQUIRE(s1[0] == -10);
