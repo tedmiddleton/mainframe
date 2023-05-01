@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.8.0-9-g3854e84</span>
+   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.8.0-10-g0c3f1db</span>
    </div>
   </td>
  </tr>
@@ -135,10 +135,10 @@ template&lt;size_t... Inds&gt; </td></tr>
 <tr class="memitem:a796d07899d7effa723205ba96c7d2a19"><td class="memItemLeft" align="right" valign="top"><a id="a796d07899d7effa723205ba96c7d2a19" name="a796d07899d7effa723205ba96c7d2a19"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>frame_without_any_missing_columns</b> = typename detail::remove_all_opt&lt; <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type</td></tr>
 <tr class="separator:a796d07899d7effa723205ba96c7d2a19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a8baebc589ef56c32d1be9d51de2333"><td class="memTemplParams" colspan="2"><a id="a2a8baebc589ef56c32d1be9d51de2333" name="a2a8baebc589ef56c32d1be9d51de2333"></a>
+<tr class="memitem:ae0774320d4e877dec7168bb1814351bd"><td class="memTemplParams" colspan="2"><a id="ae0774320d4e877dec7168bb1814351bd" name="ae0774320d4e877dec7168bb1814351bd"></a>
 template&lt;size_t Ind&gt; </td></tr>
-<tr class="memitem:a2a8baebc589ef56c32d1be9d51de2333"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>pack_elem_pair</b> = std::pair&lt; typename pack_element&lt; Ind, Ts... &gt;::type, typename pack_element&lt; Ind, Ts... &gt;::type &gt;</td></tr>
-<tr class="separator:a2a8baebc589ef56c32d1be9d51de2333"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0774320d4e877dec7168bb1814351bd"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>pack_elem_pair</b> = std::pair&lt; typename pack_element&lt; Ind, Ts... &gt;::type, typename detail::pack_element&lt; Ind, Ts... &gt;::type &gt;</td></tr>
+<tr class="separator:ae0774320d4e877dec7168bb1814351bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a881461a62ac44b3b1a931df0fc8e2f8c"><td class="memTemplParams" colspan="2"><a id="a881461a62ac44b3b1a931df0fc8e2f8c" name="a881461a62ac44b3b1a931df0fc8e2f8c"></a>
 template&lt;size_t Ind&gt; </td></tr>
 <tr class="memitem:a881461a62ac44b3b1a931df0fc8e2f8c"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>frame_without_indexed_column</b> = typename detail::pack_remove&lt; Ind, <a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts... &gt; &gt;::type</td></tr>
