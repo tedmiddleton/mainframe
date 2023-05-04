@@ -718,7 +718,7 @@ frame<Ts...>::reverse_sort(columnindex<Inds>...)
 template<typename... Ts>
 template<size_t... Inds>
 frame<Ts...>
-frame<Ts...>::reverse_sorted(columnindex<Inds>... ci)
+frame<Ts...>::reverse_sorted(columnindex<Inds>... ci) const
 {
     frame<Ts...> out(*this);
     out.set_column_names(column_names());
@@ -804,7 +804,7 @@ frame<Ts...>::sort(columnindex<Inds>...)
 template<typename... Ts>
 template<size_t... Inds>
 frame<Ts...>
-frame<Ts...>::sorted(columnindex<Inds>... ci)
+frame<Ts...>::sorted(columnindex<Inds>... ci) const
 {
     frame<Ts...> out(*this);
     out.set_column_names(column_names());

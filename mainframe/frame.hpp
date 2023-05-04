@@ -561,7 +561,7 @@ public:
 
     template<size_t... Inds>
     frame<Ts...>
-    reverse_sorted(columnindex<Inds>... ci);
+    reverse_sorted(columnindex<Inds>... ci) const;
 
     _row_proxy<false, Ts...>
     row(size_t ind);
@@ -592,7 +592,7 @@ public:
 
     template<size_t... Inds>
     frame<Ts...>
-    sorted(columnindex<Inds>... ci);
+    sorted(columnindex<Inds>... ci) const;
 
     template<size_t Ind>
     double stddev(columnindex<Ind>) const;
