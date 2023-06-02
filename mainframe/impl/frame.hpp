@@ -153,24 +153,25 @@ frame<Ts...>::allow_missing() const
 template<typename... Ts>
 template<typename T>
 frame<Ts..., T>
-frame<Ts...>::append_column(const std::string& series_name) const
+frame<Ts...>::append_column(const std::string& column_name) const
 {
     uframe plust(*this);
     series<T> ns(size());
-    ns.set_name(series_name);
+    ns.set_name(column_name);
     useries us(ns);
     plust.append_column(us);
     return plust;
 }
 
 template<typename... Ts>
-template<typename T, typename Ex>
+template<typename T, typename Ex, 
+         typename std::enable_if_t<!std::is_convertible_v<T, Ex>, bool>>
 frame<Ts..., T>
-frame<Ts...>::append_column(const std::string& series_name, Ex expr) const
+frame<Ts...>::append_column(const std::string& column_name, Ex expr) const
 {
     uframe plust(*this);
     series<T> ns(size());
-    ns.set_name(series_name);
+    ns.set_name(column_name);
     useries us(ns);
     plust.append_column(us);
     frame<Ts..., T> out = plust;
@@ -191,6 +192,24 @@ frame<Ts...>::append_column(const std::string& series_name, Ex expr) const
         }
     }
     return out;
+}
+
+template<typename... Ts>
+template<typename T, typename U, 
+         typename std::enable_if_t<std::is_convertible_v<T, U>, bool>>
+frame<Ts..., T>
+frame<Ts...>::append_column(const std::string& column_name, U val) const
+{
+    uframe plust(*this);
+    series<T> ns;
+    ns.reserve(size());
+    for (size_t i = 0; i < size(); ++i) {
+        ns.push_back(val);
+    }
+    ns.set_name(column_name);
+    useries us(ns);
+    plust.append_column(us);
+    return plust;
 }
 
 template<typename... Ts>
@@ -593,24 +612,25 @@ frame<Ts...>::pop_back()
 template<typename... Ts>
 template<typename T>
 frame<T, Ts...>
-frame<Ts...>::prepend_column(const std::string& series_name) const
+frame<Ts...>::prepend_column(const std::string& column_name) const
 {
     uframe plust(*this);
     series<T> ns(size());
-    ns.set_name(series_name);
+    ns.set_name(column_name);
     useries us(ns);
     plust.prepend_column(us);
     return plust;
 }
 
 template<typename... Ts>
-template<typename T, typename Ex>
+template<typename T, typename Ex, 
+         typename std::enable_if_t<!std::is_convertible_v<T, Ex>, bool>>
 frame<T, Ts...>
-frame<Ts...>::prepend_column(const std::string& series_name, Ex expr) const
+frame<Ts...>::prepend_column(const std::string& column_name, Ex expr) const
 {
     uframe plust(*this);
     series<T> ns(size());
-    ns.set_name(series_name);
+    ns.set_name(column_name);
     useries us(ns);
     plust.prepend_column(us);
     frame<T, Ts...> out = plust;
@@ -634,6 +654,24 @@ frame<Ts...>::prepend_column(const std::string& series_name, Ex expr) const
         }
     }
     return out;
+}
+
+template<typename... Ts>
+template<typename T, typename U, 
+         typename std::enable_if_t<std::is_convertible_v<T, U>, bool>>
+frame<T, Ts...>
+frame<Ts...>::prepend_column(const std::string& column_name, U val) const
+{
+    uframe plust(*this);
+    series<T> ns;
+    ns.reserve(size());
+    for (size_t i = 0; i < size(); ++i) {
+        ns.push_back(val);
+    }
+    ns.set_name(column_name);
+    useries us(ns);
+    plust.prepend_column(us);
+    return plust;
 }
 
 template<typename... Ts>

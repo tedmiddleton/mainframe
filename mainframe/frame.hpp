@@ -239,9 +239,31 @@ public:
     ///     //  1| 2022-02 |      2 |  12.0 |   22.0
     ///     //  2| 2022-03 |      3 |  13.0 |   23.0
     ///
-    template<typename T, typename Ex>
+    template<typename T, typename Ex, 
+             typename std::enable_if_t<!std::is_convertible_v<T, Ex>, bool> = true>
     frame<Ts..., T>
     append_column(const std::string& column_name, Ex expr) const;
+
+    /// Add a new column to the end of the frame with type T and initialize it
+    /// with a value
+    ///
+    ///     frame<year_month, int> f1;
+    ///     f1.set_column_names({"month", "length"});
+    ///     f1.push_back(2022_y/1, 1);
+    ///     f1.push_back(2022_y/2, 2);
+    ///     f1.push_back(2022_y/3, 3);
+    ///     frame<year_month, int, double> f2 = f1.append_column<double>("depth", 10.0);
+    ///     // f2 is now 
+    ///     //   |   month | length | depth
+    ///     // __|_________|________|_______
+    ///     //  0| 2022-01 |      1 |  10.0
+    ///     //  1| 2022-02 |      2 |  10.0
+    ///     //  2| 2022-03 |      3 |  10.0
+    ///
+    template<typename T, typename U, 
+             typename std::enable_if_t<std::is_convertible_v<T, U>, bool> = true>
+    frame<Ts..., T>
+    append_column(const std::string& column_name, U val) const;
 
     /// Add an existing series to the frame as a column to the end of the frame 
     ///
@@ -500,7 +522,7 @@ public:
     frame<T, Ts...>
     prepend_column(const std::string& column_name) const;
 
-    /// Add a new column to the beginning of the frame with type Tand initialize it
+    /// Add a new column to the beginning of the frame with type T and initialize it
     /// with a callable object like an expression
     ///
     ///     frame<year_month, int> f1;
@@ -525,9 +547,31 @@ public:
     ///     //  1|   22.0 |  12.0 | 2022-02 |      2 
     ///     //  2|   23.0 |  13.0 | 2022-03 |      3 
     ///
-    template<typename T, typename Ex>
+    template<typename T, typename Ex, 
+             typename std::enable_if_t<!std::is_convertible_v<T, Ex>, bool> = true>
     frame<T, Ts...>
     prepend_column(const std::string& column_name, Ex expr) const;
+
+    /// Add a new column to the beginning of the frame with type Tand initialize it
+    /// with a value
+    ///
+    ///     frame<year_month, int> f1;
+    ///     f1.set_column_names({"month", "length"});
+    ///     f1.push_back(2022_y/1, 1);
+    ///     f1.push_back(2022_y/2, 2);
+    ///     f1.push_back(2022_y/3, 3);
+    ///     frame<double, year_month, int> f2 = f1.prepend_column<double>("depth", 10.0);
+    ///     // f2 is now 
+    ///     //   | depth |   month | length 
+    ///     // __|_______|_________|________
+    ///     //  0|  10.0 | 2022-01 |      1 
+    ///     //  1|  10.0 | 2022-02 |      2 
+    ///     //  2|  10.0 | 2022-03 |      3 
+    ///
+    template<typename T, typename U, 
+             typename std::enable_if_t<std::is_convertible_v<T, U>, bool> = true>
+    frame<T, Ts...>
+    prepend_column(const std::string& column_name, U val) const;
 
     /// Add an existing series to the frame as a column to the beginning of the frame 
     ///
