@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.8.0-13-ged2c45e</span>
+   <div id="projectname">mainframe<span id="projectnumber">&#160;v0.8.0-14-gf332b26</span>
    </div>
   </td>
  </tr>
@@ -193,9 +193,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac856c8c99b265f47b235dbeb4efe256a"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:ac856c8c99b265f47b235dbeb4efe256a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ac856c8c99b265f47b235dbeb4efe256a">append_column</a> (const std::string &amp;column_name) const</td></tr>
 <tr class="separator:ac856c8c99b265f47b235dbeb4efe256a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c45601297526372ac30c918aee56b4f"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Ex &gt; </td></tr>
-<tr class="memitem:a3c45601297526372ac30c918aee56b4f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a3c45601297526372ac30c918aee56b4f">append_column</a> (const std::string &amp;column_name, Ex expr) const</td></tr>
-<tr class="separator:a3c45601297526372ac30c918aee56b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11a91697e326e58e7fdc15686025cbb7"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Ex , typename std::enable_if_t&lt;!std::is_convertible_v&lt; T, Ex &gt;, bool &gt;  = true&gt; </td></tr>
+<tr class="memitem:a11a91697e326e58e7fdc15686025cbb7"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a11a91697e326e58e7fdc15686025cbb7">append_column</a> (const std::string &amp;column_name, Ex expr) const</td></tr>
+<tr class="separator:a11a91697e326e58e7fdc15686025cbb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8ec4d30fd411229eca28620ec26546f"><td class="memTemplParams" colspan="2">template&lt;typename T , typename U , typename std::enable_if_t&lt; std::is_convertible_v&lt; T, U &gt;, bool &gt;  = true&gt; </td></tr>
+<tr class="memitem:ae8ec4d30fd411229eca28620ec26546f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ae8ec4d30fd411229eca28620ec26546f">append_column</a> (const std::string &amp;column_name, U val) const</td></tr>
+<tr class="separator:ae8ec4d30fd411229eca28620ec26546f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82ac502f49a7c3a5d30bc941513914d6"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a82ac502f49a7c3a5d30bc941513914d6"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a82ac502f49a7c3a5d30bc941513914d6">append_series</a> (const <a class="el" href="classmf_1_1series.html">series</a>&lt; T &gt; &amp;s) const</td></tr>
 <tr class="separator:a82ac502f49a7c3a5d30bc941513914d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -320,9 +323,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>pop_back</b> ()</td><
 <tr class="memitem:a260b0aaf0bb7d8e660225b99766f456a"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a260b0aaf0bb7d8e660225b99766f456a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; T, Ts... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#a260b0aaf0bb7d8e660225b99766f456a">prepend_column</a> (const std::string &amp;column_name) const</td></tr>
 <tr class="separator:a260b0aaf0bb7d8e660225b99766f456a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac44a5515f86c9d165d96f27ccd9d1d60"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Ex &gt; </td></tr>
-<tr class="memitem:ac44a5515f86c9d165d96f27ccd9d1d60"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; T, Ts... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ac44a5515f86c9d165d96f27ccd9d1d60">prepend_column</a> (const std::string &amp;column_name, Ex expr) const</td></tr>
-<tr class="separator:ac44a5515f86c9d165d96f27ccd9d1d60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2461f81b9f7727de3f55aad40dc8027"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Ex , typename std::enable_if_t&lt;!std::is_convertible_v&lt; T, Ex &gt;, bool &gt;  = true&gt; </td></tr>
+<tr class="memitem:ae2461f81b9f7727de3f55aad40dc8027"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; T, Ts... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ae2461f81b9f7727de3f55aad40dc8027">prepend_column</a> (const std::string &amp;column_name, Ex expr) const</td></tr>
+<tr class="separator:ae2461f81b9f7727de3f55aad40dc8027"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac374a050f04d7d7a5c077c79e88b6237"><td class="memTemplParams" colspan="2">template&lt;typename T , typename U , typename std::enable_if_t&lt; std::is_convertible_v&lt; T, U &gt;, bool &gt;  = true&gt; </td></tr>
+<tr class="memitem:ac374a050f04d7d7a5c077c79e88b6237"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; T, Ts... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#ac374a050f04d7d7a5c077c79e88b6237">prepend_column</a> (const std::string &amp;column_name, U val) const</td></tr>
+<tr class="separator:ac374a050f04d7d7a5c077c79e88b6237"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc51e14e008957f5f85735612057f1e1"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:afc51e14e008957f5f85735612057f1e1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; T, Ts... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classmf_1_1frame.html#afc51e14e008957f5f85735612057f1e1">prepend_series</a> (const <a class="el" href="classmf_1_1series.html">series</a>&lt; T &gt; &amp;s) const</td></tr>
 <tr class="separator:afc51e14e008957f5f85735612057f1e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -470,7 +476,7 @@ f2.push_back(2022_y/12, 3, 0.007297);
 </div>
 </div>
 <a id="ac856c8c99b265f47b235dbeb4efe256a" name="ac856c8c99b265f47b235dbeb4efe256a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac856c8c99b265f47b235dbeb4efe256a">&#9670;&nbsp;</a></span>append_column() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac856c8c99b265f47b235dbeb4efe256a">&#9670;&nbsp;</a></span>append_column() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -503,15 +509,15 @@ frame&lt;year_month, int, double&gt; f2 = f1.append_column&lt;double&gt;("depth"
 </pre> 
 </div>
 </div>
-<a id="a3c45601297526372ac30c918aee56b4f" name="a3c45601297526372ac30c918aee56b4f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c45601297526372ac30c918aee56b4f">&#9670;&nbsp;</a></span>append_column() <span class="overload">[2/2]</span></h2>
+<a id="a11a91697e326e58e7fdc15686025cbb7" name="a11a91697e326e58e7fdc15686025cbb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a11a91697e326e58e7fdc15686025cbb7">&#9670;&nbsp;</a></span>append_column() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename... Ts&gt; </div>
 <div class="memtemplate">
-template&lt;typename T , typename Ex &gt; </div>
+template&lt;typename T , typename Ex , typename std::enable_if_t&lt;!std::is_convertible_v&lt; T, Ex &gt;, bool &gt;  = true&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt; <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::append_column </td>
@@ -554,6 +560,50 @@ frame&lt;year_month, int, double&gt; f3 =
 //  0| 2022-01 |      1 |  11.0 |   21.0
 //  1| 2022-02 |      2 |  12.0 |   22.0
 //  2| 2022-03 |      3 |  13.0 |   23.0
+</pre> 
+</div>
+</div>
+<a id="ae8ec4d30fd411229eca28620ec26546f" name="ae8ec4d30fd411229eca28620ec26546f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8ec4d30fd411229eca28620ec26546f">&#9670;&nbsp;</a></span>append_column() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Ts&gt; </div>
+<div class="memtemplate">
+template&lt;typename T , typename U , typename std::enable_if_t&lt; std::is_convertible_v&lt; T, U &gt;, bool &gt;  = true&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; Ts..., T &gt; <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::append_column </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>column_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">U&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Add a new column to the end of the frame with type T and initialize it with a value </p><pre class="fragment">frame&lt;year_month, int&gt; f1;
+f1.set_column_names({"month", "length"});
+f1.push_back(2022_y/1, 1);
+f1.push_back(2022_y/2, 2);
+f1.push_back(2022_y/3, 3);
+frame&lt;year_month, int, double&gt; f2 = f1.append_column&lt;double&gt;("depth", 10.0);
+// f2 is now 
+//   |   month | length | depth
+// __|_________|________|_______
+//  0| 2022-01 |      1 |  10.0
+//  1| 2022-02 |      2 |  10.0
+//  2| 2022-03 |      3 |  10.0
 </pre> 
 </div>
 </div>
@@ -954,7 +1004,7 @@ auto fr3 = fr1 + fr2;
 </div>
 </div>
 <a id="a260b0aaf0bb7d8e660225b99766f456a" name="a260b0aaf0bb7d8e660225b99766f456a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a260b0aaf0bb7d8e660225b99766f456a">&#9670;&nbsp;</a></span>prepend_column() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a260b0aaf0bb7d8e660225b99766f456a">&#9670;&nbsp;</a></span>prepend_column() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -987,15 +1037,15 @@ frame&lt;double, year_month, int&gt; f2 = f1.prepend_column&lt;double&gt;("depth
 </pre> 
 </div>
 </div>
-<a id="ac44a5515f86c9d165d96f27ccd9d1d60" name="ac44a5515f86c9d165d96f27ccd9d1d60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac44a5515f86c9d165d96f27ccd9d1d60">&#9670;&nbsp;</a></span>prepend_column() <span class="overload">[2/2]</span></h2>
+<a id="ae2461f81b9f7727de3f55aad40dc8027" name="ae2461f81b9f7727de3f55aad40dc8027"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2461f81b9f7727de3f55aad40dc8027">&#9670;&nbsp;</a></span>prepend_column() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename... Ts&gt; </div>
 <div class="memtemplate">
-template&lt;typename T , typename Ex &gt; </div>
+template&lt;typename T , typename Ex , typename std::enable_if_t&lt;!std::is_convertible_v&lt; T, Ex &gt;, bool &gt;  = true&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; T, Ts... &gt; <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::prepend_column </td>
@@ -1016,7 +1066,7 @@ template&lt;typename T , typename Ex &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Add a new column to the beginning of the frame with type Tand initialize it with a callable object like an expression </p><pre class="fragment">frame&lt;year_month, int&gt; f1;
+<p >Add a new column to the beginning of the frame with type T and initialize it with a callable object like an expression </p><pre class="fragment">frame&lt;year_month, int&gt; f1;
 f1.set_column_names({"month", "length"});
 f1.push_back(2022_y/1, 1);
 f1.push_back(2022_y/2, 2);
@@ -1037,6 +1087,50 @@ frame&lt;year_month, int, double&gt; f3 =
 //  0|   21.0 |  11.0 | 2022-01 |      1 
 //  1|   22.0 |  12.0 | 2022-02 |      2 
 //  2|   23.0 |  13.0 | 2022-03 |      3 
+</pre> 
+</div>
+</div>
+<a id="ac374a050f04d7d7a5c077c79e88b6237" name="ac374a050f04d7d7a5c077c79e88b6237"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac374a050f04d7d7a5c077c79e88b6237">&#9670;&nbsp;</a></span>prepend_column() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Ts&gt; </div>
+<div class="memtemplate">
+template&lt;typename T , typename U , typename std::enable_if_t&lt; std::is_convertible_v&lt; T, U &gt;, bool &gt;  = true&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classmf_1_1frame.html">frame</a>&lt; T, Ts... &gt; <a class="el" href="classmf_1_1frame.html">mf::frame</a>&lt; Ts &gt;::prepend_column </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>column_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">U&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Add a new column to the beginning of the frame with type Tand initialize it with a value </p><pre class="fragment">frame&lt;year_month, int&gt; f1;
+f1.set_column_names({"month", "length"});
+f1.push_back(2022_y/1, 1);
+f1.push_back(2022_y/2, 2);
+f1.push_back(2022_y/3, 3);
+frame&lt;double, year_month, int&gt; f2 = f1.prepend_column&lt;double&gt;("depth", 10.0);
+// f2 is now 
+//   | depth |   month | length 
+// __|_______|_________|________
+//  0|  10.0 | 2022-01 |      1 
+//  1|  10.0 | 2022-02 |      2 
+//  2|  10.0 | 2022-03 |      3 
 </pre> 
 </div>
 </div>
